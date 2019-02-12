@@ -46,12 +46,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DebugCommand.cs" />
     <Compile Include="Hellraiser.cs" />
     <Compile Include="ColorPallete.cs" />
     <Compile Include="GameScriptTemplate.cs" />
-    <Compile Include="ProfileConverter.cs" />
+    <Compile Include="Converter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RandBuff.cs" />
+    <Compile Include="BotExtended.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
