@@ -17,7 +17,6 @@ namespace SFDScript.MoreBot
         public GameScript() : base(null) { }
 
         private const int MAX_PLAYERS = 12;
-        private const int MAX_WEIGTH = 500;
 
         private static Random Rnd = new Random();
         private const string TIER_1 = "TIER_1";
@@ -27,8 +26,8 @@ namespace SFDScript.MoreBot
         public void OnStartup()
         {
             //Game.GetPlayers()[0].GiveWeaponItem(WeaponItem.MP50);
-            var modifiers = Game.GetPlayers()[0].GetModifiers();
             //System.Diagnostics.Debugger.Break();
+            //var modifiers = Game.GetPlayers()[0].GetModifiers();
 
             BotHelper.Initialize();
         }
@@ -72,7 +71,7 @@ namespace SFDScript.MoreBot
 
         #endregion
 
-        #region Bot type/group
+        #region Bot type
 
         public enum BotType
         {
@@ -81,16 +80,19 @@ namespace SFDScript.MoreBot
             AssassinMelee,
             AssassinRange,
             // Tier1: Subway Shakedown
-            // Tier2: Piston Posse, Tower Trouble
             Agent,
+            // Tier2: Piston Posse, Tower Trouble
+            Agent2, // pair with metro cop
             // Tier1: High Moon Holdout
             Bandido,
             // Tier1: Police Station Punchout, Warehouse Wreckage
             // Tier2: Bar Brawl
             // Tier3: Meatgrinder Begins
             Biker,
+            BikerHulk,
             // Tier1: The Teahouse Job, Rooftop Retribution
             Bodyguard,
+            Bodyguard2,
 
             ClownBodyguard,
             ClownBoxer,
@@ -117,6 +119,7 @@ namespace SFDScript.MoreBot
             // Tier2: Hazardous Hustle, Piston Posse
             // Tier3: Armored Unit
             MetroCop,
+            MetroCop2,
             // Tier2: Plant 47 Panic
             Mutant,
 
@@ -131,10 +134,11 @@ namespace SFDScript.MoreBot
             Police,
             PoliceSWAT,
 
-            // Tier1: The Teahouse Job, Heavy Hostility
+            // Tier1: Heavy Hostility
             // Tier2: Trainyard Takedown, Alley Bombardment
             // Tier3: Meatgrinder Begins
             Gangster,
+            // Tier1: The Teahouse Job, Heavy Hostility
             GangsterHulk,
 
             // Tier3: Holiday Hullabaloo
@@ -143,11 +147,11 @@ namespace SFDScript.MoreBot
             Sniper,
             // Tier2: Facility Foray
             Soldier,
+            Soldier2,
             Teddybear,
 
             // Tier1: Storage Showdown, Rooftops Rumble, Police Station Punchout, Alley Ambush, Warehouse Wreckage, Heavy Hostility
             Thug,
-            Thug2,
             ThugHulk,
 
             // Tier3: Hotel Cleanup
@@ -160,106 +164,16 @@ namespace SFDScript.MoreBot
             // Tier1: Chemical Crisis
             ZombieGangster,
             ZombieNinja,
-            ZombiePrussian,
             ZombiePolice,
+
+            // Tier3: Unearthed
+            ZombiePrussian,
+            BaronVonHauptstein,
+
             ZombieSoldier,
             ZombieThug,
             ZombieWorker,
         }
-
-        public class Group
-        {
-            public Group(string name, Dictionary<BotType, float> types)
-            {
-                Name = name;
-                Types = types;
-                foreach (var pair in Types) TotalScore += pair.Value;
-            }
-
-            public string Name { get; private set; }
-            public Dictionary<BotType, float> Types { get; set; }
-            public float TotalScore { get; private set; }
-        }
-
-        private static List<Group> BotGroups = new List<Group>()
-        {
-            new Group("Bandido", new Dictionary<BotType, float>()
-            {
-                { BotType.Bandido, 1.0f },
-            }),
-            new Group("Clown1", new Dictionary<BotType, float>()
-            {
-                { BotType.ClownCowboy, 0.5f },
-                { BotType.ClownGangster, 0.25f },
-                { BotType.ClownBoxer, 0.25f },
-            }),
-            new Group("Clown2", new Dictionary<BotType, float>()
-            {
-                { BotType.ClownCowboy, 0.6f },
-                { BotType.ClownGangster, 0.4f },
-            }),
-            new Group("Clown3", new Dictionary<BotType, float>()
-            {
-                { BotType.ClownBoxer, 0.7f },
-                { BotType.ClownGangster, 0.3f },
-            }),
-            new Group("Cowboy", new Dictionary<BotType, float>()
-            {
-                { BotType.Cowboy, 1.0f },
-            }),
-            new Group("Boss", new Dictionary<BotType, float>()
-            {
-                { BotType.Demolitionist, 0.0f },
-            }),
-            new Group("Gangster", new Dictionary<BotType, float>()
-            {
-                { BotType.Kingpin, 0f },
-                { BotType.Bodyguard, 1f },
-            }),
-            //new Group("Gangster", new Dictionary<BotType, float>()
-            //{
-            //    { BotType.Kingpin, 0f },
-            //    { BotType.Bodyguard, 1f },
-            //    { BotType.Gangster, 1f },
-            //    { BotType.GangsterHulk, 1f },
-            //}),
-            new Group("Meatgrinder", new Dictionary<BotType, float>()
-            {
-                { BotType.Meatgrinder, 1f },
-            }),
-            new Group("MetroCop", new Dictionary<BotType, float>()
-            {
-                { BotType.MetroCop, 1f },
-            }),
-            //new Group("Police1", new Dictionary<BotType, float>()
-            //{
-            //    { BotType.Police, 0.8f },
-            //    { BotType.PoliceSWAT, 0.2f },
-            //}),
-            new Group("Police2", new Dictionary<BotType, float>()
-            {
-                { BotType.Police, 1f },
-            }),
-            //new Group("Police3", new Dictionary<BotType, float>()
-            //{
-            //    { BotType.PoliceSWAT, 1f },
-            //}),
-            new Group("Teddybear", new Dictionary<BotType, float>()
-            {
-                { BotType.Teddybear, 1f },
-            }),
-            new Group("Thug1", new Dictionary<BotType, float>()
-            {
-                { BotType.Thug, 0.5f },
-                { BotType.Thug2, 0.5f },
-            }),
-            new Group("Thug2", new Dictionary<BotType, float>()
-            {
-                { BotType.Thug, 0.3f },
-                { BotType.Thug2, 0.3f },
-                { BotType.ThugHulk, 0.4f },
-            }),
-        };
 
         #endregion
 
@@ -1222,7 +1136,7 @@ namespace SFDScript.MoreBot
         {
             new IProfile()
             {
-                Name = "Metro Cop",
+                Name = "MetroCop",
                 Accesory = null,
                 ChestOver = new IProfileClothingItem("MetroLawJacket", "ClothingGray", "ClothingGray"),
                 ChestUnder = new IProfileClothingItem("SleevelessShirt", "ClothingGreen", "ClothingLightGray"),
@@ -1236,7 +1150,7 @@ namespace SFDScript.MoreBot
             },
             new IProfile()
             {
-                Name = "Metro Cop",
+                Name = "MetroCop",
                 Accesory = null,
                 ChestOver = new IProfileClothingItem("MetroLawJacket", "ClothingGray", "ClothingGray"),
                 ChestUnder = new IProfileClothingItem("SleevelessShirt", "ClothingGreen", "ClothingLightGray"),
@@ -1250,7 +1164,24 @@ namespace SFDScript.MoreBot
             },
             new IProfile()
             {
-                Name = "Metro Cop",
+                Name = "MetroCop",
+                Accesory = null,
+                ChestOver = null,
+                ChestUnder = new IProfileClothingItem("BodyArmor", "ClothingGray", "ClothingLightGray"),
+                Feet = new IProfileClothingItem("BootsBlack", "ClothingGray", "ClothingLightGray"),
+                Gender = Gender.Male,
+                Hands = new IProfileClothingItem("SafetyGlovesBlack", "ClothingGray", "ClothingLightGray"),
+                Head = new IProfileClothingItem("MetroLawGasMask", "ClothingGray", "ClothingLightRed"),
+                Legs = new IProfileClothingItem("PantsBlack", "ClothingGray", "ClothingLightGray"),
+                Skin = new IProfileClothingItem("Tattoos", "Skin5", "ClothingLightGray"),
+                Waist = new IProfileClothingItem("CombatBelt", "ClothingGray", "ClothingLightGray"),
+            },
+        };
+        private static List<IProfile> MetroCop2Profiles = new List<IProfile>()
+        {
+            new IProfile()
+            {
+                Name = "MetroCop",
                 Accesory = new IProfileClothingItem("Earpiece", "ClothingLightGray", "ClothingLightGray"),
                 ChestOver = new IProfileClothingItem("MetroLawJacket", "ClothingGray", "ClothingGray"),
                 ChestUnder = new IProfileClothingItem("SleevelessShirt", "ClothingGreen", "ClothingLightGray"),
@@ -1264,21 +1195,7 @@ namespace SFDScript.MoreBot
             },
             new IProfile()
             {
-                Name = "Metro Cop",
-                Accesory = null,
-                ChestOver = null,
-                ChestUnder = new IProfileClothingItem("BodyArmor", "ClothingGray", "ClothingLightGray"),
-                Feet = new IProfileClothingItem("BootsBlack", "ClothingGray", "ClothingLightGray"),
-                Gender = Gender.Male,
-                Hands = new IProfileClothingItem("SafetyGlovesBlack", "ClothingGray", "ClothingLightGray"),
-                Head = new IProfileClothingItem("MetroLawGasMask", "ClothingGray", "ClothingLightRed"),
-                Legs = new IProfileClothingItem("PantsBlack", "ClothingGray", "ClothingLightGray"),
-                Skin = new IProfileClothingItem("Tattoos", "Skin5", "ClothingLightGray"),
-                Waist = new IProfileClothingItem("CombatBelt", "ClothingGray", "ClothingLightGray"),
-            },
-            new IProfile()
-            {
-                Name = "Metro Cop",
+                Name = "MetroCop",
                 Accesory = new IProfileClothingItem("Earpiece", "ClothingLightGray", "ClothingLightGray"),
                 ChestOver = null,
                 ChestUnder = new IProfileClothingItem("BodyArmor", "ClothingGray", "ClothingLightGray"),
@@ -1292,7 +1209,7 @@ namespace SFDScript.MoreBot
             },
             new IProfile()
             {
-                Name = "Metro Cop",
+                Name = "MetroCop",
                 Accesory = null,
                 ChestOver = new IProfileClothingItem("MetroLawJacket", "ClothingGray", "ClothingGray"),
                 ChestUnder = new IProfileClothingItem("SleevelessShirt", "ClothingGreen", "ClothingLightGray"),
@@ -2472,6 +2389,23 @@ namespace SFDScript.MoreBot
                 Waist = null,
             },
         };
+        private static List<IProfile> BaronVonHauptsteinProfiles = new List<IProfile>()
+        {
+            new IProfile()
+            {
+                Name = "Zombie Prussian",
+                Accesory = new IProfileClothingItem("GasMask", "ClothingCyan", "ClothingLightGreen", ""),
+                ChestOver = null,
+                ChestUnder = new IProfileClothingItem("TornShirt", "ClothingDarkCyan", "ClothingLightGray", ""),
+                Feet = new IProfileClothingItem("BootsBlack", "ClothingDarkCyan", "ClothingLightGray", ""),
+                Gender = Gender.Male,
+                Hands = null,
+                Head = new IProfileClothingItem("SpikedHelmet", "ClothingCyan", "ClothingLightGray", ""),
+                Legs = new IProfileClothingItem("TornPants", "ClothingDarkCyan", "ClothingLightGray", ""),
+                Skin = new IProfileClothingItem("Zombie", "Skin1", "ClothingLightGray", ""),
+                Waist = null,
+            },
+        };
         private static List<IProfile> ZombieSoldierProfiles = new List<IProfile>()
         {
             new IProfile()
@@ -2556,11 +2490,13 @@ namespace SFDScript.MoreBot
         public static Dictionary<BotType, List<IProfile>> BotProfiles = new Dictionary<BotType, List<IProfile>>()
         {
             { BotType.Agent, AgentProfiles },
+            { BotType.Agent2, AgentProfiles },
             { BotType.AssassinMelee, AssasinMeleeProfiles },
             { BotType.AssassinRange, AssasinRangeProfiles },
             { BotType.Bandido, BandidoProfiles },
             { BotType.Biker, BikerProfiles },
             { BotType.Bodyguard, BodyguardProfiles },
+            { BotType.Bodyguard2, BodyguardProfiles },
             { BotType.ClownBodyguard, ClownBodyguardProfiles },
             { BotType.ClownBoxer, ClownBoxerProfiles },
             { BotType.ClownCowboy, ClownCowboyProfiles },
@@ -2577,6 +2513,7 @@ namespace SFDScript.MoreBot
             { BotType.Meatgrinder, MeatgrinderProfiles },
             { BotType.Mecha, MechaProfiles },
             { BotType.MetroCop, MetroCopProfiles },
+            { BotType.MetroCop2, MetroCop2Profiles },
             { BotType.Mutant, MutantProfiles },
             { BotType.NaziLabAssistant, NaziLabAssistantProfiles },
             { BotType.NaziMuscleSoldier, NaziMuscleSoldierProfiles },
@@ -2588,9 +2525,9 @@ namespace SFDScript.MoreBot
             { BotType.Santa, SantaProfiles },
             { BotType.Sniper, SniperProfiles },
             { BotType.Soldier, SoldierProfiles },
+            { BotType.Soldier2, SoldierProfiles },
             { BotType.Teddybear, TeddybearProfiles },
             { BotType.Thug, ThugProfiles },
-            { BotType.Thug2, ThugProfiles },
             { BotType.ThugHulk, ThugHulkProfiles },
             { BotType.Zombie, ZombieProfiles },
             { BotType.ZombieAgent, ZombieAgentProfiles },
@@ -2601,6 +2538,7 @@ namespace SFDScript.MoreBot
             { BotType.ZombieNinja, ZombieNinjaProfiles },
             { BotType.ZombiePolice, ZombiePoliceProfiles },
             { BotType.ZombiePrussian, ZombiePrussianProfiles },
+            { BotType.BaronVonHauptstein, BaronVonHauptsteinProfiles },
             { BotType.ZombieSoldier, ZombieSoldierProfiles },
             { BotType.ZombieThug, ZombieThugProfiles },
             { BotType.ZombieWorker, ZombieWorkerProfiles },
@@ -2689,6 +2627,67 @@ namespace SFDScript.MoreBot
         private static Dictionary<BotType, List<WeaponSet>> BotWeapons = new Dictionary<BotType, List<WeaponSet>>()
         {
             {
+                BotType.AssassinMelee, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.KATANA,
+                    },
+                }
+            },
+            {
+                BotType.AssassinRange, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.UZI,
+                    },
+                }
+            },
+            {
+                BotType.Agent, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.PISTOL,
+                    },
+                }
+            },
+            {
+                BotType.Agent2, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.BATON,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.SHOCK_BATON,
+                    },
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.MAGNUM,
+                        UseLazer = true,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.BATON,
+                        Secondary = WeaponItem.UZI,
+                        UseLazer = true,
+                    },
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.REVOLVER,
+                        UseLazer = true,
+                    },
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.DARK_SHOTGUN,
+                        UseLazer = true,
+                    },
+                }
+            },
+            {
                 BotType.Bandido, new List<WeaponSet>()
                 {
                     new WeaponSet()
@@ -2721,6 +2720,16 @@ namespace SFDScript.MoreBot
                     {
                         Melee = WeaponItem.CHAIN,
                     },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.KNIFE,
+                    },
+                }
+            },
+            {
+                BotType.BikerHulk, new List<WeaponSet>()
+                {
+                    new WeaponSet(),
                 }
             },
             {
@@ -2728,11 +2737,37 @@ namespace SFDScript.MoreBot
                 {
                     new WeaponSet()
                     {
+                        Secondary = WeaponItem.PISTOL,
+                    },
+                }
+            },
+            {
+                BotType.Bodyguard2, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
                         Primary = WeaponItem.TOMMYGUN,
+                    },
+                }
+            },
+            {
+                BotType.ClownBodyguard, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.KATANA,
                     },
                     new WeaponSet()
                     {
-                        Secondary = WeaponItem.PISTOL,
+                        Melee = WeaponItem.KNIFE,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.AXE,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.BAT,
                     },
                 }
             },
@@ -2795,6 +2830,22 @@ namespace SFDScript.MoreBot
                 }
             },
             {
+                BotType.Fritzliebe, new List<WeaponSet>()
+                {
+                    new WeaponSet(),
+                }
+            },
+            {
+                BotType.Funnyman, new List<WeaponSet>()
+                {
+                    new WeaponSet(),
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.TOMMYGUN,
+                    },
+                }
+            },
+            {
                 BotType.Elf, new List<WeaponSet>()
                 {
                     new WeaponSet()
@@ -2828,6 +2879,49 @@ namespace SFDScript.MoreBot
                 }
             },
             {
+                BotType.Gangster, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.BAT,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.BOTTLE,
+                    },
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.UZI,
+                    },
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.PISTOL,
+                    },
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.REVOLVER,
+                    },
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.SHOTGUN,
+                    },
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.SAWED_OFF,
+                    },
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.MP50,
+                    },
+                }
+            },
+            {
+                BotType.GangsterHulk, new List<WeaponSet>()
+                {
+                    new WeaponSet(),
+                }
+            },
+            {
                 BotType.Kingpin, new List<WeaponSet>()
                 {
                     new WeaponSet()
@@ -2841,8 +2935,46 @@ namespace SFDScript.MoreBot
                 }
             },
             {
+                BotType.Kriegbär, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Powerup = WeaponItem.SLOWMO_10,
+                    },
+                }
+            },
+            {
+                BotType.Meatgrinder, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.CHAINSAW,
+                        Throwable = WeaponItem.MOLOTOVS,
+                        Powerup = WeaponItem.SLOWMO_10,
+                    },
+                }
+            },
+            {
+                BotType.Mecha, new List<WeaponSet>()
+                {
+                    new WeaponSet(),
+                }
+            },
+            {
                 BotType.MetroCop, new List<WeaponSet>()
                 {
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.SHOCK_BATON,
+                        Primary = WeaponItem.SMG,
+                        UseLazer = true,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.SHOCK_BATON,
+                        Primary = WeaponItem.DARK_SHOTGUN,
+                        UseLazer = true,
+                    },
                     new WeaponSet()
                     {
                         Primary = WeaponItem.ASSAULT,
@@ -2855,7 +2987,7 @@ namespace SFDScript.MoreBot
                     },
                     new WeaponSet()
                     {
-                        Primary = WeaponItem.SUB_MACHINEGUN,
+                        Primary = WeaponItem.SMG,
                         UseLazer = true,
                     },
                     new WeaponSet()
@@ -2863,6 +2995,23 @@ namespace SFDScript.MoreBot
                         Primary = WeaponItem.SHOCK_BATON,
                         UseLazer = true,
                     },
+                }
+            },
+            {
+                BotType.MetroCop2, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.SHOCK_BATON,
+                        Secondary = WeaponItem.PISTOL,
+                        UseLazer = true,
+                    },
+                }
+            },
+            {
+                BotType.Mutant, new List<WeaponSet>()
+                {
+                    new WeaponSet(),
                 }
             },
             {
@@ -2886,9 +3035,6 @@ namespace SFDScript.MoreBot
             {
                 BotType.NaziScientist, new List<WeaponSet>()
                 {
-                    new WeaponSet()
-                    {
-                    },
                     new WeaponSet()
                     {
                         Melee = WeaponItem.LEAD_PIPE,
@@ -2952,17 +3098,7 @@ namespace SFDScript.MoreBot
                     new WeaponSet()
                     {
                         Primary = WeaponItem.MP50,
-                    },
-                }
-            },
-            {
-                BotType.Meatgrinder, new List<WeaponSet>()
-                {
-                    new WeaponSet()
-                    {
-                        Melee = WeaponItem.CHAINSAW,
-                        Throwable = WeaponItem.MOLOTOVS,
-                        Powerup = WeaponItem.SLOWMO_10,
+                        Secondary = WeaponItem.PISTOL,
                     },
                 }
             },
@@ -2991,6 +3127,33 @@ namespace SFDScript.MoreBot
                 }
             },
             {
+                BotType.PoliceSWAT, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.KNIFE,
+                        Secondary = WeaponItem.PISTOL45,
+                        Throwable = WeaponItem.C4,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.KNIFE,
+                        Secondary = WeaponItem.MACHINE_PISTOL,
+                        Throwable = WeaponItem.GRENADES,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.KNIFE,
+                        Primary = WeaponItem.ASSAULT,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.KNIFE,
+                        Primary = WeaponItem.SMG,
+                    },
+                }
+            },
+            {
                 BotType.Santa, new List<WeaponSet>()
                 {
                     new WeaponSet()
@@ -3002,12 +3165,262 @@ namespace SFDScript.MoreBot
                 }
             },
             {
+                BotType.Sniper, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.SNIPER,
+                    },
+                }
+            },
+            {
+                BotType.Soldier, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.SHOTGUN,
+                    },
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.ASSAULT,
+                    },
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.SMG,
+                    },
+                }
+            },
+            {
+                BotType.Soldier2, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.GRENADE_LAUNCHER,
+                    },
+                }
+            },
+            {
                 BotType.Teddybear, new List<WeaponSet>()
                 {
                     new WeaponSet()
                     {
                         Throwable = WeaponItem.GRENADES,
                         Powerup = WeaponItem.SLOWMO_10,
+                    },
+                }
+            },
+            {
+                BotType.Thug, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.BAT,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.LEAD_PIPE,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.HAMMER,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.CHAIN,
+                    },
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.MACHINE_PISTOL,
+                    },
+                }
+            },
+            {
+                BotType.ThugHulk, new List<WeaponSet>()
+                {
+                    new WeaponSet(),
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.LEAD_PIPE,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.PIPE,
+                    },
+                }
+            },
+            {
+                BotType.Zombie, new List<WeaponSet>()
+                {
+                    new WeaponSet(),
+                }
+            },
+            {
+                BotType.ZombieAgent, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.PISTOL,
+                    },
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.SILENCEDPISTOL,
+                    },
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.SILENCEDUZI,
+                    },
+                }
+            },
+            {
+                BotType.ZombieBruiser, new List<WeaponSet>()
+                {
+                    new WeaponSet(),
+                }
+            },
+            {
+                BotType.ZombieChild, new List<WeaponSet>()
+                {
+                    new WeaponSet(),
+                }
+            },
+            {
+                BotType.ZombieFighter, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Powerup = WeaponItem.SLOWMO_10,
+                    },
+                }
+            },
+            {
+                BotType.ZombieFlamer, new List<WeaponSet>()
+                {
+                    new WeaponSet(),
+                }
+            },
+            {
+                BotType.ZombieGangster, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.TOMMYGUN,
+                    },
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.SHOTGUN,
+                    },
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.REVOLVER,
+                    },
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.PISTOL,
+                    },
+                }
+            },
+            {
+                BotType.ZombieNinja, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.KATANA,
+                    },
+                }
+            },
+            {
+                BotType.ZombiePrussian, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.KNIFE,
+                    },
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.REVOLVER,
+                    },
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.CARBINE,
+                        Throwable = WeaponItem.GRENADES,
+                    },
+                }
+            },
+            {
+                BotType.BaronVonHauptstein, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.KNIFE,
+                        Secondary = WeaponItem.REVOLVER,
+                        Throwable = WeaponItem.GRENADES,
+                    },
+                }
+            },
+            {
+                BotType.ZombieSoldier, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.SMG,
+                    },
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.ASSAULT,
+                    },
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.SHOTGUN,
+                    },
+                    new WeaponSet()
+                    {
+                        Throwable = WeaponItem.GRENADES,
+                    },
+                    new WeaponSet()
+                    {
+                        Throwable = WeaponItem.MINES,
+                    },
+                }
+            },
+            {
+                BotType.ZombieThug, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.BAT,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.KNIFE,
+                    },
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.PISTOL,
+                    },
+                    new WeaponSet()
+                    {
+                        Throwable = WeaponItem.MOLOTOVS,
+                    },
+                }
+            },
+            {
+                BotType.ZombieWorker, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.PIPE,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.HAMMER,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.AXE,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.CHAINSAW,
                     },
                 }
             },
@@ -3060,6 +3473,25 @@ namespace SFDScript.MoreBot
                         ProjectileDamageDealtModifier = 0.4f,
                         MeleeDamageDealtModifier = 0.4f,
                         SizeModifier = 0.95f,
+                    },
+                }
+            },
+            {
+                BotType.Biker, new BotInfo()
+                {
+                    //AIType = PredefinedAIType.Grunt,
+                    EquipWeaponChance = 0.5f,
+                    Modifiers = new PlayerModifiers()
+                    {
+                    },
+                }
+            },
+            {
+                BotType.BikerHulk, new BotInfo()
+                {
+                    //AIType = PredefinedAIType.Grunt,
+                    Modifiers = new PlayerModifiers()
+                    {
                     },
                 }
             },
@@ -3207,6 +3639,16 @@ namespace SFDScript.MoreBot
                 }
             },
             {
+                BotType.NaziScientist, new BotInfo()
+                {
+                    //AIType = PredefinedAIType.GruntMelee,
+                    EquipWeaponChance = 0.4f,
+                    Modifiers = new PlayerModifiers()
+                    {
+                    },
+                }
+            },
+            {
                 BotType.Police, new BotInfo()
                 {
                     AIType = PredefinedAIType.Grunt,
@@ -3258,32 +3700,15 @@ namespace SFDScript.MoreBot
             {
                 BotType.Thug, new BotInfo()
                 {
-                    EquipWeaponChance = 0.5f,
+                    EquipWeaponChance = 0.8f,
                     AIType = PredefinedAIType.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
-                        MaxHealth = 22,
-                        CurrentHealth = 22,
-                        ProjectileDamageDealtModifier = 0.25f,
-                        MeleeDamageDealtModifier = 0.25f,
-                        RunSpeedModifier = 0.75f,
-                        SizeModifier = 0.95f,
-                    },
-                }
-            },
-            {
-                BotType.Thug2, new BotInfo()
-                {
-                    EquipWeaponChance = 0.5f,
-                    AIType = PredefinedAIType.Grunt,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 44,
-                        CurrentHealth = 44,
+                        MaxHealth = 40,
+                        CurrentHealth = 40,
                         ProjectileDamageDealtModifier = 0.4f,
                         MeleeDamageDealtModifier = 0.4f,
-                        RunSpeedModifier = 0.75f,
-                        SizeModifier = 1.05f,
+                        SizeModifier = 0.95f,
                     },
                 }
             },
@@ -3304,6 +3729,154 @@ namespace SFDScript.MoreBot
                     },
                 }
             },
+        };
+
+        #endregion
+
+        #region Bot group
+
+        public class Group
+        {
+            public Group(Dictionary<BotType, float> types)
+            {
+                Types = types;
+
+                HasBoss = false;
+                foreach (var pair in Types)
+                {
+                    if (BotInfos[pair.Key].IsBoss)
+                        HasBoss = true;
+                    TotalScore += pair.Value;
+                }
+            }
+
+            public Dictionary<BotType, float> Types { get; private set; }
+            public float TotalScore { get; private set; }
+            public bool HasBoss { get; private set; }
+        }
+
+        public class GroupSet
+        {
+            public GroupSet(string name, List<Group> groups)
+            {
+                Name = name;
+                Groups = groups;
+            }
+
+            public GroupSet(string name, Group group)
+            {
+                Name = name;
+                Groups = new List<Group>() { group };
+            }
+
+            public string Name { get; set; }
+            public List<Group> Groups { get; set; }
+            public bool HasBoss
+            {
+                get { return Groups.Where(g => g.HasBoss).Any(); }
+            }
+        }
+
+        private static List<GroupSet> BotGroupSets = new List<GroupSet>()
+        {
+            //new GroupSet("Agent", new Group(new Dictionary<BotType, float>()
+            //{
+            //    { BotType.Agent, 1.0f },
+            //})),
+            new GroupSet("Bandido", new Group(new Dictionary<BotType, float>()
+            {
+                { BotType.Bandido, 1.0f },
+            })),
+            new GroupSet("Clown", new List<Group>()
+            {
+                new Group(new Dictionary<BotType, float>()
+                {
+                    { BotType.ClownCowboy, 0.5f },
+                    { BotType.ClownGangster, 0.25f },
+                    { BotType.ClownBoxer, 0.25f },
+                }),
+                new Group(new Dictionary<BotType, float>()
+                {
+                    { BotType.ClownCowboy, 0.6f },
+                    { BotType.ClownGangster, 0.4f },
+                }),
+                new Group(new Dictionary<BotType, float>()
+                {
+                    { BotType.ClownBoxer, 0.7f },
+                    { BotType.ClownGangster, 0.3f },
+                }),
+            }),
+            new GroupSet("Cowboy", new Group(new Dictionary<BotType, float>()
+            {
+                { BotType.Cowboy, 1.0f },
+            })),
+            new GroupSet("Demolitionist", new Group(new Dictionary<BotType, float>()
+            {
+                { BotType.Demolitionist, 1.0f },
+            })),
+            new GroupSet("Gangster", new List<Group>()
+            {
+                new Group(new Dictionary<BotType, float>()
+                {
+                    { BotType.Kingpin, -1 },
+                    { BotType.Bodyguard, 1.0f },
+                }),
+                //new Group(new Dictionary<BotType, float>()
+                //{
+                //    { BotType.Kingpin, -1 },
+                //    { BotType.Bodyguard, 1f },
+                //    { BotType.Gangster, 1f },
+                //    { BotType.GangsterHulk, 1f },
+                //}),
+            }),
+            new GroupSet("Meatgrinder", new Group(new Dictionary<BotType, float>()
+            {
+                { BotType.Meatgrinder, 1.0f },
+            })),
+            new GroupSet("MetroCop", new List<Group>()
+            {
+                new Group(new Dictionary<BotType, float>()
+                {
+                    { BotType.MetroCop, 1f },
+                }),
+                //new Group(new Dictionary<BotType, float>()
+                //{
+                //    { BotType.MetroCop, 0.9f },
+                //    { BotType.MetroCop2, 0.1f },
+                //}),
+            }),
+            new GroupSet("Police", new List<Group>()
+            {
+                new Group(new Dictionary<BotType, float>()
+                {
+                    { BotType.Police, 1.0f },
+                }),
+                //new Group(new Dictionary<BotType, float>()
+                //{
+                //    { BotType.Police, 0.8f },
+                //    { BotType.PoliceSWAT, 0.2f },
+                //}),
+            }),
+            //new GroupSet("PoliceSWAT", new Group(new Dictionary<BotType, float>()
+            //{
+            //    { BotType.PoliceSWAT, 1.0f },
+            //})),
+            new GroupSet("Teddybear", new Group(new Dictionary<BotType, float>()
+            {
+                { BotType.Teddybear, 1.0f },
+            })),
+            new GroupSet("Thug", new List<Group>()
+            {
+                new Group(new Dictionary<BotType, float>()
+                {
+                    { BotType.Thug, 1.0f },
+                }),
+                new Group(new Dictionary<BotType, float>()
+                {
+                    { BotType.Thug, 0.6f },
+                    { BotType.ThugHulk, 0.4f },
+                }),
+            }),
         };
 
         #endregion
@@ -3336,7 +3909,19 @@ namespace SFDScript.MoreBot
                 var botCount = MAX_PLAYERS - playerCount;
                 var botSpawnCount = Math.Min(botCount, playerSpawners.Count);
 
-                SpawnGroup(botSpawnCount);
+                if (botSpawnCount < 3) // Too few for a group, spawn boss instead
+                {
+                    var bossGroupSets = BotGroupSets.Select(s => s).Where(s => s.HasBoss).ToList();
+                    var bossGroupSet = Helper.GetRandomItem(bossGroupSets);
+                    //System.Diagnostics.Debugger.Break();
+                    SpawnGroup(Helper.GetRandomItem(bossGroupSet.Groups), botSpawnCount);
+                }
+                else
+                {
+                    var groupSet = Helper.GetRandomItem(BotGroupSets);
+                    var group = Helper.GetRandomItem(groupSet.Groups);
+                    SpawnGroup(group, botSpawnCount);
+                }
             }
 
             private static List<PlayerSpawner> GetEmptyPlayerSpawners()
@@ -3365,9 +3950,8 @@ namespace SFDScript.MoreBot
                 return emptyPlayerSpawners;
             }
 
-            private static void SpawnGroup(int groupCount)
+            private static void SpawnGroup(Group group, int groupCount)
             {
-                var group = Helper.GetRandomItem(BotGroups);
                 var typeCount = 0;
                 var groupCountRemaining = groupCount;
 
@@ -3412,12 +3996,11 @@ namespace SFDScript.MoreBot
                     case BotType.Santa:
                     case BotType.Teddybear:
                     case BotType.Thug:
-                    case BotType.Thug2:
                     case BotType.ThugHulk:
                         return SpawnBot(botType);
 
                     default:
-                        return SpawnBot(BotType.Thug);
+                        return null;
                 }
             }
 
@@ -3459,17 +4042,9 @@ namespace SFDScript.MoreBot
                 player.SetTeam(PlayerTeam.Team4);
                 player.SetBotName(profile.Name);
 
-                if (BotWeapons.ContainsKey(botType))
-                {
-                    var rndWeaponSet = Helper.GetRandomItem(BotWeapons[botType]);
+                var rndWeaponSet = Helper.GetRandomItem(BotWeapons[botType]);
+                if (Rnd.Next(100) / 100.0f <= info.EquipWeaponChance) // Next(100) -> 0-99
                     rndWeaponSet.Equip(player);
-                }
-                else
-                {
-                    // TODO: remove this
-                    if (Rnd.Next(100) / 100.0f <= info.EquipWeaponChance) // Next(100) -> 0-99
-                        player.GiveWeaponItem(Helper.GetRandomItem(WeaponStock[TIER_1]));
-                }
 
                 return new Bot()
                 {
@@ -3483,6 +4058,14 @@ namespace SFDScript.MoreBot
 
 // TODO:
 // add spawnline|deathline ?
-// add weapon for thug
-// split bodyguard into bodyguardLight and bodyguardHeavy
 // Fix player spawn at the same place in Canal and two towers maps
+// metrocop -> bullet resistant
+
+// Not grunt:
+// agent
+// assassin (both)
+// fritzliebe
+// funnyman
+// Kriegbär
+// mecha
+// sniper - rangeA
