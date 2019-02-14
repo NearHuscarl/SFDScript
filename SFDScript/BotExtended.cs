@@ -16,6 +16,12 @@ namespace SFDScript.MoreBot
         /// </summary>
         public GameScript() : base(null) { }
 
+/*
+* author: NearHuscarl
+* description: Spawn a variety of bots from the campaign and challenge maps to make thing more chaotic
+* mapmodes: versus
+*/
+
         private const int MAX_PLAYERS = 12;
 
         private static Random Rnd = new Random();
@@ -26,9 +32,8 @@ namespace SFDScript.MoreBot
         public void OnStartup()
         {
             //Game.GetPlayers()[0].GiveWeaponItem(WeaponItem.MP50);
-            //System.Diagnostics.Debugger.Break();
             //var modifiers = Game.GetPlayers()[0].GetModifiers();
-
+            //System.Diagnostics.Debugger.Break();
             BotHelper.Initialize();
         }
 
@@ -52,15 +57,15 @@ namespace SFDScript.MoreBot
 
             public static bool SpawnPlayerHasPlayer(IObject spawnPlayer)
             {
-                // Player position y: -8 -> -10
-                // => -6 -> -12
+                // Player position y: -8 -> -10 || +5
+                // => -12 -> +6
                 // Player position x: unchange
                 foreach (var player in Game.GetPlayers())
                 {
                     var playerPosition = player.GetWorldPosition();
                     var spawnPlayerPosition = spawnPlayer.GetWorldPosition();
 
-                    if (spawnPlayerPosition.Y - 12 <= playerPosition.Y && playerPosition.Y <= spawnPlayerPosition.Y - 6
+                    if (spawnPlayerPosition.Y - 12 <= playerPosition.Y && playerPosition.Y <= spawnPlayerPosition.Y + 6
                         && spawnPlayerPosition.X == playerPosition.X)
                         return true;
                 }
@@ -2495,6 +2500,7 @@ namespace SFDScript.MoreBot
             { BotType.AssassinRange, AssasinRangeProfiles },
             { BotType.Bandido, BandidoProfiles },
             { BotType.Biker, BikerProfiles },
+            { BotType.BikerHulk, BikerProfiles },
             { BotType.Bodyguard, BodyguardProfiles },
             { BotType.Bodyguard2, BodyguardProfiles },
             { BotType.ClownBodyguard, ClownBodyguardProfiles },
@@ -3428,6 +3434,50 @@ namespace SFDScript.MoreBot
 
         #endregion
 
+        #region Bot behaviors
+
+        enum BotAI
+        {
+            Expert,
+            Hard,
+            Normal,
+            Easy,
+            Grunt,
+            Hulk,
+
+            Meatgrinder,
+            Ninja,
+            Soldier,
+            Sniper,
+        }
+
+        private static Dictionary<BotAI, BotBehaviorSet> BotBehaviors = new Dictionary<BotAI, BotBehaviorSet>()
+        {
+            {
+                BotAI.Expert, BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotA)
+            },
+            {
+                BotAI.Hard, BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotB)
+            },
+            {
+                BotAI.Normal, BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotC)
+            },
+            {
+                BotAI.Easy, BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotD)
+            },
+            {
+                BotAI.Meatgrinder, BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Meatgrinder)
+            },
+            {
+                BotAI.Grunt, BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Grunt)
+            },
+            {
+                BotAI.Hulk, BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Hulk)
+            },
+        };
+
+        #endregion
+
         #region Bot infos
 
         public class BotInfo
@@ -3460,6 +3510,12 @@ namespace SFDScript.MoreBot
         // RunSpeedModifier: 0.5-2.0 [1.0]
         // SizeModifier: 0.75-1.25 [1.0]
 
+        // Base stats: Police Officer
+        // MaxHealth: 70
+        // ProjectileDamageDealtModifier = 0.95f,
+        // ProjectileCritChanceDealtModifier = 0.95f,
+        // MeleeDamageDealtModifier = 0.95f,
+        // SizeModifier = 0.95f,
         public static Dictionary<BotType, BotInfo> BotInfos = new Dictionary<BotType, BotInfo>()
         {
             {
@@ -3468,10 +3524,10 @@ namespace SFDScript.MoreBot
                     AIType = PredefinedAIType.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
-                        MaxHealth = 40,
-                        CurrentHealth = 40,
-                        ProjectileDamageDealtModifier = 0.4f,
-                        MeleeDamageDealtModifier = 0.4f,
+                        MaxHealth = 70,
+                        CurrentHealth = 70,
+                        ProjectileDamageDealtModifier = 1.05f,
+                        MeleeDamageDealtModifier = 0.95f,
                         SizeModifier = 0.95f,
                     },
                 }
@@ -3479,19 +3535,31 @@ namespace SFDScript.MoreBot
             {
                 BotType.Biker, new BotInfo()
                 {
-                    //AIType = PredefinedAIType.Grunt,
+                    AIType = PredefinedAIType.Grunt,
                     EquipWeaponChance = 0.5f,
                     Modifiers = new PlayerModifiers()
                     {
+                        MaxHealth = 70,
+                        CurrentHealth = 70,
+                        ProjectileDamageDealtModifier = 0.9f,
+                        MeleeDamageDealtModifier = 0.95f,
+                        SizeModifier = 0.95f,
                     },
                 }
             },
             {
                 BotType.BikerHulk, new BotInfo()
                 {
-                    //AIType = PredefinedAIType.Grunt,
+                    AIType = PredefinedAIType.Hulk,
                     Modifiers = new PlayerModifiers()
                     {
+                        MaxHealth = 110,
+                        CurrentHealth = 110,
+                        MeleeDamageDealtModifier = 1.1f,
+                        MeleeForceModifier = 1.5f,
+                        RunSpeedModifier = 0.75f,
+                        SprintSpeedModifier = 0.75f,
+                        SizeModifier = 1.15f,
                     },
                 }
             },
@@ -3501,10 +3569,10 @@ namespace SFDScript.MoreBot
                     AIType = PredefinedAIType.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
-                        MaxHealth = 50,
-                        CurrentHealth = 50,
-                        ProjectileDamageDealtModifier = 0.4f,
-                        MeleeDamageDealtModifier = 0.4f,
+                        MaxHealth = 70,
+                        CurrentHealth = 70,
+                        ProjectileDamageDealtModifier = 0.95f,
+                        MeleeDamageDealtModifier = 0.8f,
                         SizeModifier = 0.95f,
                     },
                 }
@@ -3515,10 +3583,10 @@ namespace SFDScript.MoreBot
                     AIType = PredefinedAIType.Hulk,
                     Modifiers = new PlayerModifiers()
                     {
-                        MaxHealth = 85,
-                        CurrentHealth = 85.0f,
+                        MaxHealth = 110,
+                        CurrentHealth = 110,
                         ProjectileDamageDealtModifier = 0.5f,
-                        MeleeDamageDealtModifier = 0.5f,
+                        MeleeDamageDealtModifier = 1.1f,
                         MeleeForceModifier = 2.0f,
                         SizeModifier = 1.15f,
                     },
@@ -3530,12 +3598,12 @@ namespace SFDScript.MoreBot
                     AIType = PredefinedAIType.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
-                        MaxHealth = 40,
-                        CurrentHealth = 40.0f,
-                        ProjectileDamageDealtModifier = 0.5f,
-                        MeleeDamageDealtModifier = 0.5f,
-                        RunSpeedModifier = 1.05f,
-                        SprintSpeedModifier = 1.05f,
+                        MaxHealth = 70,
+                        CurrentHealth = 70,
+                        ProjectileDamageDealtModifier = 1.1f,
+                        MeleeDamageDealtModifier = 0.85f,
+                        RunSpeedModifier = 1.1f,
+                        SprintSpeedModifier = 1.1f,
                         SizeModifier = 0.9f,
                     }
                 }
@@ -3546,10 +3614,10 @@ namespace SFDScript.MoreBot
                     AIType = PredefinedAIType.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
-                        MaxHealth = 40,
-                        CurrentHealth = 40.0f,
-                        ProjectileDamageDealtModifier = 0.5f,
-                        MeleeDamageDealtModifier = 0.5f,
+                        MaxHealth = 75,
+                        CurrentHealth = 75,
+                        ProjectileDamageDealtModifier = 0.95f,
+                        MeleeDamageDealtModifier = 0.95f,
                         RunSpeedModifier = 1.05f,
                         SprintSpeedModifier = 1.05f,
                         SizeModifier = 0.95f,
@@ -3559,14 +3627,15 @@ namespace SFDScript.MoreBot
             {
                 BotType.Cowboy, new BotInfo()
                 {
-                    EquipWeaponChance = 0.5f,
                     AIType = PredefinedAIType.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
-                        MaxHealth = 40,
-                        CurrentHealth = 40,
-                        ProjectileDamageDealtModifier = 0.5f,
-                        MeleeDamageDealtModifier = 0.25f,
+                        MaxHealth = 70,
+                        CurrentHealth = 70,
+                        ProjectileDamageDealtModifier = 1.1f,
+                        MeleeDamageDealtModifier = 0.85f,
+                        RunSpeedModifier = 1.1f,
+                        SprintSpeedModifier = 1.1f,
                         SizeModifier = 0.95f,
                     },
                 }
@@ -3574,12 +3643,11 @@ namespace SFDScript.MoreBot
             {
                 BotType.Demolitionist, new BotInfo()
                 {
-                    EquipWeaponChance = 0.5f,
                     AIType = PredefinedAIType.RangedA,
                     Modifiers = new PlayerModifiers()
                     {
-                        MaxHealth = 120,
-                        CurrentHealth = 120,
+                        MaxHealth = 125,
+                        CurrentHealth = 125,
                         ProjectileDamageDealtModifier = 5.0f,
                         ProjectileCritChanceDealtModifier = 5.0f,
                         MeleeDamageDealtModifier = 1.5f,
@@ -3594,7 +3662,7 @@ namespace SFDScript.MoreBot
             {
                 BotType.Kingpin, new BotInfo()
                 {
-                    AIType = PredefinedAIType.Grunt,
+                    AIType = PredefinedAIType.BotB,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 150,
@@ -3612,11 +3680,13 @@ namespace SFDScript.MoreBot
                     AIType = PredefinedAIType.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
-                        MaxHealth = 50,
-                        CurrentHealth = 50,
-                        ProjectileDamageDealtModifier = 0.5f,
-                        ProjectileCritChanceDealtModifier = 0.5f,
-                        MeleeDamageDealtModifier = 0.5f,
+                        MaxHealth = 80,
+                        CurrentHealth = 80,
+                        ProjectileDamageDealtModifier = 1.0f,
+                        ProjectileCritChanceDealtModifier = 1.05f,
+                        MeleeDamageDealtModifier = 0.95f,
+                        ProjectileDamageTakenModifier = 0.9f,
+                        ProjectileCritChanceTakenModifier = 0.9f,
                         SizeModifier = 0.95f,
                     },
                 }
@@ -3624,14 +3694,15 @@ namespace SFDScript.MoreBot
             {
                 BotType.Meatgrinder, new BotInfo()
                 {
-                    AIType = PredefinedAIType.GruntMelee,
+                    AIType = PredefinedAIType.Meatgrinder,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 200,
                         CurrentHealth = 200,
-                        EnergyConsumptionModifier = 0.0f,
-                        ProjectileDamageDealtModifier = 0.75f,
-                        MeleeDamageDealtModifier = 0.75f,
+                        MaxEnergy = 200,
+                        CurrentEnergy = 200,
+                        ProjectileDamageDealtModifier = 1.5f,
+                        MeleeDamageDealtModifier = 1.25f,
                         SizeModifier = 1.05f,
                         InfiniteAmmo = 1,
                     },
@@ -3654,11 +3725,11 @@ namespace SFDScript.MoreBot
                     AIType = PredefinedAIType.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
-                        MaxHealth = 40,
-                        CurrentHealth = 40,
-                        ProjectileDamageDealtModifier = 0.5f,
-                        ProjectileCritChanceDealtModifier = 0.5f,
-                        MeleeDamageDealtModifier = 0.5f,
+                        MaxHealth = 70,
+                        CurrentHealth = 70,
+                        ProjectileDamageDealtModifier = 0.95f,
+                        ProjectileCritChanceDealtModifier = 0.95f,
+                        MeleeDamageDealtModifier = 0.95f,
                         SizeModifier = 0.95f,
                     },
                 }
@@ -3671,12 +3742,13 @@ namespace SFDScript.MoreBot
                     {
                         MaxHealth = 350,
                         CurrentHealth = 350,
-                        EnergyConsumptionModifier = 0.0f,
+                        MaxEnergy = 350,
+                        CurrentEnergy = 350,
                         MeleeDamageDealtModifier = 1.25f,
                         MeleeForceModifier = 2.0f,
                         RunSpeedModifier = 0.9f,
+                        SprintSpeedModifier = 0.9f,
                         SizeModifier = 1.25f,
-                        InfiniteAmmo = 1,
                     },
                     IsBoss = true,
                 }
@@ -3704,10 +3776,10 @@ namespace SFDScript.MoreBot
                     AIType = PredefinedAIType.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
-                        MaxHealth = 40,
-                        CurrentHealth = 40,
-                        ProjectileDamageDealtModifier = 0.4f,
-                        MeleeDamageDealtModifier = 0.4f,
+                        MaxHealth = 70,
+                        CurrentHealth = 70,
+                        ProjectileDamageDealtModifier = 0.9f,
+                        MeleeDamageDealtModifier = 0.9f,
                         SizeModifier = 0.95f,
                     },
                 }
@@ -3719,13 +3791,28 @@ namespace SFDScript.MoreBot
                     AIType = PredefinedAIType.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
-                        MaxHealth = 85,
-                        CurrentHealth = 85,
-                        ProjectileDamageDealtModifier = 0.5f,
-                        MeleeDamageDealtModifier = 0.5f,
+                        MaxHealth = 110,
+                        CurrentHealth = 110,
+                        MeleeDamageDealtModifier = 1.1f,
                         MeleeForceModifier = 1.5f,
                         RunSpeedModifier = 0.75f,
-                        SizeModifier = 1.2f,
+                        SprintSpeedModifier = 0.75f,
+                        SizeModifier = 1.15f,
+                    },
+                }
+            },
+            {
+                BotType.Zombie, new BotInfo()
+                {
+                    EquipWeaponChance = 0.0f,
+                    AIType = PredefinedAIType.ZombieA,
+                    Modifiers = new PlayerModifiers()
+                    {
+                        MaxHealth = 60,
+                        CurrentHealth = 60,
+                        MeleeDamageDealtModifier = 0.75f,
+                        RunSpeedModifier = 0.75f,
+                        SizeModifier = 0.95f,
                     },
                 }
             },
@@ -3787,6 +3874,18 @@ namespace SFDScript.MoreBot
             {
                 { BotType.Bandido, 1.0f },
             })),
+            new GroupSet("Biker", new List<Group>()
+            {
+                new Group(new Dictionary<BotType, float>()
+                {
+                    { BotType.Biker, 1.0f },
+                }),
+                new Group(new Dictionary<BotType, float>()
+                {
+                    { BotType.Biker, 0.6f },
+                    { BotType.BikerHulk, 0.4f },
+                }),
+            }),
             new GroupSet("Clown", new List<Group>()
             {
                 new Group(new Dictionary<BotType, float>()
@@ -3877,6 +3976,13 @@ namespace SFDScript.MoreBot
                     { BotType.ThugHulk, 0.4f },
                 }),
             }),
+            new GroupSet("Zombie", new List<Group>() // TODO
+            {
+                new Group(new Dictionary<BotType, float>()
+                {
+                    { BotType.Zombie, 1.0f },
+                }),
+            }),
         };
 
         #endregion
@@ -3909,11 +4015,12 @@ namespace SFDScript.MoreBot
                 var botCount = MAX_PLAYERS - playerCount;
                 var botSpawnCount = Math.Min(botCount, playerSpawners.Count);
 
+                //SpawnGroup(BotGroupSets.Last().Groups[0], botSpawnCount);
+
                 if (botSpawnCount < 3) // Too few for a group, spawn boss instead
                 {
                     var bossGroupSets = BotGroupSets.Select(s => s).Where(s => s.HasBoss).ToList();
                     var bossGroupSet = Helper.GetRandomItem(bossGroupSets);
-                    //System.Diagnostics.Debugger.Break();
                     SpawnGroup(Helper.GetRandomItem(bossGroupSet.Groups), botSpawnCount);
                 }
                 else
@@ -3983,6 +4090,8 @@ namespace SFDScript.MoreBot
                 switch (botType)
                 {
                     case BotType.Bandido:
+                    case BotType.Biker:
+                    case BotType.BikerHulk:
                     case BotType.Bodyguard:
                     case BotType.ClownBoxer:
                     case BotType.ClownCowboy:
@@ -3997,6 +4106,7 @@ namespace SFDScript.MoreBot
                     case BotType.Teddybear:
                     case BotType.Thug:
                     case BotType.ThugHulk:
+                    case BotType.Zombie:
                         return SpawnBot(botType);
 
                     default:
@@ -4060,6 +4170,7 @@ namespace SFDScript.MoreBot
 // add spawnline|deathline ?
 // Fix player spawn at the same place in Canal and two towers maps
 // metrocop -> bullet resistant
+
 
 // Not grunt:
 // agent

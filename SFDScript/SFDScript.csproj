@@ -47,7 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DebugCommand.cs" />
-    <Compile Include="Hellraiser.cs" />
     <Compile Include="ColorPallete.cs" />
     <Compile Include="GameScriptTemplate.cs" />
     <Compile Include="Converter.cs" />
