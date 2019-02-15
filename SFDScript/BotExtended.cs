@@ -34,6 +34,23 @@ namespace SFDScript.MoreBot
             //Game.GetPlayers()[0].GiveWeaponItem(WeaponItem.MP50);
             //var modifiers = Game.GetPlayers()[0].GetModifiers();
             //System.Diagnostics.Debugger.Break();
+
+            if (Game.IsEditorTest)
+            {
+                var player = Game.GetPlayers()[0];
+                var modifiers = player.GetModifiers();
+
+                modifiers.MaxHealth = 5000;
+                modifiers.CurrentHealth = 5000;
+                modifiers.InfiniteAmmo = 1;
+
+                player.SetModifiers(modifiers);
+                player.GiveWeaponItem(WeaponItem.PIPE);
+                player.GiveWeaponItem(WeaponItem.REVOLVER);
+                player.GiveWeaponItem(WeaponItem.SUB_MACHINEGUN);
+                player.GiveWeaponItem(WeaponItem.MOLOTOVS);
+            }
+
             BotHelper.Initialize();
         }
 
@@ -80,6 +97,8 @@ namespace SFDScript.MoreBot
 
         public enum BotType
         {
+            DebugBot,
+
             // Tier1: Rooftop Retribution
             // Tier2: Canals Carnage
             AssassinMelee,
@@ -2494,6 +2513,7 @@ namespace SFDScript.MoreBot
 
         public static Dictionary<BotType, List<IProfile>> BotProfiles = new Dictionary<BotType, List<IProfile>>()
         {
+            { BotType.DebugBot, GangsterProfiles },
             { BotType.Agent, AgentProfiles },
             { BotType.Agent2, AgentProfiles },
             { BotType.AssassinMelee, AssasinMeleeProfiles },
@@ -2632,6 +2652,19 @@ namespace SFDScript.MoreBot
 
         private static Dictionary<BotType, List<WeaponSet>> BotWeapons = new Dictionary<BotType, List<WeaponSet>>()
         {
+            {
+                BotType.DebugBot, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        //Melee = WeaponItem.KATANA,
+                        //Primary = WeaponItem.M60,
+                        //Secondary = WeaponItem.PISTOL,
+                        //Throwable = WeaponItem.GRENADES,
+                        //Powerup = WeaponItem.SLOWMO_10,
+                    },
+                }
+            },
             {
                 BotType.AssassinMelee, new List<WeaponSet>()
                 {
@@ -3175,7 +3208,13 @@ namespace SFDScript.MoreBot
                 {
                     new WeaponSet()
                     {
+                        Melee = WeaponItem.KNIFE,
                         Primary = WeaponItem.SNIPER,
+                    },
+                    new WeaponSet()
+                    {
+                        Primary = WeaponItem.SNIPER,
+                        Secondary = WeaponItem.SILENCEDPISTOL,
                     },
                 }
             },
@@ -3436,12 +3475,21 @@ namespace SFDScript.MoreBot
 
         #region Bot behaviors
 
-        enum BotAI
+        public enum BotAI
         {
+            Debug,
+
+            Hacker,
             Expert,
             Hard,
             Normal,
             Easy,
+
+            MeleeExpert, // == BotAI.Hacker but with range weapons disabled
+            MeleeHard, // == BotAI.Expert but with range weapons disabled
+            RangeExpert, // == BotAI.Hacker but with melee weapons disabled
+            RangeHard, // == BotAI.Expert but with melee weapons disabled
+
             Grunt,
             Hulk,
 
@@ -3449,32 +3497,208 @@ namespace SFDScript.MoreBot
             Ninja,
             Soldier,
             Sniper,
+
+            ZombieSlow,
+            ZombieFast,
         }
 
         private static Dictionary<BotAI, BotBehaviorSet> BotBehaviors = new Dictionary<BotAI, BotBehaviorSet>()
         {
             {
-                BotAI.Expert, BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotA)
+                BotAI.Debug, GetBotBehaviorSet(BotAI.Debug)
             },
             {
-                BotAI.Hard, BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotB)
+                BotAI.Easy, GetBotBehaviorSet(BotAI.Easy)
             },
             {
-                BotAI.Normal, BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotC)
+                BotAI.Normal, GetBotBehaviorSet(BotAI.Normal)
             },
             {
-                BotAI.Easy, BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotD)
+                BotAI.Hard, GetBotBehaviorSet(BotAI.Hard)
             },
             {
-                BotAI.Meatgrinder, BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Meatgrinder)
+                BotAI.Expert, GetBotBehaviorSet(BotAI.Expert)
             },
             {
-                BotAI.Grunt, BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Grunt)
+                BotAI.MeleeExpert, GetBotBehaviorSet(BotAI.MeleeExpert)
             },
             {
-                BotAI.Hulk, BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Hulk)
+                BotAI.RangeExpert, GetBotBehaviorSet(BotAI.RangeExpert)
+            },
+            {
+                BotAI.RangeHard, GetBotBehaviorSet(BotAI.RangeHard)
+            },
+            {
+                BotAI.Grunt, GetBotBehaviorSet(BotAI.Grunt)
+            },
+            {
+                BotAI.Hulk, GetBotBehaviorSet(BotAI.Hulk)
+            },
+            {
+                BotAI.Meatgrinder, GetBotBehaviorSet(BotAI.Meatgrinder)
+            },
+            {
+                BotAI.Sniper, GetBotBehaviorSet(BotAI.Sniper)
+            },
+            {
+                BotAI.ZombieSlow, GetBotBehaviorSet(BotAI.ZombieSlow)
             },
         };
+
+        private static BotBehaviorSet GetBotBehaviorSet(BotAI botAI)
+        {
+            var botBehaviorSet = new BotBehaviorSet()
+            {
+                MeleeActions = BotMeleeActions.Default,
+                MeleeActionsWhenHit = BotMeleeActions.DefaultWhenHit,
+                MeleeActionsWhenEnraged = BotMeleeActions.DefaultWhenEnraged,
+                MeleeActionsWhenEnragedAndHit = BotMeleeActions.DefaultWhenEnragedAndHit
+            };
+
+            switch (botAI)
+            {
+                case BotAI.Debug:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotD);
+                    botBehaviorSet.RangedWeaponBurstTimeMin = 5000;
+                    botBehaviorSet.RangedWeaponBurstTimeMax = 5000;
+                    botBehaviorSet.RangedWeaponBurstPauseMin = 0;
+                    botBehaviorSet.RangedWeaponBurstPauseMax = 0;
+                    break;
+
+                case BotAI.Easy:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotD);
+                    break;
+
+                case BotAI.Normal:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotC);
+                    break;
+
+                case BotAI.Hard:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotB);
+                    break;
+
+                case BotAI.Expert:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotA);
+                    break;
+
+                case BotAI.Hacker:
+                    botBehaviorSet.NavigationMode = BotBehaviorNavigationMode.PathFinding;
+                    botBehaviorSet.MeleeMode = BotBehaviorMeleeMode.Default;
+                    botBehaviorSet.EliminateEnemies = true;
+                    botBehaviorSet.SearchForItems = true;
+                    botBehaviorSet.OffensiveEnrageLevel = 0.8f;
+                    botBehaviorSet.NavigationRandomPausesLevel = 0.1f;
+                    botBehaviorSet.DefensiveRollFireLevel = 0.95f;
+                    botBehaviorSet.DefensiveAvoidProjectilesLevel = 0.7f;
+                    botBehaviorSet.OffensiveClimbingLevel = 0.7f;
+                    botBehaviorSet.OffensiveSprintLevel = 0.6f;
+                    botBehaviorSet.OffensiveDiveLevel = 0.6f;
+                    botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0.9f;
+                    botBehaviorSet.ChokePointPlayerCountThreshold = 1;
+                    botBehaviorSet.ChokePointValue = 150f;
+                    botBehaviorSet.MeleeWaitTimeLimitMin = 600f;
+                    botBehaviorSet.MeleeWaitTimeLimitMax = 800f;
+                    botBehaviorSet.MeleeUsage = true;
+                    botBehaviorSet.SetMeleeActionsToExpert();
+                    botBehaviorSet.MeleeWeaponUsage = true;
+                    botBehaviorSet.RangedWeaponUsage = true;
+                    botBehaviorSet.RangedWeaponAccuracy = 0.85f;
+                    botBehaviorSet.RangedWeaponAimShootDelayMin = 100f;
+                    botBehaviorSet.RangedWeaponHipFireAimShootDelayMin = 100f;
+                    botBehaviorSet.RangedWeaponHipFireAimShootDelayMax = 100f;
+                    botBehaviorSet.RangedWeaponBurstTimeMin = 400f;
+                    botBehaviorSet.RangedWeaponBurstTimeMax = 800f;
+                    botBehaviorSet.RangedWeaponBurstPauseMin = 400f;
+                    botBehaviorSet.RangedWeaponBurstPauseMax = 800f;
+                    botBehaviorSet.RangedWeaponPrecisionInterpolateTime = 800f;
+                    botBehaviorSet.RangedWeaponPrecisionAccuracy = 0.95f;
+                    botBehaviorSet.RangedWeaponPrecisionAimShootDelayMin = 25f;
+                    botBehaviorSet.RangedWeaponPrecisionAimShootDelayMax = 50f;
+                    botBehaviorSet.RangedWeaponPrecisionBurstTimeMin = 800f;
+                    botBehaviorSet.RangedWeaponPrecisionBurstTimeMax = 1600f;
+                    botBehaviorSet.RangedWeaponPrecisionBurstPauseMin = 100f;
+                    botBehaviorSet.RangedWeaponPrecisionBurstPauseMax = 200f;
+                    break;
+
+                case BotAI.MeleeExpert:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.MeleeB);
+                    break;
+
+                case BotAI.RangeExpert:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.RangedA);
+                    botBehaviorSet.RangedWeaponAccuracy = 0.85f;
+                    botBehaviorSet.RangedWeaponAimShootDelayMin = 600f;
+                    botBehaviorSet.RangedWeaponPrecisionInterpolateTime = 2000f;
+                    botBehaviorSet.RangedWeaponPrecisionAccuracy = 0.95f;
+                    break;
+
+                case BotAI.RangeHard:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.RangedA);
+                    botBehaviorSet.RangedWeaponAccuracy = 0.75f;
+                    botBehaviorSet.RangedWeaponAimShootDelayMin = 600f;
+                    botBehaviorSet.RangedWeaponPrecisionInterpolateTime = 2000f;
+                    botBehaviorSet.RangedWeaponPrecisionAccuracy = 0.9f;
+                    break;
+
+                case BotAI.Sniper:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.RangedA);
+                    botBehaviorSet.RangedWeaponMode = BotBehaviorRangedWeaponMode.ManualAim;
+                    botBehaviorSet.RangedWeaponAccuracy = 0.85f;
+                    botBehaviorSet.RangedWeaponAimShootDelayMin = 600f;
+                    botBehaviorSet.RangedWeaponPrecisionInterpolateTime = 2000f;
+                    botBehaviorSet.RangedWeaponPrecisionAccuracy = 0.95f;
+
+                    botBehaviorSet.DefensiveRollFireLevel = 0.95f;
+                    botBehaviorSet.DefensiveAvoidProjectilesLevel = 0.6f;
+                    botBehaviorSet.OffensiveEnrageLevel = 0.2f;
+                    botBehaviorSet.OffensiveClimbingLevel = 0f;
+                    botBehaviorSet.OffensiveSprintLevel = 0f;
+                    botBehaviorSet.OffensiveDiveLevel = 0f;
+                    botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0f;
+                    botBehaviorSet.TeamLineUp = false;
+                    break;
+
+
+                case BotAI.Grunt:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Grunt);
+
+                    // Taken from PredefinedAIType.BotB, PredefinedAIType.Grunt is too slow
+                    botBehaviorSet.RangedWeaponAimShootDelayMin = 200f;
+                    botBehaviorSet.RangedWeaponAimShootDelayMax = 600f;
+                    botBehaviorSet.RangedWeaponHipFireAimShootDelayMin = 200f;
+                    botBehaviorSet.RangedWeaponHipFireAimShootDelayMax = 600f;
+                    botBehaviorSet.RangedWeaponBurstTimeMin = 400f;
+                    botBehaviorSet.RangedWeaponBurstTimeMax = 800f;
+                    botBehaviorSet.RangedWeaponBurstPauseMin = 400f;
+                    botBehaviorSet.RangedWeaponBurstPauseMax = 800f;
+                    break;
+
+                case BotAI.Hulk:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Hulk);
+                    break;
+
+                case BotAI.Meatgrinder:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Meatgrinder);
+                    break;
+
+                case BotAI.ZombieSlow:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.ZombieA);
+                    break;
+
+                case BotAI.ZombieFast:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.ZombieB);
+                    break;
+
+                default:
+                    botBehaviorSet.NavigationMode = BotBehaviorNavigationMode.None;
+                    botBehaviorSet.MeleeMode = BotBehaviorMeleeMode.None;
+                    botBehaviorSet.EliminateEnemies = false;
+                    botBehaviorSet.SearchForItems = false;
+                    break;
+            }
+
+            return botBehaviorSet;
+        }
 
         #endregion
 
@@ -3490,7 +3714,7 @@ namespace SFDScript.MoreBot
             }
 
             public float EquipWeaponChance { get; set; } // 0-1
-            public PredefinedAIType AIType { get; set; }
+            public BotAI AIType { get; set; }
             public PlayerModifiers Modifiers { get; set; }
             public bool IsBoss { get; set; }
             public Action<Bot> OnSpawn { get; set; }
@@ -3519,9 +3743,16 @@ namespace SFDScript.MoreBot
         public static Dictionary<BotType, BotInfo> BotInfos = new Dictionary<BotType, BotInfo>()
         {
             {
+                BotType.DebugBot, new BotInfo()
+                {
+                    AIType = BotAI.Debug,
+                    Modifiers = new PlayerModifiers(),
+                }
+            },
+            {
                 BotType.Bandido, new BotInfo()
                 {
-                    AIType = PredefinedAIType.Grunt,
+                    AIType = BotAI.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 70,
@@ -3535,7 +3766,7 @@ namespace SFDScript.MoreBot
             {
                 BotType.Biker, new BotInfo()
                 {
-                    AIType = PredefinedAIType.Grunt,
+                    AIType = BotAI.Grunt,
                     EquipWeaponChance = 0.5f,
                     Modifiers = new PlayerModifiers()
                     {
@@ -3550,7 +3781,7 @@ namespace SFDScript.MoreBot
             {
                 BotType.BikerHulk, new BotInfo()
                 {
-                    AIType = PredefinedAIType.Hulk,
+                    AIType = BotAI.Hulk,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 110,
@@ -3566,7 +3797,7 @@ namespace SFDScript.MoreBot
             {
                 BotType.Bodyguard, new BotInfo()
                 {
-                    AIType = PredefinedAIType.Grunt,
+                    AIType = BotAI.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 70,
@@ -3580,7 +3811,7 @@ namespace SFDScript.MoreBot
             {
                 BotType.ClownBoxer, new BotInfo()
                 {
-                    AIType = PredefinedAIType.Hulk,
+                    AIType = BotAI.Hulk,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 110,
@@ -3595,7 +3826,7 @@ namespace SFDScript.MoreBot
             {
                 BotType.ClownCowboy, new BotInfo()
                 {
-                    AIType = PredefinedAIType.Grunt,
+                    AIType = BotAI.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 70,
@@ -3611,7 +3842,7 @@ namespace SFDScript.MoreBot
             {
                 BotType.ClownGangster, new BotInfo()
                 {
-                    AIType = PredefinedAIType.Grunt,
+                    AIType = BotAI.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 75,
@@ -3627,7 +3858,7 @@ namespace SFDScript.MoreBot
             {
                 BotType.Cowboy, new BotInfo()
                 {
-                    AIType = PredefinedAIType.Grunt,
+                    AIType = BotAI.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 70,
@@ -3643,7 +3874,7 @@ namespace SFDScript.MoreBot
             {
                 BotType.Demolitionist, new BotInfo()
                 {
-                    AIType = PredefinedAIType.RangedA,
+                    AIType = BotAI.RangeHard,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 125,
@@ -3662,7 +3893,7 @@ namespace SFDScript.MoreBot
             {
                 BotType.Kingpin, new BotInfo()
                 {
-                    AIType = PredefinedAIType.BotB,
+                    AIType = BotAI.Hard,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 150,
@@ -3677,7 +3908,7 @@ namespace SFDScript.MoreBot
             {
                 BotType.MetroCop, new BotInfo()
                 {
-                    AIType = PredefinedAIType.Grunt,
+                    AIType = BotAI.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 80,
@@ -3694,7 +3925,7 @@ namespace SFDScript.MoreBot
             {
                 BotType.Meatgrinder, new BotInfo()
                 {
-                    AIType = PredefinedAIType.Meatgrinder,
+                    AIType = BotAI.Meatgrinder,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 200,
@@ -3722,7 +3953,7 @@ namespace SFDScript.MoreBot
             {
                 BotType.Police, new BotInfo()
                 {
-                    AIType = PredefinedAIType.Grunt,
+                    AIType = BotAI.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 70,
@@ -3735,9 +3966,26 @@ namespace SFDScript.MoreBot
                 }
             },
             {
+                BotType.Sniper, new BotInfo()
+                {
+                    AIType = BotAI.Sniper,
+                    Modifiers = new PlayerModifiers()
+                    {
+                        MaxHealth = 70,
+                        CurrentHealth = 70,
+                        ProjectileDamageDealtModifier = 1.25f,
+                        ProjectileCritChanceDealtModifier = 1.5f,
+                        MeleeDamageDealtModifier = 0.85f,
+                        RunSpeedModifier = 0.9f,
+                        SprintSpeedModifier = 0.9f,
+                        SizeModifier = 0.95f,
+                    },
+                }
+            },
+            {
                 BotType.Teddybear, new BotInfo()
                 {
-                    AIType = PredefinedAIType.Hulk,
+                    AIType = BotAI.Hulk,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 350,
@@ -3756,7 +4004,7 @@ namespace SFDScript.MoreBot
             {
                 BotType.Santa, new BotInfo()
                 {
-                    AIType = PredefinedAIType.ChallengeA,
+                    AIType = BotAI.Hard, // ChallengeA
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 250,
@@ -3773,7 +4021,7 @@ namespace SFDScript.MoreBot
                 BotType.Thug, new BotInfo()
                 {
                     EquipWeaponChance = 0.8f,
-                    AIType = PredefinedAIType.Grunt,
+                    AIType = BotAI.Grunt,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 70,
@@ -3788,7 +4036,7 @@ namespace SFDScript.MoreBot
                 BotType.ThugHulk, new BotInfo()
                 {
                     EquipWeaponChance = 0.0f,
-                    AIType = PredefinedAIType.Grunt,
+                    AIType = BotAI.Hulk,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 110,
@@ -3805,7 +4053,7 @@ namespace SFDScript.MoreBot
                 BotType.Zombie, new BotInfo()
                 {
                     EquipWeaponChance = 0.0f,
-                    AIType = PredefinedAIType.ZombieA,
+                    AIType = BotAI.ZombieSlow,
                     Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 60,
@@ -3960,6 +4208,10 @@ namespace SFDScript.MoreBot
             //{
             //    { BotType.PoliceSWAT, 1.0f },
             //})),
+            new GroupSet("Sniper", new Group(new Dictionary<BotType, float>()
+            {
+                { BotType.Sniper, 1.0f },
+            })),
             new GroupSet("Teddybear", new Group(new Dictionary<BotType, float>()
             {
                 { BotType.Teddybear, 1.0f },
@@ -4015,19 +4267,54 @@ namespace SFDScript.MoreBot
                 var botCount = MAX_PLAYERS - playerCount;
                 var botSpawnCount = Math.Min(botCount, playerSpawners.Count);
 
-                //SpawnGroup(BotGroupSets.Last().Groups[0], botSpawnCount);
-
-                if (botSpawnCount < 3) // Too few for a group, spawn boss instead
+                if (!Game.IsEditorTest)
                 {
-                    var bossGroupSets = BotGroupSets.Select(s => s).Where(s => s.HasBoss).ToList();
-                    var bossGroupSet = Helper.GetRandomItem(bossGroupSets);
-                    SpawnGroup(Helper.GetRandomItem(bossGroupSet.Groups), botSpawnCount);
+                    if (botSpawnCount < 3) // Too few for a group, spawn boss instead
+                    {
+                        var bossGroupSets = BotGroupSets.Select(s => s).Where(s => s.HasBoss).ToList();
+                        var bossGroupSet = Helper.GetRandomItem(bossGroupSets);
+                        SpawnGroup(Helper.GetRandomItem(bossGroupSet.Groups), botSpawnCount);
+                    }
+                    else
+                    {
+                        var groupSet = Helper.GetRandomItem(BotGroupSets);
+                        var group = Helper.GetRandomItem(groupSet.Groups);
+                        SpawnGroup(group, botSpawnCount);
+                    }
                 }
                 else
                 {
-                    var groupSet = Helper.GetRandomItem(BotGroupSets);
-                    var group = Helper.GetRandomItem(groupSet.Groups);
-                    SpawnGroup(group, botSpawnCount);
+                    //var group = BotGroupSets.Where(g => g.Name == "Sniper").First().Groups[0];
+                    //SpawnGroup(group, botSpawnCount);
+                    var sniper = Create(BotType.Sniper);
+                    var demols = Create(BotType.Demolitionist);
+
+                    sniper.Player.SetTeam(PlayerTeam.Independent);
+                    var mod = sniper.Player.GetModifiers();
+                    mod.MaxHealth = 300;
+                    mod.CurrentHealth = 300;
+                    mod.InfiniteAmmo = 1;
+                    sniper.Player.SetModifiers(mod);
+
+                    sniper.Player.RemoveWeaponItemType(WeaponItemType.Rifle);
+                    sniper.Player.GiveWeaponItem(WeaponItem.PISTOL);
+                    demols.Player.RemoveWeaponItemType(WeaponItemType.Rifle);
+                    demols.Player.GiveWeaponItem(WeaponItem.PISTOL);
+                    demols.Player.SetModifiers(mod);
+                    Game.GetPlayers()[0].Destroy();
+
+                    //var meleeBot = Create(BotType.DebugBot);
+                    //var meleeBehavior = BotBehaviors[BotAI.MeleeExpert];
+                    //meleeBot.Player.SetBotName("MeleeBot");
+                    //meleeBot.Player.SetBotBehaviorSet(meleeBehavior);
+                    //meleeBot.Player.SetTeam(PlayerTeam.Independent);
+
+                    //var expertBot = Create(BotType.DebugBot);
+                    //var expertBehavior = BotBehaviors[BotAI.Expert];
+                    //expertBehavior.SearchForItems = false;
+                    //expertBot.Player.SetBotName("ExpertBot");
+                    //expertBot.Player.SetBotBehaviorSet(expertBehavior);
+                    //expertBot.Player.SetTeam(PlayerTeam.Independent);
                 }
             }
 
@@ -4089,6 +4376,7 @@ namespace SFDScript.MoreBot
             {
                 switch (botType)
                 {
+                    case BotType.DebugBot:
                     case BotType.Bandido:
                     case BotType.Biker:
                     case BotType.BikerHulk:
@@ -4103,6 +4391,7 @@ namespace SFDScript.MoreBot
                     case BotType.Meatgrinder:
                     case BotType.Police:
                     case BotType.Santa:
+                    case BotType.Sniper:
                     case BotType.Teddybear:
                     case BotType.Thug:
                     case BotType.ThugHulk:
@@ -4144,11 +4433,8 @@ namespace SFDScript.MoreBot
 
                 player.SetProfile(profile);
                 player.SetModifiers(info.Modifiers);
-                player.SetBotBehavior(new BotBehavior()
-                {
-                    Active = true,
-                    PredefinedAI = info.AIType,
-                });
+                player.SetBotBehaviorSet(BotBehaviors[info.AIType]);
+                player.SetBotBehaviorActive(true);
                 player.SetTeam(PlayerTeam.Team4);
                 player.SetBotName(profile.Name);
 
@@ -4169,7 +4455,6 @@ namespace SFDScript.MoreBot
 // TODO:
 // add spawnline|deathline ?
 // Fix player spawn at the same place in Canal and two towers maps
-// metrocop -> bullet resistant
 
 
 // Not grunt:
@@ -4180,3 +4465,7 @@ namespace SFDScript.MoreBot
 // Kriegbär
 // mecha
 // sniper - rangeA
+
+// Meatgrider block?
+// Spawn at the same place
+// Facility top
