@@ -15,8 +15,6 @@
 
         public void OnStartup()
         {
-            //Game.GetPlayers()[0].GiveWeaponItem(WeaponItem.MP50);
-            //var modifiers = Game.GetPlayers()[0].GetModifiers();
             //System.Diagnostics.Debugger.Break();
 
             if (Game.IsEditorTest)
@@ -58,15 +56,15 @@
 
             public static bool SpawnPlayerHasPlayer(IObject spawnPlayer)
             {
-                // Player position y: -8 -> -10 || +5
-                // => -12 -> +6
+                // Player position y: -20 || +5
+                // => -21 -> +6
                 // Player position x: unchange
                 foreach (var player in Game.GetPlayers())
                 {
                     var playerPosition = player.GetWorldPosition();
                     var spawnPlayerPosition = spawnPlayer.GetWorldPosition();
 
-                    if (spawnPlayerPosition.Y - 12 <= playerPosition.Y && playerPosition.Y <= spawnPlayerPosition.Y + 6
+                    if (spawnPlayerPosition.Y - 21 <= playerPosition.Y && playerPosition.Y <= spawnPlayerPosition.Y + 6
                         && spawnPlayerPosition.X == playerPosition.X)
                         return true;
                 }
@@ -81,8 +79,6 @@
 
         public enum BotType
         {
-            DebugBot,
-
             // Tier1: Rooftop Retribution
             // Tier2: Canals Carnage
             AssassinMelee,
@@ -2497,7 +2493,6 @@
 
         public static Dictionary<BotType, List<IProfile>> BotProfiles = new Dictionary<BotType, List<IProfile>>()
         {
-            { BotType.DebugBot, GangsterProfiles },
             { BotType.Agent, AgentProfiles },
             { BotType.Agent2, AgentProfiles },
             { BotType.AssassinMelee, AssasinMeleeProfiles },
@@ -2581,6 +2576,13 @@
                 if (UseLazer) player.GiveWeaponItem(WeaponItem.LAZER);
             }
 
+            static WeaponSet()
+            {
+                Empty = new WeaponSet();
+            }
+
+            public static WeaponSet Empty { get; private set; }
+
             public WeaponItem Melee { get; set; }
             public WeaponItem Primary { get; set; }
             public WeaponItem Secondary { get; set; }
@@ -2636,19 +2638,6 @@
 
         private static Dictionary<BotType, List<WeaponSet>> BotWeapons = new Dictionary<BotType, List<WeaponSet>>()
         {
-            {
-                BotType.DebugBot, new List<WeaponSet>()
-                {
-                    new WeaponSet()
-                    {
-                        //Melee = WeaponItem.KATANA,
-                        //Primary = WeaponItem.M60,
-                        //Secondary = WeaponItem.PISTOL,
-                        //Throwable = WeaponItem.GRENADES,
-                        //Powerup = WeaponItem.SLOWMO_10,
-                    },
-                }
-            },
             {
                 BotType.AssassinMelee, new List<WeaponSet>()
                 {
@@ -2752,7 +2741,7 @@
             {
                 BotType.BikerHulk, new List<WeaponSet>()
                 {
-                    new WeaponSet(),
+                    WeaponSet.Empty,
                 }
             },
             {
@@ -2797,7 +2786,7 @@
             {
                 BotType.ClownBoxer, new List<WeaponSet>()
                 {
-                    new WeaponSet(),
+                    WeaponSet.Empty,
                 }
             },
             {
@@ -2855,13 +2844,13 @@
             {
                 BotType.Fritzliebe, new List<WeaponSet>()
                 {
-                    new WeaponSet(),
+                    WeaponSet.Empty,
                 }
             },
             {
                 BotType.Funnyman, new List<WeaponSet>()
                 {
-                    new WeaponSet(),
+                    WeaponSet.Empty,
                     new WeaponSet()
                     {
                         Primary = WeaponItem.TOMMYGUN,
@@ -2941,7 +2930,7 @@
             {
                 BotType.GangsterHulk, new List<WeaponSet>()
                 {
-                    new WeaponSet(),
+                    WeaponSet.Empty,
                 }
             },
             {
@@ -2980,7 +2969,7 @@
             {
                 BotType.Mecha, new List<WeaponSet>()
                 {
-                    new WeaponSet(),
+                    WeaponSet.Empty,
                 }
             },
             {
@@ -3034,7 +3023,7 @@
             {
                 BotType.Mutant, new List<WeaponSet>()
                 {
-                    new WeaponSet(),
+                    WeaponSet.Empty,
                 }
             },
             {
@@ -3266,7 +3255,7 @@
             {
                 BotType.ThugHulk, new List<WeaponSet>()
                 {
-                    new WeaponSet(),
+                    WeaponSet.Empty,
                     new WeaponSet()
                     {
                         Melee = WeaponItem.LEAD_PIPE,
@@ -3280,7 +3269,7 @@
             {
                 BotType.Zombie, new List<WeaponSet>()
                 {
-                    new WeaponSet(),
+                    WeaponSet.Empty,
                 }
             },
             {
@@ -3303,13 +3292,13 @@
             {
                 BotType.ZombieBruiser, new List<WeaponSet>()
                 {
-                    new WeaponSet(),
+                    WeaponSet.Empty,
                 }
             },
             {
                 BotType.ZombieChild, new List<WeaponSet>()
                 {
-                    new WeaponSet(),
+                    WeaponSet.Empty,
                 }
             },
             {
@@ -3324,7 +3313,7 @@
             {
                 BotType.ZombieFlamer, new List<WeaponSet>()
                 {
-                    new WeaponSet(),
+                    WeaponSet.Empty,
                 }
             },
             {
@@ -3695,6 +3684,9 @@
                 EquipWeaponChance = 1.0f;
                 OnSpawn = null;
                 IsBoss = false;
+                InitialWeaponDrawn = WeaponItemType.NONE;
+                SpawnLine = "";
+                DeathLine = "";
             }
 
             public float EquipWeaponChance { get; set; } // 0-1
@@ -3702,6 +3694,9 @@
             public PlayerModifiers Modifiers { get; set; }
             public bool IsBoss { get; set; }
             public Action<Bot> OnSpawn { get; set; }
+            public WeaponItemType InitialWeaponDrawn { get; set; }
+            public string SpawnLine { get; set; }
+            public string DeathLine { get; set; }
         }
 
         // CanBurn [1]
@@ -3718,336 +3713,219 @@
         // RunSpeedModifier: 0.5-2.0 [1.0]
         // SizeModifier: 0.75-1.25 [1.0]
 
-        // Base stats: Police Officer
+        // Base stats: Grunt
         // MaxHealth: 70
-        // ProjectileDamageDealtModifier = 0.95f,
-        // ProjectileCritChanceDealtModifier = 0.95f,
+        // ProjectileDamageDealtModifier = 0.9f,
+        // ProjectileCritChanceDealtModifier = 0.9f,
         // MeleeDamageDealtModifier = 0.95f,
         // SizeModifier = 0.95f,
+
+        private static BotInfo GruntInfo = new BotInfo()
+        {
+            AIType = BotAI.Grunt,
+            EquipWeaponChance = 0.5f,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 70,
+                CurrentHealth = 70,
+                ProjectileDamageDealtModifier = 0.9f,
+                MeleeDamageDealtModifier = 0.95f,
+                SizeModifier = 0.95f,
+            },
+        };
+        private static BotInfo GruntWithWeaponsInfo = new BotInfo()
+        {
+            AIType = BotAI.Grunt,
+            EquipWeaponChance = 1f,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 70,
+                CurrentHealth = 70,
+                ProjectileDamageDealtModifier = 0.9f,
+                MeleeDamageDealtModifier = 0.95f,
+                SizeModifier = 0.95f,
+            },
+        };
+        private static BotInfo CowboyInfo = new BotInfo() // Faster Grunt
+        {
+            AIType = BotAI.Grunt,
+            EquipWeaponChance = 1f,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 70,
+                CurrentHealth = 70,
+                ProjectileDamageDealtModifier = 1.1f,
+                MeleeDamageDealtModifier = 0.85f,
+                RunSpeedModifier = 1.1f,
+                SprintSpeedModifier = 1.1f,
+                SizeModifier = 0.9f,
+            },
+        };
+        private static BotInfo HulkInfo = new BotInfo()
+        {
+            AIType = BotAI.Hulk,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 150,
+                CurrentHealth = 150,
+                ProjectileDamageDealtModifier = 0.5f,
+                MeleeDamageDealtModifier = 1.1f,
+                MeleeForceModifier = 1.5f,
+                RunSpeedModifier = 0.75f,
+                SprintSpeedModifier = 0.75f,
+                SizeModifier = 1.15f,
+            },
+        };
+        private static BotInfo BoxerInfo = new BotInfo()
+        {
+            AIType = BotAI.Hulk,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 110,
+                CurrentHealth = 110,
+                ProjectileDamageDealtModifier = 0.5f,
+                MeleeDamageDealtModifier = 1.1f,
+                MeleeForceModifier = 1.5f,
+                SizeModifier = 1.15f,
+            },
+        };
+        private static BotInfo SniperInfo = new BotInfo()
+        {
+            AIType = BotAI.Sniper,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 60,
+                CurrentHealth = 60,
+                ProjectileDamageDealtModifier = 1.15f,
+                ProjectileCritChanceDealtModifier = 1.15f,
+                MeleeDamageDealtModifier = 0.85f,
+                RunSpeedModifier = 0.8f,
+                SprintSpeedModifier = 0.8f,
+                SizeModifier = 0.95f,
+            },
+        };
+        private static BotInfo ZombieInfo = new BotInfo()
+        {
+            EquipWeaponChance = 0.0f,
+            AIType = BotAI.ZombieSlow,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 60,
+                CurrentHealth = 60,
+                MeleeDamageDealtModifier = 0.75f,
+                RunSpeedModifier = 0.75f,
+                SprintSpeedModifier = 0.75f,
+                SizeModifier = 0.95f,
+            },
+        };
+        // Bosses
+        private static BotInfo DemotionalistInfo = new BotInfo()
+        {
+            AIType = BotAI.RangeHard,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 150,
+                CurrentHealth = 150,
+                ProjectileDamageDealtModifier = 5.0f,
+                ProjectileCritChanceDealtModifier = 5.0f,
+                MeleeDamageDealtModifier = 1.5f,
+                RunSpeedModifier = 0.5f,
+                SprintSpeedModifier = 0.5f,
+                SizeModifier = 0.95f,
+                InfiniteAmmo = 1,
+            },
+            IsBoss = true,
+        };
+        private static BotInfo KingpinInfo = new BotInfo()
+        {
+            AIType = BotAI.Hard,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 250,
+                CurrentHealth = 250,
+                ProjectileDamageDealtModifier = 1.2f,
+                MeleeDamageDealtModifier = 1.2f,
+                SizeModifier = 1.05f,
+            },
+            IsBoss = true,
+        };
+        private static BotInfo MeatgrinderInfo = new BotInfo()
+        {
+            AIType = BotAI.Meatgrinder,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 250,
+                CurrentHealth = 250,
+                MaxEnergy = 250,
+                CurrentEnergy = 250,
+                ProjectileDamageDealtModifier = 1.5f,
+                MeleeDamageDealtModifier = 1.5f,
+                MeleeForceModifier = 1.5f,
+                RunSpeedModifier = 1.15f,
+                SprintSpeedModifier = 1.15f,
+                SizeModifier = 1.1f,
+                InfiniteAmmo = 1,
+            },
+            IsBoss = true,
+            InitialWeaponDrawn = WeaponItemType.Melee,
+        };
+        private static BotInfo TeddybearInfo = new BotInfo()
+        {
+            AIType = BotAI.Hulk,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 400,
+                CurrentHealth = 400,
+                MaxEnergy = 400,
+                CurrentEnergy = 400,
+                MeleeDamageDealtModifier = 1.25f,
+                MeleeForceModifier = 2.0f,
+                RunSpeedModifier = 0.9f,
+                SprintSpeedModifier = 0.9f,
+                SizeModifier = 1.25f,
+            },
+            IsBoss = true,
+        };
+        private static BotInfo SantaInfo = new BotInfo()
+        {
+            AIType = BotAI.Hard, // ChallengeA
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 200,
+                CurrentHealth = 200,
+                ExplosionDamageTakenModifier = 0.5f,
+                MeleeForceModifier = 1.75f,
+                SizeModifier = 1.1f,
+                InfiniteAmmo = 1,
+            },
+            IsBoss = true,
+            SpawnLine = "Ho ho ho!",
+            DeathLine = "Ho ohhhh...",
+        };
+
         public static Dictionary<BotType, BotInfo> BotInfos = new Dictionary<BotType, BotInfo>()
         {
-            {
-                BotType.DebugBot, new BotInfo()
-                {
-                    AIType = BotAI.Debug,
-                    Modifiers = new PlayerModifiers(),
-                }
-            },
-            {
-                BotType.Bandido, new BotInfo()
-                {
-                    AIType = BotAI.Grunt,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 70,
-                        CurrentHealth = 70,
-                        ProjectileDamageDealtModifier = 1.05f,
-                        MeleeDamageDealtModifier = 0.95f,
-                        SizeModifier = 0.95f,
-                    },
-                }
-            },
-            {
-                BotType.Biker, new BotInfo()
-                {
-                    AIType = BotAI.Grunt,
-                    EquipWeaponChance = 0.5f,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 70,
-                        CurrentHealth = 70,
-                        ProjectileDamageDealtModifier = 0.9f,
-                        MeleeDamageDealtModifier = 0.95f,
-                        SizeModifier = 0.95f,
-                    },
-                }
-            },
-            {
-                BotType.BikerHulk, new BotInfo()
-                {
-                    AIType = BotAI.Hulk,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 110,
-                        CurrentHealth = 110,
-                        MeleeDamageDealtModifier = 1.1f,
-                        MeleeForceModifier = 1.5f,
-                        RunSpeedModifier = 0.75f,
-                        SprintSpeedModifier = 0.75f,
-                        SizeModifier = 1.15f,
-                    },
-                }
-            },
-            {
-                BotType.Bodyguard, new BotInfo()
-                {
-                    AIType = BotAI.Grunt,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 70,
-                        CurrentHealth = 70,
-                        ProjectileDamageDealtModifier = 0.95f,
-                        MeleeDamageDealtModifier = 0.8f,
-                        SizeModifier = 0.95f,
-                    },
-                }
-            },
-            {
-                BotType.ClownBoxer, new BotInfo()
-                {
-                    AIType = BotAI.Hulk,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 110,
-                        CurrentHealth = 110,
-                        ProjectileDamageDealtModifier = 0.5f,
-                        MeleeDamageDealtModifier = 1.1f,
-                        MeleeForceModifier = 2.0f,
-                        SizeModifier = 1.15f,
-                    },
-                }
-            },
-            {
-                BotType.ClownCowboy, new BotInfo()
-                {
-                    AIType = BotAI.Grunt,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 70,
-                        CurrentHealth = 70,
-                        ProjectileDamageDealtModifier = 1.1f,
-                        MeleeDamageDealtModifier = 0.85f,
-                        RunSpeedModifier = 1.1f,
-                        SprintSpeedModifier = 1.1f,
-                        SizeModifier = 0.9f,
-                    }
-                }
-            },
-            {
-                BotType.ClownGangster, new BotInfo()
-                {
-                    AIType = BotAI.Grunt,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 75,
-                        CurrentHealth = 75,
-                        ProjectileDamageDealtModifier = 0.95f,
-                        MeleeDamageDealtModifier = 0.95f,
-                        RunSpeedModifier = 1.05f,
-                        SprintSpeedModifier = 1.05f,
-                        SizeModifier = 0.95f,
-                    }
-                }
-            },
-            {
-                BotType.Cowboy, new BotInfo()
-                {
-                    AIType = BotAI.Grunt,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 70,
-                        CurrentHealth = 70,
-                        ProjectileDamageDealtModifier = 1.1f,
-                        MeleeDamageDealtModifier = 0.85f,
-                        RunSpeedModifier = 1.1f,
-                        SprintSpeedModifier = 1.1f,
-                        SizeModifier = 0.95f,
-                    },
-                }
-            },
-            {
-                BotType.Demolitionist, new BotInfo()
-                {
-                    AIType = BotAI.RangeHard,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 125,
-                        CurrentHealth = 125,
-                        ProjectileDamageDealtModifier = 5.0f,
-                        ProjectileCritChanceDealtModifier = 5.0f,
-                        MeleeDamageDealtModifier = 1.5f,
-                        RunSpeedModifier = 0.5f,
-                        SprintSpeedModifier = 0.5f,
-                        SizeModifier = 0.95f,
-                        InfiniteAmmo = 1,
-                    },
-                    IsBoss = true,
-                }
-            },
-            {
-                BotType.Kingpin, new BotInfo()
-                {
-                    AIType = BotAI.Hard,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 150,
-                        CurrentHealth = 150,
-                        ProjectileDamageDealtModifier = 1.2f,
-                        MeleeDamageDealtModifier = 1.2f,
-                        SizeModifier = 1.05f,
-                    },
-                    IsBoss = true,
-                }
-            },
-            {
-                BotType.MetroCop, new BotInfo()
-                {
-                    AIType = BotAI.Grunt,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 80,
-                        CurrentHealth = 80,
-                        ProjectileDamageDealtModifier = 1.0f,
-                        ProjectileCritChanceDealtModifier = 1.05f,
-                        MeleeDamageDealtModifier = 0.95f,
-                        ProjectileDamageTakenModifier = 0.9f,
-                        ProjectileCritChanceTakenModifier = 0.9f,
-                        SizeModifier = 0.95f,
-                    },
-                }
-            },
-            {
-                BotType.Meatgrinder, new BotInfo()
-                {
-                    AIType = BotAI.Meatgrinder,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 200,
-                        CurrentHealth = 200,
-                        MaxEnergy = 200,
-                        CurrentEnergy = 200,
-                        ProjectileDamageDealtModifier = 1.5f,
-                        MeleeDamageDealtModifier = 1.25f,
-                        SizeModifier = 1.05f,
-                        InfiniteAmmo = 1,
-                    },
-                    IsBoss = true,
-                }
-            },
-            {
-                BotType.NaziScientist, new BotInfo()
-                {
-                    //AIType = PredefinedAIType.GruntMelee,
-                    EquipWeaponChance = 0.4f,
-                    Modifiers = new PlayerModifiers()
-                    {
-                    },
-                }
-            },
-            {
-                BotType.Police, new BotInfo()
-                {
-                    AIType = BotAI.Grunt,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 70,
-                        CurrentHealth = 70,
-                        ProjectileDamageDealtModifier = 0.95f,
-                        ProjectileCritChanceDealtModifier = 0.95f,
-                        MeleeDamageDealtModifier = 0.95f,
-                        SizeModifier = 0.95f,
-                    },
-                }
-            },
-            {
-                BotType.Sniper, new BotInfo()
-                {
-                    AIType = BotAI.Sniper,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 70,
-                        CurrentHealth = 70,
-                        ProjectileDamageDealtModifier = 1.25f,
-                        ProjectileCritChanceDealtModifier = 1.5f,
-                        MeleeDamageDealtModifier = 0.85f,
-                        RunSpeedModifier = 0.9f,
-                        SprintSpeedModifier = 0.9f,
-                        SizeModifier = 0.95f,
-                    },
-                }
-            },
-            {
-                BotType.Teddybear, new BotInfo()
-                {
-                    AIType = BotAI.Hulk,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 350,
-                        CurrentHealth = 350,
-                        MaxEnergy = 350,
-                        CurrentEnergy = 350,
-                        MeleeDamageDealtModifier = 1.25f,
-                        MeleeForceModifier = 2.0f,
-                        RunSpeedModifier = 0.9f,
-                        SprintSpeedModifier = 0.9f,
-                        SizeModifier = 1.25f,
-                    },
-                    IsBoss = true,
-                }
-            },
-            {
-                BotType.Santa, new BotInfo()
-                {
-                    AIType = BotAI.Hard, // ChallengeA
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 250,
-                        CurrentHealth = 250,
-                        ExplosionDamageTakenModifier = 0.5f,
-                        MeleeForceModifier = 1.75f,
-                        SizeModifier = 1.1f,
-                        InfiniteAmmo = 1,
-                    },
-                    IsBoss = true,
-                }
-            },
-            {
-                BotType.Thug, new BotInfo()
-                {
-                    EquipWeaponChance = 0.8f,
-                    AIType = BotAI.Grunt,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 70,
-                        CurrentHealth = 70,
-                        ProjectileDamageDealtModifier = 0.9f,
-                        MeleeDamageDealtModifier = 0.9f,
-                        SizeModifier = 0.95f,
-                    },
-                }
-            },
-            {
-                BotType.ThugHulk, new BotInfo()
-                {
-                    EquipWeaponChance = 0.0f,
-                    AIType = BotAI.Hulk,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 110,
-                        CurrentHealth = 110,
-                        MeleeDamageDealtModifier = 1.1f,
-                        MeleeForceModifier = 1.5f,
-                        RunSpeedModifier = 0.75f,
-                        SprintSpeedModifier = 0.75f,
-                        SizeModifier = 1.15f,
-                    },
-                }
-            },
-            {
-                BotType.Zombie, new BotInfo()
-                {
-                    EquipWeaponChance = 0.0f,
-                    AIType = BotAI.ZombieSlow,
-                    Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 60,
-                        CurrentHealth = 60,
-                        MeleeDamageDealtModifier = 0.75f,
-                        RunSpeedModifier = 0.75f,
-                        SizeModifier = 0.95f,
-                    },
-                }
-            },
+            { BotType.Bandido, GruntWithWeaponsInfo },
+            { BotType.Biker, GruntInfo },
+            { BotType.BikerHulk, HulkInfo },
+            { BotType.Bodyguard, GruntWithWeaponsInfo },
+            { BotType.ClownBoxer, BoxerInfo },
+            { BotType.ClownCowboy, CowboyInfo },
+            { BotType.ClownGangster, GruntWithWeaponsInfo },
+            { BotType.Cowboy, CowboyInfo },
+            { BotType.Demolitionist, DemotionalistInfo },
+            { BotType.Elf, GruntWithWeaponsInfo },
+            { BotType.Kingpin, KingpinInfo },
+            { BotType.MetroCop, GruntWithWeaponsInfo },
+            { BotType.Meatgrinder, MeatgrinderInfo },
+            { BotType.NaziScientist, GruntInfo },
+            { BotType.Police, GruntWithWeaponsInfo },
+            { BotType.Sniper, SniperInfo },
+            { BotType.Teddybear, TeddybearInfo },
+            { BotType.Santa, SantaInfo },
+            { BotType.Thug, GruntInfo },
+            { BotType.ThugHulk, HulkInfo },
+            { BotType.Zombie, ZombieInfo },
         };
 
         #endregion
@@ -4104,13 +3982,13 @@
             //})),
             new GroupSet("Bandido", new Group(new Dictionary<BotType, float>()
             {
-                { BotType.Bandido, 1.0f },
+                { BotType.Bandido, 1f },
             })),
             new GroupSet("Biker", new List<Group>()
             {
                 new Group(new Dictionary<BotType, float>()
                 {
-                    { BotType.Biker, 1.0f },
+                    { BotType.Biker, 1f },
                 }),
                 new Group(new Dictionary<BotType, float>()
                 {
@@ -4139,18 +4017,18 @@
             }),
             new GroupSet("Cowboy", new Group(new Dictionary<BotType, float>()
             {
-                { BotType.Cowboy, 1.0f },
+                { BotType.Cowboy, 1f },
             })),
             new GroupSet("Demolitionist", new Group(new Dictionary<BotType, float>()
             {
-                { BotType.Demolitionist, 1.0f },
+                { BotType.Demolitionist, 1f },
             })),
             new GroupSet("Gangster", new List<Group>()
             {
                 new Group(new Dictionary<BotType, float>()
                 {
                     { BotType.Kingpin, -1 },
-                    { BotType.Bodyguard, 1.0f },
+                    { BotType.Bodyguard, 1f },
                 }),
                 //new Group(new Dictionary<BotType, float>()
                 //{
@@ -4162,7 +4040,7 @@
             }),
             new GroupSet("Meatgrinder", new Group(new Dictionary<BotType, float>()
             {
-                { BotType.Meatgrinder, 1.0f },
+                { BotType.Meatgrinder, 1f },
             })),
             new GroupSet("MetroCop", new List<Group>()
             {
@@ -4180,7 +4058,7 @@
             {
                 new Group(new Dictionary<BotType, float>()
                 {
-                    { BotType.Police, 1.0f },
+                    { BotType.Police, 1f },
                 }),
                 //new Group(new Dictionary<BotType, float>()
                 //{
@@ -4190,21 +4068,26 @@
             }),
             //new GroupSet("PoliceSWAT", new Group(new Dictionary<BotType, float>()
             //{
-            //    { BotType.PoliceSWAT, 1.0f },
+            //    { BotType.PoliceSWAT, 1f },
             //})),
+            new GroupSet("Santa", new Group(new Dictionary<BotType, float>()
+            {
+                { BotType.Santa, -1f },
+                { BotType.Elf, 1f },
+            })),
             new GroupSet("Sniper", new Group(new Dictionary<BotType, float>()
             {
-                { BotType.Sniper, 1.0f },
+                { BotType.Sniper, 1f },
             })),
             new GroupSet("Teddybear", new Group(new Dictionary<BotType, float>()
             {
-                { BotType.Teddybear, 1.0f },
+                { BotType.Teddybear, 1f },
             })),
             new GroupSet("Thug", new List<Group>()
             {
                 new Group(new Dictionary<BotType, float>()
                 {
-                    { BotType.Thug, 1.0f },
+                    { BotType.Thug, 1f },
                 }),
                 new Group(new Dictionary<BotType, float>()
                 {
@@ -4231,25 +4114,51 @@
 
         public class Bot
         {
+            public Bot(IPlayer player, BotType type)
+            {
+                Player = player;
+                Type = type;
+
+                SaySpawnLine();
+            }
             public IPlayer Player { get; set; }
             public BotType Type { get; set; }
             public BotInfo Info
             {
                 get { return BotInfos[Type]; }
             }
+
+            public void SaySpawnLine()
+            {
+                var spawnLine = Info.SpawnLine;
+
+                if (!string.IsNullOrWhiteSpace(spawnLine))
+                    Game.CreateDialogue(spawnLine, new Color(128, 32, 32), Player, duration: 3000f);
+            }
+
+            public void SayDeathLine()
+            {
+                var deathLine = Info.DeathLine;
+
+                if (!string.IsNullOrWhiteSpace(deathLine))
+                    Game.CreateDialogue(deathLine, new Color(128, 32, 32), Player, duration: 3000f);
+            }
         }
 
         public static class BotHelper
         {
-            private static List<PlayerSpawner> playerSpawners;
+            private static List<PlayerSpawner> m_playerSpawners;
+            private static Events.PlayerDeathCallback m_playerDeathEvent = null;
+            private static Dictionary<int, Bot> m_bots = new Dictionary<int, Bot>();
 
             public static void Initialize()
             {
-                playerSpawners = GetEmptyPlayerSpawners();
+                m_playerSpawners = GetEmptyPlayerSpawners();
+                m_playerDeathEvent = Events.PlayerDeathCallback.Start(OnPlayerDeath);
 
                 var playerCount = Game.GetPlayers().Length;
                 var botCount = MAX_PLAYERS - playerCount;
-                var botSpawnCount = Math.Min(botCount, playerSpawners.Count);
+                var botSpawnCount = Math.Min(botCount, m_playerSpawners.Count);
 
                 if (!Game.IsEditorTest)
                 {
@@ -4268,24 +4177,8 @@
                 }
                 else
                 {
-                    //var group = BotGroupSets.Where(g => g.Name == "Sniper").First().Groups[0];
-                    //SpawnGroup(group, botSpawnCount);
-                    var sniper = Create(BotType.Sniper);
-                    var demols = Create(BotType.Demolitionist);
-
-                    sniper.Player.SetTeam(PlayerTeam.Independent);
-                    var mod = sniper.Player.GetModifiers();
-                    mod.MaxHealth = 300;
-                    mod.CurrentHealth = 300;
-                    mod.InfiniteAmmo = 1;
-                    sniper.Player.SetModifiers(mod);
-
-                    sniper.Player.RemoveWeaponItemType(WeaponItemType.Rifle);
-                    sniper.Player.GiveWeaponItem(WeaponItem.PISTOL);
-                    demols.Player.RemoveWeaponItemType(WeaponItemType.Rifle);
-                    demols.Player.GiveWeaponItem(WeaponItem.PISTOL);
-                    demols.Player.SetModifiers(mod);
-                    Game.GetPlayers()[0].Destroy();
+                    //Create(BotType.Sniper);
+                    SpawnGroup("Santa", botSpawnCount);
 
                     //var meleeBot = Create(BotType.DebugBot);
                     //var meleeBehavior = BotBehaviors[BotAI.MeleeExpert];
@@ -4299,6 +4192,22 @@
                     //expertBot.Player.SetBotName("ExpertBot");
                     //expertBot.Player.SetBotBehaviorSet(expertBehavior);
                     //expertBot.Player.SetTeam(PlayerTeam.Independent);
+                }
+            }
+
+            private static void OnPlayerDeath(IPlayer player)
+            {
+                if (player == null) return;
+
+                switch (player.GetTeam())
+                {
+                    case PlayerTeam.Team4:
+                        Bot enemy;
+                        if (m_bots.TryGetValue(player.UniqueID, out enemy))
+                        {
+                            enemy.SayDeathLine();
+                        }
+                        break;
                 }
             }
 
@@ -4328,6 +4237,15 @@
                 return emptyPlayerSpawners;
             }
 
+            // Spawn exact group for debugging purpose. Usually you random the group before every match
+            private static void SpawnGroup(string groupName, int botCount)
+            {
+                var groupSet = BotGroupSets.Where(g => g.Name == groupName).FirstOrDefault();
+                if (groupSet == null) return;
+
+                SpawnGroup(groupSet.Groups[0], botCount);
+            }
+
             private static void SpawnGroup(Group group, int groupCount)
             {
                 var typeCount = 0;
@@ -4346,50 +4264,19 @@
                     {
                         while (groupCountRemaining > 0 && (botCount > 0 || typeCount == group.Types.Count))
                         {
-                            Create(botType);
+                            SpawnBot(botType);
                             groupCountRemaining--;
                             botCount--;
                         }
                     }
                     else
-                        Create(botType);
+                        SpawnBot(botType);
                 }
             }
 
-            public static Bot Create(BotType botType)
+            private static IPlayer SpawnPlayer(BotInfo botInfo, WeaponSet weaponSet)
             {
-                switch (botType)
-                {
-                    case BotType.DebugBot:
-                    case BotType.Bandido:
-                    case BotType.Biker:
-                    case BotType.BikerHulk:
-                    case BotType.Bodyguard:
-                    case BotType.ClownBoxer:
-                    case BotType.ClownCowboy:
-                    case BotType.ClownGangster:
-                    case BotType.Cowboy:
-                    case BotType.Demolitionist:
-                    case BotType.Kingpin:
-                    case BotType.MetroCop:
-                    case BotType.Meatgrinder:
-                    case BotType.Police:
-                    case BotType.Santa:
-                    case BotType.Sniper:
-                    case BotType.Teddybear:
-                    case BotType.Thug:
-                    case BotType.ThugHulk:
-                    case BotType.Zombie:
-                        return SpawnBot(botType);
-
-                    default:
-                        return null;
-                }
-            }
-
-            private static IPlayer SpawnPlayer()
-            {
-                var emptySpawners = playerSpawners
+                var emptySpawners = m_playerSpawners
                     .Select((playerSpawner, index) => new { playerSpawner, index })
                     .Where(Q => Q.playerSpawner.HasSpawned == false)
                     .ToList();
@@ -4400,20 +4287,42 @@
                 var rndSpawner = Helper.GetRandomItem(emptySpawners);
                 var spawnTrigger = rndSpawner.playerSpawner.Trigger;
 
+                // TODO: fix runtime error
+                //spawnTrigger.SetSpawnWeaponItemMelee(weaponSet.Melee);
+                //spawnTrigger.SetSpawnWeaponItemRifle(weaponSet.Primary);
+                //spawnTrigger.SetSpawnWeaponItemHandgun(weaponSet.Secondary);
+                //spawnTrigger.SetSpawnWeaponItemThrown(weaponSet.Throwable);
+                //spawnTrigger.SetSpawnWeaponItemPowerup(weaponSet.Powerup);
+                spawnTrigger.SetInitialWeaponDrawn(botInfo.InitialWeaponDrawn);
                 spawnTrigger.Trigger();
-                playerSpawners[rndSpawner.index].HasSpawned = true;
 
-                return spawnTrigger.GetLastCreatedPlayer();
+                var player = spawnTrigger.GetLastCreatedPlayer();
+
+                player.GiveWeaponItem(weaponSet.Melee);
+                player.GiveWeaponItem(weaponSet.Primary);
+                player.GiveWeaponItem(weaponSet.Secondary);
+                player.GiveWeaponItem(weaponSet.Throwable);
+                player.GiveWeaponItem(weaponSet.Powerup);
+                if (weaponSet.UseLazer)
+                    player.GiveWeaponItem(WeaponItem.LAZER);
+
+                m_playerSpawners[rndSpawner.index].HasSpawned = true;
+
+                return player;
             }
 
             private static Bot SpawnBot(BotType botType)
             {
-                var player = SpawnPlayer();
+                var info = BotInfos[botType];
+                var weaponSet = WeaponSet.Empty;
 
+                if (Rnd.Next(100) / 100.0f <= info.EquipWeaponChance) // Next(100) -> 0-99
+                    weaponSet = Helper.GetRandomItem(BotWeapons[botType]);
+
+                var player = SpawnPlayer(info, weaponSet);
                 if (player == null) return null;
 
                 var profile = Helper.GetRandomItem(BotProfiles[botType]);
-                var info = BotInfos[botType];
 
                 player.SetProfile(profile);
                 player.SetModifiers(info.Modifiers);
@@ -4422,15 +4331,8 @@
                 player.SetTeam(PlayerTeam.Team4);
                 player.SetBotName(profile.Name);
 
-                var rndWeaponSet = Helper.GetRandomItem(BotWeapons[botType]);
-                if (Rnd.Next(100) / 100.0f <= info.EquipWeaponChance) // Next(100) -> 0-99
-                    rndWeaponSet.Equip(player);
-
-                return new Bot()
-                {
-                    Player = player,
-                    Type = botType,
-                };
+                m_bots.Add(player.UniqueID, new Bot(player, botType));
+                return m_bots[player.UniqueID];
             }
         }
 
