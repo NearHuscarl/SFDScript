@@ -1,26 +1,16 @@
 ﻿using System;
 using System.Linq;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
 using SFDGameScriptInterface;
 
 namespace SFDScript.MoreBot
 {
-
     public partial class GameScript : GameScriptInterface
     {
         /// <summary>
         /// Placeholder constructor that's not to be included in the ScriptWindow!
         /// </summary>
         public GameScript() : base(null) { }
-
-/*
-* author: NearHuscarl
-* description: Spawn a variety of bots from the campaign and challenge maps to make thing more chaotic
-* mapmodes: versus
-*/
 
         private const int MAX_PLAYERS = 12;
 
@@ -41,11 +31,12 @@ namespace SFDScript.MoreBot
                 modifiers.MaxHealth = 5000;
                 modifiers.CurrentHealth = 5000;
                 modifiers.InfiniteAmmo = 1;
+                modifiers.MeleeStunImmunity = 1;
 
                 player.SetModifiers(modifiers);
-                player.GiveWeaponItem(WeaponItem.PIPE);
+                player.GiveWeaponItem(WeaponItem.KATANA);
                 player.GiveWeaponItem(WeaponItem.REVOLVER);
-                player.GiveWeaponItem(WeaponItem.SUB_MACHINEGUN);
+                player.GiveWeaponItem(WeaponItem.BAZOOKA);
                 player.GiveWeaponItem(WeaponItem.MOLOTOVS);
             }
 
@@ -64,6 +55,19 @@ namespace SFDScript.MoreBot
 
         public static class Helper
         {
+            public static bool IsElapsed(float timeStarted, float timeToElapse)
+            {
+                if (Game.TotalElapsedGameTime - timeStarted >= timeToElapse)
+                    return true;
+                else
+                    return false;
+            }
+
+            public static float RandomBetween(float min, float max)
+            {
+                return (float)Rnd.NextDouble() * (max - min) + min;
+            }
+
             public static T GetRandomItem<T>(List<T> list)
             {
                 var rndIndex = Rnd.Next(list.Count);
@@ -72,15 +76,15 @@ namespace SFDScript.MoreBot
 
             public static bool SpawnPlayerHasPlayer(IObject spawnPlayer)
             {
-                // Player position y: -20 || +5
-                // => -21 -> +6
+                // Player position y: -20 || +9
+                // => -21 -> +10
                 // Player position x: unchange
                 foreach (var player in Game.GetPlayers())
                 {
                     var playerPosition = player.GetWorldPosition();
                     var spawnPlayerPosition = spawnPlayer.GetWorldPosition();
 
-                    if (spawnPlayerPosition.Y - 21 <= playerPosition.Y && playerPosition.Y <= spawnPlayerPosition.Y + 6
+                    if (spawnPlayerPosition.Y - 21 <= playerPosition.Y && playerPosition.Y <= spawnPlayerPosition.Y + 10
                         && spawnPlayerPosition.X == playerPosition.X)
                         return true;
                 }
@@ -1637,7 +1641,7 @@ namespace SFDScript.MoreBot
         {
             new IProfile()
             {
-                Name = "SWAT Officer",
+                Name = "SWAT",
                 Accesory = null,
                 ChestOver = new IProfileClothingItem("KevlarVest_fem", "ClothingGray", "ClothingLightGray", ""),
                 ChestUnder = new IProfileClothingItem("PoliceShirt_fem", "ClothingDarkBlue", "ClothingLightGray", ""),
@@ -1651,7 +1655,7 @@ namespace SFDScript.MoreBot
             },
             new IProfile()
             {
-                Name = "SWAT Officer",
+                Name = "SWAT",
                 Accesory = null,
                 ChestOver = new IProfileClothingItem("KevlarVest", "ClothingGray", "ClothingLightGray", ""),
                 ChestUnder = new IProfileClothingItem("PoliceShirt", "ClothingDarkBlue", "ClothingLightGray", ""),
@@ -3697,12 +3701,15 @@ namespace SFDScript.MoreBot
         {
             public BotInfo()
             {
-                EquipWeaponChance = 1.0f;
+                EquipWeaponChance = 1f;
                 OnSpawn = null;
+                OnDeath = null;
                 IsBoss = false;
                 InitialWeaponDrawn = WeaponItemType.NONE;
                 SpawnLine = "";
+                SpawnLineChance = 1f;
                 DeathLine = "";
+                DeathLineChance = 1f;
             }
 
             public float EquipWeaponChance { get; set; } // 0-1
@@ -3710,9 +3717,12 @@ namespace SFDScript.MoreBot
             public PlayerModifiers Modifiers { get; set; }
             public bool IsBoss { get; set; }
             public Action<Bot> OnSpawn { get; set; }
+            public Action<Bot> OnDeath { get; set; }
             public WeaponItemType InitialWeaponDrawn { get; set; }
             public string SpawnLine { get; set; }
+            public float SpawnLineChance { get; set; }
             public string DeathLine { get; set; }
+            public float DeathLineChance { get; set; }
         }
 
         // CanBurn [1]
@@ -3833,6 +3843,8 @@ namespace SFDScript.MoreBot
                 SprintSpeedModifier = 0.75f,
                 SizeModifier = 0.95f,
             },
+            SpawnLine = "Brainzz",
+            SpawnLineChance = 0.1f,
         };
         // Bosses
         private static BotInfo DemotionalistInfo = new BotInfo()
@@ -3936,6 +3948,7 @@ namespace SFDScript.MoreBot
             { BotType.Meatgrinder, MeatgrinderInfo },
             { BotType.NaziScientist, GruntInfo },
             { BotType.Police, GruntWithWeaponsInfo },
+            { BotType.PoliceSWAT, GruntWithWeaponsInfo },
             { BotType.Sniper, SniperInfo },
             { BotType.Teddybear, TeddybearInfo },
             { BotType.Santa, SantaInfo },
@@ -3948,22 +3961,53 @@ namespace SFDScript.MoreBot
 
         #region Bot group
 
+        public class SubGroup
+        {
+            public List<BotType> Types { get; set; }
+            public float Weight { get; set; }
+            public BotType GetRandomType()
+            {
+                return Helper.GetRandomItem(Types);
+            }
+        }
+
         public class Group
         {
             public Group(Dictionary<BotType, float> types)
             {
-                Types = types;
-
+                SubGroups = new List<SubGroup>();
                 HasBoss = false;
-                foreach (var pair in Types)
+
+                foreach (var pair in types)
                 {
                     if (BotInfos[pair.Key].IsBoss)
                         HasBoss = true;
+
                     TotalScore += pair.Value;
+
+                    SubGroups.Add(new SubGroup()
+                    {
+                        Types = new List<BotType>() { pair.Key },
+                        Weight = pair.Value,
+                    });
                 }
             }
 
-            public Dictionary<BotType, float> Types { get; private set; }
+            public Group(List<SubGroup> subGroups)
+            {
+                SubGroups = subGroups;
+                HasBoss = false;
+
+                foreach (var subGroup in subGroups)
+                {
+                    var hasBoss = subGroup.Types.Where(t => BotInfos[t].IsBoss).Any();
+                    if (hasBoss) HasBoss = true;
+
+                    TotalScore += subGroup.Weight;
+                }
+            }
+
+            public List<SubGroup> SubGroups { get; private set; }
             public float TotalScore { get; private set; }
             public bool HasBoss { get; private set; }
         }
@@ -4043,7 +4087,7 @@ namespace SFDScript.MoreBot
             {
                 new Group(new Dictionary<BotType, float>()
                 {
-                    { BotType.Kingpin, -1 },
+                    { BotType.Kingpin, -1f },
                     { BotType.Bodyguard, 1f },
                 }),
                 //new Group(new Dictionary<BotType, float>()
@@ -4076,11 +4120,16 @@ namespace SFDScript.MoreBot
                 {
                     { BotType.Police, 1f },
                 }),
-                //new Group(new Dictionary<BotType, float>()
-                //{
-                //    { BotType.Police, 0.8f },
-                //    { BotType.PoliceSWAT, 0.2f },
-                //}),
+                new Group(new Dictionary<BotType, float>()
+                {
+                    { BotType.Police, 0.7f },
+                    { BotType.PoliceSWAT, 0.3f },
+                }),
+                new Group(new Dictionary<BotType, float>()
+                {
+                    { BotType.Police, 0.2f },
+                    { BotType.PoliceSWAT, 0.8f },
+                }),
             }),
             //new GroupSet("PoliceSWAT", new Group(new Dictionary<BotType, float>()
             //{
@@ -4115,7 +4164,7 @@ namespace SFDScript.MoreBot
             {
                 new Group(new Dictionary<BotType, float>()
                 {
-                    { BotType.Zombie, 1.0f },
+                    { BotType.Zombie, 1f },
                 }),
             }),
         };
@@ -4130,47 +4179,101 @@ namespace SFDScript.MoreBot
 
         public class Bot
         {
-            public Bot(IPlayer player, BotType type)
+            public Bot(IPlayer player, BotType type, BotInfo info)
             {
                 Player = player;
                 Type = type;
+                Info = info;
 
                 SaySpawnLine();
             }
-            public IPlayer Player { get; set; }
-            public BotType Type { get; set; }
-            public BotInfo Info
-            {
-                get { return BotInfos[Type]; }
-            }
+            public IPlayer Player { get; private set; }
+            public BotType Type { get; private set; }
+            public BotInfo Info { get; private set; }
 
             public void SaySpawnLine()
             {
                 var spawnLine = Info.SpawnLine;
+                var spawnLineChance = Info.SpawnLineChance;
 
-                if (!string.IsNullOrWhiteSpace(spawnLine))
+                if (!string.IsNullOrWhiteSpace(spawnLine) && Helper.RandomBetween(0f, 1f) < spawnLineChance)
                     Game.CreateDialogue(spawnLine, new Color(128, 32, 32), Player, duration: 3000f);
             }
 
             public void SayDeathLine()
             {
                 var deathLine = Info.DeathLine;
+                var deathLineChance = Info.DeathLineChance;
 
-                if (!string.IsNullOrWhiteSpace(deathLine))
+                if (!string.IsNullOrWhiteSpace(deathLine) && Helper.RandomBetween(0f, 1f) < deathLineChance)
                     Game.CreateDialogue(deathLine, new Color(128, 32, 32), Player, duration: 3000f);
+            }
+
+            public void OnDeath()
+            {
+                if (Info.OnDeath != null)
+                    Info.OnDeath(this);
             }
         }
 
         public static class BotHelper
         {
+            private class PlayerCorpse
+            {
+                public IPlayer Body { get; set; }
+                public float DeathTime { get; set; }
+                public bool IsTurningIntoZombie { get; private set; }
+                public void TurnIntoZombie(IPlayer zombieBody)
+                {
+                    Body.Remove();
+                    Body = zombieBody;
+                    Body.SetBotBehaivorActive(false);
+                    Body.AddCommand(new PlayerCommand(PlayerCommandType.StartCrouch));
+                    IsTurningIntoZombie = true;
+                }
+                public bool IsZombie { get; set; }
+
+                public PlayerCorpse(IPlayer player)
+                {
+                    Body = player;
+                    DeathTime = Game.TotalElapsedGameTime;
+                    IsTurningIntoZombie = false;
+                    IsZombie = false;
+                }
+
+                private bool isKneeling;
+                private float kneelingTime;
+                public void UpdateTurningIntoZombieAnimation()
+                {
+                    if (!isKneeling)
+                    {
+                        kneelingTime = Game.TotalElapsedGameTime;
+                        isKneeling = true;
+                    }
+                    else
+                    {
+                        if (Helper.IsElapsed(kneelingTime, 700))
+                        {
+                            Body.AddCommand(new PlayerCommand(PlayerCommandType.StopCrouch));
+                            Body.SetBotBehaivorActive(true);
+                            IsZombie = true;
+                        }
+                    }
+                }
+            }
+
+            // Player corpses waiting to be transform into zombies
+            private static List<PlayerCorpse> m_corpsesKilledByZombies = new List<PlayerCorpse>();
             private static List<PlayerSpawner> m_playerSpawners;
             private static Events.PlayerDeathCallback m_playerDeathEvent = null;
+            private static Events.UpdateCallback m_updateEvent = null;
             private static Dictionary<int, Bot> m_bots = new Dictionary<int, Bot>();
 
             public static void Initialize()
             {
                 m_playerSpawners = GetEmptyPlayerSpawners();
                 m_playerDeathEvent = Events.PlayerDeathCallback.Start(OnPlayerDeath);
+                m_updateEvent = Events.UpdateCallback.Start(OnUpdate, 50);
 
                 var playerCount = Game.GetPlayers().Length;
                 var botCount = MAX_PLAYERS - playerCount;
@@ -4193,21 +4296,76 @@ namespace SFDScript.MoreBot
                 }
                 else
                 {
-                    //Create(BotType.Sniper);
-                    SpawnGroup("Santa", botSpawnCount);
+                    //var bot = SpawnBot(BotType.Thug);
 
-                    //var meleeBot = Create(BotType.DebugBot);
-                    //var meleeBehavior = BotBehaviors[BotAI.MeleeExpert];
-                    //meleeBot.Player.SetBotName("MeleeBot");
-                    //meleeBot.Player.SetBotBehaviorSet(meleeBehavior);
-                    //meleeBot.Player.SetTeam(PlayerTeam.Independent);
+                    //SpawnBot(BotType.Zombie);
+                    //SpawnBot(BotType.Zombie);
+                    //var bot = SpawnBot(BotType.Thug);
+                    //bot.Player.SetTeam(PlayerTeam.Independent);
+                    //bot.Player.GiveWeaponItem(WeaponItem.MOLOTOVS);
+                    SpawnGroup("Police", botSpawnCount);
+                }
+            }
 
-                    //var expertBot = Create(BotType.DebugBot);
-                    //var expertBehavior = BotBehaviors[BotAI.Expert];
-                    //expertBehavior.SearchForItems = false;
-                    //expertBot.Player.SetBotName("ExpertBot");
-                    //expertBot.Player.SetBotBehaviorSet(expertBehavior);
-                    //expertBot.Player.SetTeam(PlayerTeam.Independent);
+            public static void OnUpdate(float elapsed)
+            {
+                UpdateCorpses();
+            }
+
+            // Turning corpses killed by zombie into another one after some time
+            private static void UpdateCorpses()
+            {
+                var obsoleteCorpses = new List<PlayerCorpse>();
+
+                foreach (var corpse in m_corpsesKilledByZombies)
+                {
+                    try
+                    {
+                        if (Helper.IsElapsed(corpse.DeathTime, 10000)) // TODO: change back to 5000
+                        {
+                            if (!corpse.IsTurningIntoZombie)
+                            {
+                                var body = corpse.Body;
+                                if (body.IsRemoved || body.IsBurning) // TODO: turn into ZombieFlamer?
+                                {
+                                    obsoleteCorpses.Add(corpse);
+                                    continue;
+                                }
+
+                                var player = Game.CreatePlayer(body.GetWorldPosition());
+                                var zombie = SpawnBot(BotType.Zombie, player, equipWeapons: false, setProfile: false);
+                                var zombieBody = zombie.Player;
+
+                                var modifiers = body.GetModifiers();
+                                modifiers.CurrentHealth = modifiers.MaxHealth * 0.75f;
+                                modifiers.RunSpeedModifier = 0.75f;
+                                modifiers.SprintSpeedModifier = 0.75f;
+                                zombieBody.SetModifiers(modifiers);
+
+                                var profile = body.GetProfile();
+                                zombieBody.SetProfile(ToZombieProfile(profile));
+                                zombieBody.SetBotName(body.Name);
+                                corpse.TurnIntoZombie(zombieBody);
+                            }
+                            else
+                            {
+                                if (!corpse.IsZombie)
+                                    corpse.UpdateTurningIntoZombieAnimation();
+                                else
+                                    obsoleteCorpses.Add(corpse);
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        //System.Diagnostics.Debugger.Break();
+                        Game.CreateDialogue("Error #2", Game.GetPlayers()[0]);
+                    }
+                }
+
+                foreach (var corpse in obsoleteCorpses)
+                {
+                    m_corpsesKilledByZombies.Remove(corpse);
                 }
             }
 
@@ -4222,9 +4380,70 @@ namespace SFDScript.MoreBot
                         if (m_bots.TryGetValue(player.UniqueID, out enemy))
                         {
                             enemy.SayDeathLine();
+                            enemy.OnDeath();
+                        }
+                        break;
+
+                    default:
+                        if (IsKilledByZombie(player))
+                        {
+                            m_corpsesKilledByZombies.Add(new PlayerCorpse(player));
                         }
                         break;
                 }
+            }
+
+            private static IProfile ToZombieProfile(IProfile profile)
+            {
+                switch (profile.Skin.Name)
+                {
+                    case "Normal":
+                    case "Tattoos":
+                        profile.Skin = new IProfileClothingItem("Zombie", "Skin1", "ClothingLightGray", "");
+                        break;
+
+                    case "Normal_fem":
+                    case "Tattoos_fem":
+                        profile.Skin = new IProfileClothingItem("Zombie_fem", "Skin1", "ClothingLightGray", "");
+                        break;
+
+                    case "BearSkin":
+                        profile.Skin = new IProfileClothingItem("FrankenbearSkin", "ClothingDarkGray", "ClothingLightBlue", "");
+                        break;
+                }
+
+                return profile;
+            }
+
+            private static bool IsKilledByZombie(IPlayer target)
+            {
+                foreach (var bot in m_bots.Values)
+                {
+                    if (!IsZombie(bot.Type)) continue;
+
+                    var zombie = bot.Player;
+
+                    if (zombie.IsMeleeAttacking || zombie.IsJumpAttacking || zombie.IsJumpKicking || zombie.IsKicking)
+                    {
+                        if (!target.IsRemoved && target.IsDead
+                        && (target.GetTeam() != zombie.GetTeam()) // Zombie is always in the same team so no need to check if Independent
+                        && target.IsInputEnabled
+                        && 25 >= Math.Abs(zombie.GetWorldPosition().X - target.GetWorldPosition().X)
+                        && 25 >= Math.Abs(zombie.GetWorldPosition().Y - target.GetWorldPosition().Y))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            private static bool IsZombie(BotType type)
+            {
+                var typeStr = Enum.GetName(typeof(BotType), type);
+
+                return typeStr.StartsWith("Zombie")
+                    || typeStr == "BaronVonHauptstein";
             }
 
             private static List<PlayerSpawner> GetEmptyPlayerSpawners()
@@ -4258,8 +4477,9 @@ namespace SFDScript.MoreBot
             {
                 var groupSet = BotGroupSets.Where(g => g.Name == groupName).FirstOrDefault();
                 if (groupSet == null) return;
+                var group = Helper.GetRandomItem(groupSet.Groups);
 
-                SpawnGroup(groupSet.Groups[0], botCount);
+                SpawnGroup(group, botCount);
             }
 
             private static void SpawnGroup(Group group, int groupCount)
@@ -4267,18 +4487,18 @@ namespace SFDScript.MoreBot
                 var typeCount = 0;
                 var groupCountRemaining = groupCount;
 
-                foreach (var type in group.Types)
+                foreach (var subGroup in group.SubGroups)
                 {
                     typeCount++;
 
-                    var botType = type.Key;
-                    var weight = type.Value;
+                    var botType = subGroup.GetRandomType();
+                    var weight = subGroup.Weight;
                     var share = weight / group.TotalScore;
                     var botCount = groupCount * share;
 
                     if (!BotInfos[botType].IsBoss)
                     {
-                        while (groupCountRemaining > 0 && (botCount > 0 || typeCount == group.Types.Count))
+                        while (groupCountRemaining > 0 && (botCount > 0 || typeCount == group.SubGroups.Count))
                         {
                             SpawnBot(botType);
                             groupCountRemaining--;
@@ -4327,27 +4547,37 @@ namespace SFDScript.MoreBot
                 return player;
             }
 
-            private static Bot SpawnBot(BotType botType)
+            private static Bot SpawnBot(
+                BotType botType,
+                IPlayer player = null,
+                bool equipWeapons = true,
+                bool setProfile = true)
             {
                 var info = BotInfos[botType];
                 var weaponSet = WeaponSet.Empty;
 
-                if (Rnd.Next(100) / 100.0f <= info.EquipWeaponChance) // Next(100) -> 0-99
-                    weaponSet = Helper.GetRandomItem(BotWeapons[botType]);
+                if (equipWeapons)
+                {
+                    if (Helper.RandomBetween(0f, 1f) < info.EquipWeaponChance)
+                        weaponSet = Helper.GetRandomItem(BotWeapons[botType]);
+                }
 
-                var player = SpawnPlayer(info, weaponSet);
+                if (player == null) player = SpawnPlayer(info, weaponSet);
                 if (player == null) return null;
 
-                var profile = Helper.GetRandomItem(BotProfiles[botType]);
+                if (setProfile)
+                {
+                    var profile = Helper.GetRandomItem(BotProfiles[botType]);
+                    player.SetProfile(profile);
+                    player.SetBotName(profile.Name);
+                }
 
-                player.SetProfile(profile);
                 player.SetModifiers(info.Modifiers);
                 player.SetBotBehaviorSet(BotBehaviors[info.AIType]);
                 player.SetBotBehaviorActive(true);
                 player.SetTeam(PlayerTeam.Team4);
-                player.SetBotName(profile.Name);
 
-                m_bots.Add(player.UniqueID, new Bot(player, botType));
+                m_bots.Add(player.UniqueID, new Bot(player, botType, info));
                 return m_bots[player.UniqueID];
             }
         }
@@ -4364,5 +4594,10 @@ namespace SFDScript.MoreBot
 // funnyman
 // Kriegbär
 // mecha
+// Flamethrower boss -> Explose with fire on death
+
+// Group
+// mecha/fritzliebe
 
 // Meatgrider block?
+// Multiple spawn|dead lines?
