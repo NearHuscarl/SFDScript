@@ -26,7 +26,7 @@
                 modifiers.MaxHealth = 5000;
                 modifiers.CurrentHealth = 5000;
                 modifiers.InfiniteAmmo = 1;
-                modifiers.MeleeStunImmunity = 1;
+                //modifiers.MeleeStunImmunity = 1;
 
                 player.SetModifiers(modifiers);
                 player.GiveWeaponItem(WeaponItem.KATANA);
@@ -94,6 +94,8 @@
 
         public enum BotType
         {
+            None,
+
             // Tier1: Rooftop Retribution
             // Tier2: Canals Carnage
             AssassinMelee,
@@ -3501,6 +3503,7 @@
 
             ZombieSlow,
             ZombieFast,
+            ZombieHulk,
         }
 
         private static Dictionary<BotAI, BotBehaviorSet> BotBehaviors = new Dictionary<BotAI, BotBehaviorSet>()
@@ -3546,6 +3549,9 @@
             },
             {
                 BotAI.ZombieFast, GetBotBehaviorSet(BotAI.ZombieFast)
+            },
+            {
+                BotAI.ZombieHulk, GetBotBehaviorSet(BotAI.ZombieHulk)
             },
         };
 
@@ -3691,6 +3697,20 @@
 
                 case BotAI.ZombieFast:
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.ZombieB);
+                    break;
+
+                case BotAI.ZombieHulk:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Hulk);
+                    botBehaviorSet.AttackDeadEnemies = true;
+                    botBehaviorSet.SearchForItems = false;
+                    botBehaviorSet.MeleeWeaponUsage = false;
+                    botBehaviorSet.RangedWeaponUsage = false;
+                    botBehaviorSet.PowerupUsage = false;
+                    botBehaviorSet.ChokePointValue = 32f;
+                    botBehaviorSet.ChokePointPlayerCountThreshold = 5;
+                    botBehaviorSet.DefensiveRollFireLevel = 0.1f;
+                    botBehaviorSet.OffensiveDiveLevel = 0f;
+                    botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0f;
                     break;
 
                 default:
@@ -3857,7 +3877,7 @@
         };
         private static BotInfo ZombieBruiserInfo = new BotInfo()
         {
-            AIType = BotAI.ZombieSlow,
+            AIType = BotAI.ZombieHulk,
             Modifiers = new PlayerModifiers()
             {
                 MaxHealth = 125,
@@ -3885,6 +3905,24 @@
             },
             SpawnLine = "Brainzz",
             SpawnLineChance = 0.1f,
+        };
+        private static BotInfo ZombieFlamerInfo = new BotInfo()
+        {
+            AIType = BotAI.ZombieFast,
+            OnSpawn = (Bot bot) =>
+            {
+                bot.Player.SetMaxFire();
+            },
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 35,
+                CurrentHealth = 35,
+                FireDamageTakenModifier = 0.01f,
+                MeleeDamageDealtModifier = 0.5f,
+                RunSpeedModifier = 1.15f,
+                SprintSpeedModifier = 1.15f,
+                SizeModifier = 0.95f,
+            },
         };
         // Bosses
         private static BotInfo DemotionalistInfo = new BotInfo()
@@ -4012,10 +4050,10 @@
             { BotType.Zombie, ZombieInfo },
             { BotType.ZombieBruiser, ZombieBruiserInfo },
             { BotType.ZombieChild, ZombieChildInfo },
+            { BotType.ZombieFlamer, ZombieFlamerInfo },
 
             { BotType.ZombieAgent, ZombieInfo },
             //{ BotType.ZombieFighter, ZombieInfo },
-            { BotType.ZombieFlamer, ZombieInfo },
             { BotType.ZombieGangster, ZombieInfo },
             { BotType.ZombieNinja, ZombieInfo },
             { BotType.ZombiePolice, ZombieInfo },
@@ -4067,6 +4105,10 @@
 
         public class Group
         {
+            public List<SubGroup> SubGroups { get; private set; }
+            public float TotalScore { get; private set; }
+            public bool HasBoss { get; private set; }
+
             public Group(List<SubGroup> subGroups)
             {
                 SubGroups = subGroups;
@@ -4081,9 +4123,36 @@
                 }
             }
 
-            public List<SubGroup> SubGroups { get; private set; }
-            public float TotalScore { get; private set; }
-            public bool HasBoss { get; private set; }
+            public void Spawn(int groupCount)
+            {
+                var subGroupCount = 0;
+                var groupCountRemaining = groupCount;
+
+                foreach (var subGroup in SubGroups)
+                {
+                    subGroupCount++;
+
+                    var weight = subGroup.Weight;
+                    var share = weight / TotalScore;
+                    var botCount = groupCount * share;
+
+                    if (!subGroup.HasBoss)
+                    {
+                        while (groupCountRemaining > 0 && (botCount > 0 || subGroupCount == SubGroups.Count))
+                        {
+                            var botType = subGroup.GetRandomType();
+                            BotHelper.SpawnBot(botType);
+                            groupCountRemaining--;
+                            botCount--;
+                        }
+                    }
+                    else
+                    {
+                        var botType = subGroup.GetRandomType();
+                        BotHelper.SpawnBot(botType);
+                    }
+                }
+            }
         }
 
         public class GroupSet
@@ -4298,6 +4367,16 @@
                     new SubGroup(CommonZombieTypes, 0.6f),
                     new SubGroup(BotType.ZombieChild, 0.4f),
                 }),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(CommonZombieTypes, 0.8f),
+                    new SubGroup(BotType.ZombieFlamer, 0.2f),
+                }),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(CommonZombieTypes, 0.6f),
+                    new SubGroup(BotType.ZombieFlamer, 0.4f),
+                }),
             }),
         };
 
@@ -4316,6 +4395,9 @@
                 Player = player;
                 Type = type;
                 Info = info;
+
+                if (Info.OnSpawn != null)
+                    Info.OnSpawn(this);
 
                 SaySpawnLine();
             }
@@ -4363,7 +4445,7 @@
                     Body.AddCommand(new PlayerCommand(PlayerCommandType.StartCrouch));
                     IsTurningIntoZombie = true;
                 }
-                public bool IsZombie { get; set; }
+                public bool IsZombie { get; private set; }
 
                 public PlayerCorpse(IPlayer player)
                 {
@@ -4417,25 +4499,34 @@
                     {
                         var bossGroupSets = BotGroupSets.Select(s => s).Where(s => s.HasBoss).ToList();
                         var bossGroupSet = Helper.GetRandomItem(bossGroupSets);
-                        SpawnGroup(Helper.GetRandomItem(bossGroupSet.Groups), botSpawnCount);
+                        var group = Helper.GetRandomItem(bossGroupSet.Groups);
+                        group.Spawn(botSpawnCount);
                     }
                     else
                     {
                         var groupSet = Helper.GetRandomItem(BotGroupSets);
                         var group = Helper.GetRandomItem(groupSet.Groups);
-                        SpawnGroup(group, botSpawnCount);
+                        group.Spawn(botSpawnCount);
                     }
                 }
                 else
                 {
                     //var bot = SpawnBot(BotType.Thug);
+                    Bot bot;
+                    bot = SpawnBot(BotType.Zombie);
+                    var mod = bot.Info.Modifiers;
+                    mod.MeleeDamageDealtModifier = 2.0f;
+                    bot.Player.SetModifiers(mod);
+                    bot = SpawnBot(BotType.Zombie);
+                    bot.Player.SetModifiers(mod);
+                    bot = SpawnBot(BotType.ThugHulk);
+                    bot.Player.SetTeam(PlayerTeam.Independent);
+                    bot = SpawnBot(BotType.Cowboy);
+                    bot.Player.SetTeam(PlayerTeam.Independent);
+                    bot = SpawnBot(BotType.Police);
+                    bot.Player.SetTeam(PlayerTeam.Independent);
 
-                    //SpawnBot(BotType.Zombie);
-                    //SpawnBot(BotType.Zombie);
-                    //var bot = SpawnBot(BotType.Thug);
-                    //bot.Player.SetTeam(PlayerTeam.Independent);
-                    //bot.Player.GiveWeaponItem(WeaponItem.MOLOTOVS);
-                    SpawnGroup("Zombie", botSpawnCount);
+                    //SpawnGroup("Zombie", botSpawnCount);
                 }
             }
 
@@ -4449,7 +4540,7 @@
             {
                 var obsoleteCorpses = new List<PlayerCorpse>();
 
-                // loop the copied list since the original list can be modified when OnPlayerDeath() called
+                // loop the copied list since the original one can be modified when OnPlayerDeath() is called
                 foreach (var corpse in m_corpsesKilledByZombies.ToList())
                 {
                     if (Helper.IsElapsed(corpse.DeathTime, 5000))
@@ -4464,13 +4555,12 @@
                             }
 
                             var player = Game.CreatePlayer(body.GetWorldPosition());
-                            var zombie = SpawnBot(BotType.Zombie, player, equipWeapons: false, setProfile: false);
+                            var botType = GetBotType(body);
+                            var zombie = SpawnBot(GetZombieType(botType), player, equipWeapons: false, setProfile: false);
                             var zombieBody = zombie.Player;
 
                             var modifiers = body.GetModifiers();
                             modifiers.CurrentHealth = modifiers.MaxHealth * 0.75f;
-                            modifiers.RunSpeedModifier = 0.75f;
-                            modifiers.SprintSpeedModifier = 0.75f;
                             zombieBody.SetModifiers(modifiers);
 
                             var profile = body.GetProfile();
@@ -4516,6 +4606,32 @@
                         }
                         break;
                 }
+            }
+
+            private static BotType GetBotType(IPlayer player)
+            {
+                foreach (var bot in m_bots.Values)
+                {
+                    if (bot.Player.UniqueID == player.UniqueID)
+                        return bot.Type;
+                }
+                return BotType.None;
+            }
+
+            private static BotType GetZombieType(BotType botType)
+            {
+                if (botType == BotType.None) return BotType.Zombie;
+                BotAI aiType = BotInfos[botType].AIType;
+
+                if (aiType == BotAI.Hulk)
+                    return BotType.ZombieBruiser;
+
+                var modifiers = BotInfos[botType].Modifiers;
+
+                if (modifiers.SprintSpeedModifier >= 1.1f)
+                    return BotType.ZombieChild;
+
+                return BotType.Zombie;
             }
 
             private static IProfile ToZombieProfile(IProfile profile)
@@ -4598,44 +4714,18 @@
             }
 
             // Spawn exact group for debugging purpose. Usually you random the group before every match
-            private static void SpawnGroup(string groupName, int botCount)
+            private static void SpawnGroup(string groupSetName, int botCount, int groupIndex = -1)
             {
-                var groupSet = BotGroupSets.Where(g => g.Name == groupName).FirstOrDefault();
+                var groupSet = BotGroupSets.Where(g => g.Name == groupSetName).FirstOrDefault();
                 if (groupSet == null) return;
-                var group = Helper.GetRandomItem(groupSet.Groups);
 
-                SpawnGroup(group, botCount);
-            }
+                Group group = null;
+                if (groupIndex == -1)
+                    group = Helper.GetRandomItem(groupSet.Groups);
+                else
+                    group = groupSet.Groups[groupIndex];
 
-            private static void SpawnGroup(Group group, int groupCount)
-            {
-                var typeCount = 0;
-                var groupCountRemaining = groupCount;
-
-                foreach (var subGroup in group.SubGroups)
-                {
-                    typeCount++;
-
-                    var weight = subGroup.Weight;
-                    var share = weight / group.TotalScore;
-                    var botCount = groupCount * share;
-
-                    if (!subGroup.HasBoss)
-                    {
-                        while (groupCountRemaining > 0 && (botCount > 0 || typeCount == group.SubGroups.Count))
-                        {
-                            var botType = subGroup.GetRandomType();
-                            SpawnBot(botType);
-                            groupCountRemaining--;
-                            botCount--;
-                        }
-                    }
-                    else
-                    {
-                        var botType = subGroup.GetRandomType();
-                        SpawnBot(botType);
-                    }
-                }
+                group.Spawn(botCount);
             }
 
             private static IPlayer SpawnPlayer(BotInfo botInfo, WeaponSet weaponSet)
@@ -4675,7 +4765,7 @@
                 return player;
             }
 
-            private static Bot SpawnBot(
+            public static Bot SpawnBot(
                 BotType botType,
                 IPlayer player = null,
                 bool equipWeapons = true,
