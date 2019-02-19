@@ -3362,6 +3362,19 @@
                 }
             },
             {
+                BotType.ZombiePolice, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.BATON,
+                    },
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.REVOLVER,
+                    },
+                }
+            },
+            {
                 BotType.ZombiePrussian, new List<WeaponSet>()
                 {
                     new WeaponSet()
@@ -3531,6 +3544,9 @@
             {
                 BotAI.ZombieSlow, GetBotBehaviorSet(BotAI.ZombieSlow)
             },
+            {
+                BotAI.ZombieFast, GetBotBehaviorSet(BotAI.ZombieFast)
+            },
         };
 
         private static BotBehaviorSet GetBotBehaviorSet(BotAI botAI)
@@ -3650,7 +3666,7 @@
                 case BotAI.Grunt:
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Grunt);
 
-                    // Taken from PredefinedAIType.BotB, PredefinedAIType.Grunt is too slow
+                    // Taken from PredefinedAIType.BotB, PredefinedAIType.Grunt is too slow in shooting
                     botBehaviorSet.RangedWeaponAimShootDelayMin = 200f;
                     botBehaviorSet.RangedWeaponAimShootDelayMax = 600f;
                     botBehaviorSet.RangedWeaponHipFireAimShootDelayMin = 200f;
@@ -3827,7 +3843,6 @@
         };
         private static BotInfo ZombieInfo = new BotInfo()
         {
-            EquipWeaponChance = 0.0f,
             AIType = BotAI.ZombieSlow,
             Modifiers = new PlayerModifiers()
             {
@@ -3835,8 +3850,38 @@
                 CurrentHealth = 60,
                 MeleeDamageDealtModifier = 0.75f,
                 RunSpeedModifier = 0.75f,
-                SprintSpeedModifier = 0.75f,
                 SizeModifier = 0.95f,
+            },
+            SpawnLine = "Brainzz",
+            SpawnLineChance = 0.1f,
+        };
+        private static BotInfo ZombieBruiserInfo = new BotInfo()
+        {
+            AIType = BotAI.ZombieSlow,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 125,
+                CurrentHealth = 125,
+                MeleeDamageDealtModifier = 1.1f,
+                MeleeForceModifier = 1.4f,
+                RunSpeedModifier = 0.75f,
+                SprintSpeedModifier = 0.75f,
+                SizeModifier = 1.2f,
+            },
+            SpawnLine = "Brainzz",
+            SpawnLineChance = 0.1f,
+        };
+        private static BotInfo ZombieChildInfo = new BotInfo()
+        {
+            AIType = BotAI.ZombieFast,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 35,
+                CurrentHealth = 35,
+                MeleeDamageDealtModifier = 0.75f,
+                RunSpeedModifier = 1.15f,
+                SprintSpeedModifier = 1.15f,
+                SizeModifier = 0.85f,
             },
             SpawnLine = "Brainzz",
             SpawnLineChance = 0.1f,
@@ -3892,6 +3937,19 @@
             IsBoss = true,
             InitialWeaponDrawn = WeaponItemType.Melee,
         };
+        private static BotInfo MetroCopBossInfo = new BotInfo()
+        {
+            AIType = BotAI.Expert,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 110,
+                CurrentHealth = 110,
+                RunSpeedModifier = 1.1f,
+                SprintSpeedModifier = 1.1f,
+                SizeModifier = 0.95f,
+            },
+            IsBoss = true,
+        };
         private static BotInfo TeddybearInfo = new BotInfo()
         {
             AIType = BotAI.Hulk,
@@ -3940,6 +3998,7 @@
             { BotType.Elf, GruntWithWeaponsInfo },
             { BotType.Kingpin, KingpinInfo },
             { BotType.MetroCop, GruntWithWeaponsInfo },
+            { BotType.MetroCop2, MetroCopBossInfo },
             { BotType.Meatgrinder, MeatgrinderInfo },
             { BotType.NaziScientist, GruntInfo },
             { BotType.Police, GruntWithWeaponsInfo },
@@ -3949,7 +4008,21 @@
             { BotType.Santa, SantaInfo },
             { BotType.Thug, GruntInfo },
             { BotType.ThugHulk, HulkInfo },
+
             { BotType.Zombie, ZombieInfo },
+            { BotType.ZombieBruiser, ZombieBruiserInfo },
+            { BotType.ZombieChild, ZombieChildInfo },
+
+            { BotType.ZombieAgent, ZombieInfo },
+            //{ BotType.ZombieFighter, ZombieInfo },
+            { BotType.ZombieFlamer, ZombieInfo },
+            { BotType.ZombieGangster, ZombieInfo },
+            { BotType.ZombieNinja, ZombieInfo },
+            { BotType.ZombiePolice, ZombieInfo },
+            { BotType.ZombiePrussian, ZombieInfo },
+            { BotType.ZombieSoldier, ZombieInfo },
+            { BotType.ZombieThug, ZombieInfo },
+            { BotType.ZombieWorker, ZombieInfo },
         };
 
         #endregion
@@ -3958,8 +4031,34 @@
 
         public class SubGroup
         {
-            public List<BotType> Types { get; set; }
+            public SubGroup() { }
+            public SubGroup(List<BotType> types, float weight)
+            {
+                Types = types;
+                Weight = weight;
+            }
+            public SubGroup(BotType type, float weight)
+            {
+                Types = new List<BotType>() { type };
+                Weight = weight;
+            }
+            public SubGroup(BotType type)
+            {
+                Types = new List<BotType>() { type };
+                Weight = -1f;
+            }
+            private List<BotType> types;
+            public List<BotType> Types
+            {
+                get { return types; }
+                set
+                {
+                    types = value;
+                    HasBoss = types.Where(t => BotInfos[t].IsBoss).Any();
+                }
+            }
             public float Weight { get; set; }
+            public bool HasBoss { get; private set; }
             public BotType GetRandomType()
             {
                 return Helper.GetRandomItem(Types);
@@ -3968,26 +4067,6 @@
 
         public class Group
         {
-            public Group(Dictionary<BotType, float> types)
-            {
-                SubGroups = new List<SubGroup>();
-                HasBoss = false;
-
-                foreach (var pair in types)
-                {
-                    if (BotInfos[pair.Key].IsBoss)
-                        HasBoss = true;
-
-                    TotalScore += pair.Value;
-
-                    SubGroups.Add(new SubGroup()
-                    {
-                        Types = new List<BotType>() { pair.Key },
-                        Weight = pair.Value,
-                    });
-                }
-            }
-
             public Group(List<SubGroup> subGroups)
             {
                 SubGroups = subGroups;
@@ -4029,61 +4108,83 @@
             }
         }
 
+        private static List<BotType> CommonZombieTypes = new List<BotType>()
+        {
+            BotType.Zombie,
+            BotType.ZombieAgent,
+            BotType.ZombieFlamer,
+            BotType.ZombieGangster,
+            BotType.ZombieNinja,
+            BotType.ZombiePolice,
+            BotType.ZombieSoldier,
+            BotType.ZombieThug,
+            BotType.ZombieWorker,
+        };
+
         private static List<GroupSet> BotGroupSets = new List<GroupSet>()
         {
             //new GroupSet("Agent", new Group(new Dictionary<BotType, float>()
             //{
             //    { BotType.Agent, 1.0f },
             //})),
-            new GroupSet("Bandido", new Group(new Dictionary<BotType, float>()
+            new GroupSet("Bandido", new List<Group>()
             {
-                { BotType.Bandido, 1f },
-            })),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.Bandido, 1f),
+                }),
+            }),
             new GroupSet("Biker", new List<Group>()
             {
-                new Group(new Dictionary<BotType, float>()
+                new Group(new List<SubGroup>()
                 {
-                    { BotType.Biker, 1f },
+                    new SubGroup(BotType.Biker, 1f),
                 }),
-                new Group(new Dictionary<BotType, float>()
+                new Group(new List<SubGroup>()
                 {
-                    { BotType.Biker, 0.6f },
-                    { BotType.BikerHulk, 0.4f },
+                    new SubGroup(BotType.Biker, 0.6f),
+                    new SubGroup(BotType.BikerHulk, 0.4f),
                 }),
             }),
             new GroupSet("Clown", new List<Group>()
             {
-                new Group(new Dictionary<BotType, float>()
+                new Group(new List<SubGroup>()
                 {
-                    { BotType.ClownCowboy, 0.5f },
-                    { BotType.ClownGangster, 0.25f },
-                    { BotType.ClownBoxer, 0.25f },
+                    new SubGroup(BotType.ClownCowboy, 0.5f),
+                    new SubGroup(BotType.ClownGangster, 0.25f),
+                    new SubGroup(BotType.ClownBoxer, 0.25f),
                 }),
-                new Group(new Dictionary<BotType, float>()
+                new Group(new List<SubGroup>()
                 {
-                    { BotType.ClownCowboy, 0.6f },
-                    { BotType.ClownGangster, 0.4f },
+                    new SubGroup(BotType.ClownCowboy, 0.6f),
+                    new SubGroup(BotType.ClownGangster, 0.4f),
                 }),
-                new Group(new Dictionary<BotType, float>()
+                new Group(new List<SubGroup>()
                 {
-                    { BotType.ClownBoxer, 0.7f },
-                    { BotType.ClownGangster, 0.3f },
+                    new SubGroup(BotType.ClownBoxer, 0.7f),
+                    new SubGroup(BotType.ClownGangster, 0.3f),
                 }),
             }),
-            new GroupSet("Cowboy", new Group(new Dictionary<BotType, float>()
+            new GroupSet("Cowboy", new List<Group>()
             {
-                { BotType.Cowboy, 1f },
-            })),
-            new GroupSet("Demolitionist", new Group(new Dictionary<BotType, float>()
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.Cowboy, 1f),
+                }),
+            }),
+            new GroupSet("Demolitionist", new List<Group>()
             {
-                { BotType.Demolitionist, 1f },
-            })),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.Demolitionist),
+                }),
+            }),
             new GroupSet("Gangster", new List<Group>()
             {
-                new Group(new Dictionary<BotType, float>()
+                new Group(new List<SubGroup>()
                 {
-                    { BotType.Kingpin, -1f },
-                    { BotType.Bodyguard, 1f },
+                    new SubGroup(BotType.Kingpin),
+                    new SubGroup(BotType.Bodyguard, 1f),
                 }),
                 //new Group(new Dictionary<BotType, float>()
                 //{
@@ -4093,73 +4194,109 @@
                 //    { BotType.GangsterHulk, 1f },
                 //}),
             }),
-            new GroupSet("Meatgrinder", new Group(new Dictionary<BotType, float>()
+            new GroupSet("Meatgrinder", new List<Group>()
             {
-                { BotType.Meatgrinder, 1f },
-            })),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.Meatgrinder),
+                }),
+            }),
             new GroupSet("MetroCop", new List<Group>()
             {
-                new Group(new Dictionary<BotType, float>()
+                new Group(new List<SubGroup>()
                 {
-                    { BotType.MetroCop, 1f },
+                    new SubGroup(BotType.MetroCop, 1f),
                 }),
-                //new Group(new Dictionary<BotType, float>()
-                //{
-                //    { BotType.MetroCop, 0.9f },
-                //    { BotType.MetroCop2, 0.1f },
-                //}),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.MetroCop2),
+                    new SubGroup(BotType.MetroCop, 1f),
+                }),
             }),
             new GroupSet("Police", new List<Group>()
             {
-                new Group(new Dictionary<BotType, float>()
+                new Group(new List<SubGroup>()
                 {
-                    { BotType.Police, 1f },
+                    new SubGroup(BotType.Police, 1f),
                 }),
-                new Group(new Dictionary<BotType, float>()
+                new Group(new List<SubGroup>()
                 {
-                    { BotType.Police, 0.7f },
-                    { BotType.PoliceSWAT, 0.3f },
+                    new SubGroup(BotType.Police, 0.7f),
+                    new SubGroup(BotType.PoliceSWAT, 0.3f),
                 }),
-                new Group(new Dictionary<BotType, float>()
+                new Group(new List<SubGroup>()
                 {
-                    { BotType.Police, 0.2f },
-                    { BotType.PoliceSWAT, 0.8f },
+                    new SubGroup(BotType.PoliceSWAT, 0.8f),
+                    new SubGroup(BotType.Police, 0.2f),
                 }),
             }),
-            //new GroupSet("PoliceSWAT", new Group(new Dictionary<BotType, float>()
-            //{
-            //    { BotType.PoliceSWAT, 1f },
-            //})),
-            new GroupSet("Santa", new Group(new Dictionary<BotType, float>()
+            new GroupSet("PoliceSWAT", new List<Group>()
             {
-                { BotType.Santa, -1f },
-                { BotType.Elf, 1f },
-            })),
-            new GroupSet("Sniper", new Group(new Dictionary<BotType, float>()
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.PoliceSWAT, 1f),
+                }),
+            }),
+            new GroupSet("Santa", new List<Group>()
             {
-                { BotType.Sniper, 1f },
-            })),
-            new GroupSet("Teddybear", new Group(new Dictionary<BotType, float>()
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.Santa),
+                    new SubGroup(BotType.Elf, 1f),
+                }),
+            }),
+            new GroupSet("Sniper", new List<Group>()
             {
-                { BotType.Teddybear, 1f },
-            })),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.Sniper, 1f),
+                }),
+            }),
+            new GroupSet("Teddybear", new List<Group>()
+            {
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.Teddybear),
+                }),
+            }),
             new GroupSet("Thug", new List<Group>()
             {
-                new Group(new Dictionary<BotType, float>()
+                new Group(new List<SubGroup>()
                 {
-                    { BotType.Thug, 1f },
+                    new SubGroup(BotType.Thug, 1f),
                 }),
-                new Group(new Dictionary<BotType, float>()
+                new Group(new List<SubGroup>()
                 {
-                    { BotType.Thug, 0.6f },
-                    { BotType.ThugHulk, 0.4f },
+                    new SubGroup(BotType.Thug, 0.6f),
+                    new SubGroup(BotType.ThugHulk, 0.4f),
                 }),
             }),
-            new GroupSet("Zombie", new List<Group>() // TODO
+            new GroupSet("Zombie", new List<Group>()
             {
-                new Group(new Dictionary<BotType, float>()
+                new Group(new List<SubGroup>()
                 {
-                    { BotType.Zombie, 1f },
+                    new SubGroup(BotType.Zombie, 0.4f),
+                    new SubGroup(CommonZombieTypes, 0.6f),
+                }),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(CommonZombieTypes, 0.8f),
+                    new SubGroup(BotType.ZombieBruiser, 0.2f),
+                }),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(CommonZombieTypes, 0.6f),
+                    new SubGroup(BotType.ZombieBruiser, 0.4f),
+                }),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(CommonZombieTypes, 0.8f),
+                    new SubGroup(BotType.ZombieChild, 0.2f),
+                }),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(CommonZombieTypes, 0.6f),
+                    new SubGroup(BotType.ZombieChild, 0.4f),
                 }),
             }),
         };
@@ -4298,7 +4435,7 @@
                     //var bot = SpawnBot(BotType.Thug);
                     //bot.Player.SetTeam(PlayerTeam.Independent);
                     //bot.Player.GiveWeaponItem(WeaponItem.MOLOTOVS);
-                    SpawnGroup("Police", botSpawnCount);
+                    SpawnGroup("Zombie", botSpawnCount);
                 }
             }
 
@@ -4312,49 +4449,42 @@
             {
                 var obsoleteCorpses = new List<PlayerCorpse>();
 
-                foreach (var corpse in m_corpsesKilledByZombies)
+                // loop the copied list since the original list can be modified when OnPlayerDeath() called
+                foreach (var corpse in m_corpsesKilledByZombies.ToList())
                 {
-                    try
+                    if (Helper.IsElapsed(corpse.DeathTime, 5000))
                     {
-                        if (Helper.IsElapsed(corpse.DeathTime, 10000)) // TODO: change back to 5000
+                        if (!corpse.IsTurningIntoZombie)
                         {
-                            if (!corpse.IsTurningIntoZombie)
+                            var body = corpse.Body;
+                            if (body.IsRemoved || body.IsBurning) // TODO: turn into ZombieFlamer?
                             {
-                                var body = corpse.Body;
-                                if (body.IsRemoved || body.IsBurning) // TODO: turn into ZombieFlamer?
-                                {
-                                    obsoleteCorpses.Add(corpse);
-                                    continue;
-                                }
-
-                                var player = Game.CreatePlayer(body.GetWorldPosition());
-                                var zombie = SpawnBot(BotType.Zombie, player, equipWeapons: false, setProfile: false);
-                                var zombieBody = zombie.Player;
-
-                                var modifiers = body.GetModifiers();
-                                modifiers.CurrentHealth = modifiers.MaxHealth * 0.75f;
-                                modifiers.RunSpeedModifier = 0.75f;
-                                modifiers.SprintSpeedModifier = 0.75f;
-                                zombieBody.SetModifiers(modifiers);
-
-                                var profile = body.GetProfile();
-                                zombieBody.SetProfile(ToZombieProfile(profile));
-                                zombieBody.SetBotName(body.Name);
-                                corpse.TurnIntoZombie(zombieBody);
+                                obsoleteCorpses.Add(corpse);
+                                continue;
                             }
-                            else
-                            {
-                                if (!corpse.IsZombie)
-                                    corpse.UpdateTurningIntoZombieAnimation();
-                                else
-                                    obsoleteCorpses.Add(corpse);
-                            }
+
+                            var player = Game.CreatePlayer(body.GetWorldPosition());
+                            var zombie = SpawnBot(BotType.Zombie, player, equipWeapons: false, setProfile: false);
+                            var zombieBody = zombie.Player;
+
+                            var modifiers = body.GetModifiers();
+                            modifiers.CurrentHealth = modifiers.MaxHealth * 0.75f;
+                            modifiers.RunSpeedModifier = 0.75f;
+                            modifiers.SprintSpeedModifier = 0.75f;
+                            zombieBody.SetModifiers(modifiers);
+
+                            var profile = body.GetProfile();
+                            zombieBody.SetProfile(ToZombieProfile(profile));
+                            zombieBody.SetBotName(body.Name);
+                            corpse.TurnIntoZombie(zombieBody);
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        //System.Diagnostics.Debugger.Break();
-                        Game.CreateDialogue("Error #2", Game.GetPlayers()[0]);
+                        else
+                        {
+                            if (!corpse.IsZombie)
+                                corpse.UpdateTurningIntoZombieAnimation();
+                            else
+                                obsoleteCorpses.Add(corpse);
+                        }
                     }
                 }
 
@@ -4486,22 +4616,25 @@
                 {
                     typeCount++;
 
-                    var botType = subGroup.GetRandomType();
                     var weight = subGroup.Weight;
                     var share = weight / group.TotalScore;
                     var botCount = groupCount * share;
 
-                    if (!BotInfos[botType].IsBoss)
+                    if (!subGroup.HasBoss)
                     {
                         while (groupCountRemaining > 0 && (botCount > 0 || typeCount == group.SubGroups.Count))
                         {
+                            var botType = subGroup.GetRandomType();
                             SpawnBot(botType);
                             groupCountRemaining--;
                             botCount--;
                         }
                     }
                     else
+                    {
+                        var botType = subGroup.GetRandomType();
                         SpawnBot(botType);
+                    }
                 }
             }
 
