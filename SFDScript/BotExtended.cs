@@ -185,6 +185,7 @@ namespace SFDScript.MoreBot
             ZombieAgent,
             ZombieBruiser,
             ZombieChild,
+            ZombieFat,
             ZombieFighter,
             ZombieFlamer,
             // Tier1: Chemical Crisis
@@ -2246,6 +2247,110 @@ namespace SFDScript.MoreBot
                 Waist = null,
             },
         };
+        private static List<IProfile> ZombieFatProfiles = new List<IProfile>()
+        {
+            new IProfile()
+            {
+                Name = "Fat Zombie",
+                Accesory = null,
+                ChestOver = new IProfileClothingItem("ShoulderHolster", "ClothingRed", "ClothingLightGray", ""),
+                ChestUnder = null,
+                Feet = null,
+                Gender = Gender.Male,
+                Hands = null,
+                Head = null,
+                Legs = new IProfileClothingItem("Shorts", "ClothingGray", "ClothingLightGray", ""),
+                Skin = new IProfileClothingItem("Zombie", "Skin1", "ClothingLightGray", ""),
+                Waist = null,
+            },
+        };
+        private static List<IProfile> ZombieFighterProfiles = new List<IProfile>()
+        {
+            new IProfile()
+            {
+                Name = "Dead Cop",
+                Accesory = null,
+                ChestOver = null,
+                ChestUnder = new IProfileClothingItem("Sweater", "ClothingGreen", "ClothingLightGray", ""),
+                Feet = new IProfileClothingItem("BootsBlack", "ClothingDarkBrown", "ClothingLightGray", ""),
+                Gender = Gender.Male,
+                Hands = new IProfileClothingItem("FingerlessGloves", "ClothingDarkGray", "ClothingLightGray", ""),
+                Head = null,
+                Legs = new IProfileClothingItem("PantsBlack", "ClothingDarkGray", "ClothingLightGray", ""),
+                Skin = new IProfileClothingItem("Zombie", "Skin1", "ClothingLightGray", ""),
+                Waist = new IProfileClothingItem("Belt", "ClothingDarkGray", "ClothingLightGray", ""),
+            },
+            new IProfile()
+            {
+                Name = "Dead Merc",
+                Accesory = null,
+                ChestOver = new IProfileClothingItem("Jacket", "ClothingBrown", "ClothingLightBrown", ""),
+                ChestUnder = new IProfileClothingItem("TShirt", "ClothingLightGray", "ClothingLightGray", ""),
+                Feet = new IProfileClothingItem("BootsBlack", "ClothingDarkBrown", "ClothingLightGray", ""),
+                Gender = Gender.Male,
+                Hands = null,
+                Head = new IProfileClothingItem("AviatorHat", "ClothingBrown", "ClothingLightGray", ""),
+                Legs = new IProfileClothingItem("PantsBlack", "ClothingDarkGray", "ClothingLightGray", ""),
+                Skin = new IProfileClothingItem("Zombie", "Skin1", "ClothingLightGray", ""),
+                Waist = new IProfileClothingItem("SatchelBelt", "ClothingBrown", "ClothingLightGray", ""),
+            },
+            new IProfile()
+            {
+                Name = "Dead Vigilante",
+                Accesory = null,
+                ChestOver = null,
+                ChestUnder = new IProfileClothingItem("TShirt", "ClothingDarkYellow", "ClothingLightGray", ""),
+                Feet = new IProfileClothingItem("BootsBlack", "ClothingDarkBrown", "ClothingLightGray", ""),
+                Gender = Gender.Male,
+                Hands = null,
+                Head = new IProfileClothingItem("Cap", "ClothingDarkYellow", "ClothingLightGray", ""),
+                Legs = new IProfileClothingItem("PantsBlack", "ClothingDarkGray", "ClothingLightGray", ""),
+                Skin = new IProfileClothingItem("Zombie", "Skin1", "ClothingLightGray", ""),
+                Waist = null,
+            },
+            new IProfile()
+            {
+                Name = "Dead Spy",
+                Accesory = null,
+                ChestOver = new IProfileClothingItem("SuitJacketBlack", "ClothingDarkGray", "ClothingLightGray", ""),
+                ChestUnder = new IProfileClothingItem("ShirtWithBowtie", "ClothingLightGray", "ClothingDarkGray", ""),
+                Feet = new IProfileClothingItem("ShoesBlack", "ClothingDarkBrown", "ClothingLightGray", ""),
+                Gender = Gender.Male,
+                Hands = null,
+                Head = null,
+                Legs = new IProfileClothingItem("PantsBlack", "ClothingDarkGray", "ClothingLightGray", ""),
+                Skin = new IProfileClothingItem("Zombie", "Skin1", "ClothingLightGray", ""),
+                Waist = null,
+            },
+            new IProfile()
+            {
+                Name = "Dead Pilot",
+                Accesory = null,
+                ChestOver = new IProfileClothingItem("ShoulderHolster", "ClothingDarkBrown", "ClothingDarkBrown", ""),
+                ChestUnder = new IProfileClothingItem("SleevelessShirt", "ClothingLightGray", "ClothingLightGray", ""),
+                Feet = new IProfileClothingItem("ShoesBlack", "ClothingDarkBrown", "ClothingLightGray", ""),
+                Gender = Gender.Male,
+                Hands = null,
+                Head = null,
+                Legs = new IProfileClothingItem("PantsBlack", "ClothingDarkGray", "ClothingLightGray", ""),
+                Skin = new IProfileClothingItem("Zombie", "Skin1", "ClothingLightGray", ""),
+                Waist = new IProfileClothingItem("SmallBelt", "ClothingDarkGray", "ClothingLightGray", ""),
+            },
+            new IProfile()
+            {
+                Name = "Dead Driver",
+                Accesory = null,
+                ChestOver = new IProfileClothingItem("Jacket", "ClothingBrown", "ClothingBrown", ""),
+                ChestUnder = new IProfileClothingItem("SleevelessShirt", "ClothingGray", "ClothingLightGray", ""),
+                Feet = new IProfileClothingItem("BootsBlack", "ClothingDarkBrown", "ClothingLightGray", ""),
+                Gender = Gender.Male,
+                Hands = null,
+                Head = null,
+                Legs = new IProfileClothingItem("PantsBlack", "ClothingDarkGray", "ClothingLightGray", ""),
+                Skin = new IProfileClothingItem("Zombie", "Skin1", "ClothingLightGray", ""),
+                Waist = new IProfileClothingItem("Belt", "ClothingDarkGray", "ClothingLightGray", ""),
+            },
+        };
         private static List<IProfile> ZombieFlamerProfiles = new List<IProfile>()
         {
             new IProfile()
@@ -2560,6 +2665,8 @@ namespace SFDScript.MoreBot
             { BotType.ZombieAgent, ZombieAgentProfiles },
             { BotType.ZombieBruiser, ZombieBruiserProfiles },
             { BotType.ZombieChild, ZombieChildProfiles },
+            { BotType.ZombieFat, ZombieFatProfiles },
+            { BotType.ZombieFighter, ZombieFighterProfiles },
             { BotType.ZombieFlamer, ZombieFlamerProfiles },
             { BotType.ZombieGangster, ZombieGangsterProfiles },
             { BotType.ZombieNinja, ZombieNinjaProfiles },
@@ -3324,6 +3431,12 @@ namespace SFDScript.MoreBot
                 }
             },
             {
+                BotType.ZombieFat, new List<WeaponSet>()
+                {
+                    WeaponSet.Empty,
+                }
+            },
+            {
                 BotType.ZombieFighter, new List<WeaponSet>()
                 {
                     new WeaponSet()
@@ -3501,14 +3614,16 @@ namespace SFDScript.MoreBot
             Grunt,
             Hulk,
 
+            Demolitionist,
             Meatgrinder,
             Ninja,
-            Soldier,
             Sniper,
+            Soldier,
 
             ZombieSlow,
             ZombieFast,
             ZombieHulk,
+            ZombieFighter,
         }
 
         private static Dictionary<BotAI, BotBehaviorSet> BotBehaviors = new Dictionary<BotAI, BotBehaviorSet>()
@@ -3544,6 +3659,9 @@ namespace SFDScript.MoreBot
                 BotAI.Hulk, GetBotBehaviorSet(BotAI.Hulk)
             },
             {
+                BotAI.Demolitionist, GetBotBehaviorSet(BotAI.Demolitionist)
+            },
+            {
                 BotAI.Meatgrinder, GetBotBehaviorSet(BotAI.Meatgrinder)
             },
             {
@@ -3557,6 +3675,9 @@ namespace SFDScript.MoreBot
             },
             {
                 BotAI.ZombieHulk, GetBotBehaviorSet(BotAI.ZombieHulk)
+            },
+            {
+                BotAI.ZombieFighter, GetBotBehaviorSet(BotAI.ZombieFighter)
             },
         };
 
@@ -3655,6 +3776,16 @@ namespace SFDScript.MoreBot
                     botBehaviorSet.RangedWeaponPrecisionAccuracy = 0.9f;
                     break;
 
+                case BotAI.Demolitionist:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.RangedA);
+                    botBehaviorSet.SearchForItems = true;
+                    botBehaviorSet.SearchItems = SearchItems.Primary;
+                    botBehaviorSet.RangedWeaponAccuracy = 0.75f;
+                    botBehaviorSet.RangedWeaponAimShootDelayMin = 600f;
+                    botBehaviorSet.RangedWeaponPrecisionInterpolateTime = 2000f;
+                    botBehaviorSet.RangedWeaponPrecisionAccuracy = 0.9f;
+                    break;
+
                 case BotAI.Sniper:
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.RangedA);
                     botBehaviorSet.RangedWeaponMode = BotBehaviorRangedWeaponMode.ManualAim;
@@ -3706,6 +3837,20 @@ namespace SFDScript.MoreBot
 
                 case BotAI.ZombieHulk:
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Hulk);
+                    botBehaviorSet.AttackDeadEnemies = true;
+                    botBehaviorSet.SearchForItems = false;
+                    botBehaviorSet.MeleeWeaponUsage = false;
+                    botBehaviorSet.RangedWeaponUsage = false;
+                    botBehaviorSet.PowerupUsage = false;
+                    botBehaviorSet.ChokePointValue = 32f;
+                    botBehaviorSet.ChokePointPlayerCountThreshold = 5;
+                    botBehaviorSet.DefensiveRollFireLevel = 0.1f;
+                    botBehaviorSet.OffensiveDiveLevel = 0f;
+                    botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0f;
+                    break;
+
+                case BotAI.ZombieFighter:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.MeleeB);
                     botBehaviorSet.AttackDeadEnemies = true;
                     botBehaviorSet.SearchForItems = false;
                     botBehaviorSet.MeleeWeaponUsage = false;
@@ -3911,13 +4056,38 @@ namespace SFDScript.MoreBot
             SpawnLine = "Brainzz",
             SpawnLineChance = 0.1f,
         };
+        private static BotInfo ZombieFatInfo = new BotInfo()
+        {
+            AIType = BotAI.ZombieSlow,
+            OnDeath = (Bot bot) => Game.TriggerExplosion(bot.Player.GetWorldPosition()),
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 20,
+                CurrentHealth = 20,
+                MeleeDamageDealtModifier = 1.2f,
+                RunSpeedModifier = 0.5f,
+                SprintSpeedModifier = 0.5f,
+                SizeModifier = 1.25f,
+            },
+        };
+        private static BotInfo ZombieFighterInfo = new BotInfo()
+        {
+            AIType = BotAI.ZombieFighter,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 200,
+                CurrentHealth = 200,
+                MeleeDamageDealtModifier = 1.05f,
+                RunSpeedModifier = 0.95f,
+                SprintSpeedModifier = 0.95f,
+                SizeModifier = 1.1f,
+            },
+            IsBoss = true,
+        };
         private static BotInfo ZombieFlamerInfo = new BotInfo()
         {
             AIType = BotAI.ZombieFast,
-            OnSpawn = (Bot bot) =>
-            {
-                bot.Player.SetMaxFire();
-            },
+            OnSpawn = (Bot bot) => bot.Player.SetMaxFire(),
             Modifiers = new PlayerModifiers()
             {
                 MaxHealth = 35,
@@ -3932,7 +4102,7 @@ namespace SFDScript.MoreBot
         // Bosses
         private static BotInfo DemotionalistInfo = new BotInfo()
         {
-            AIType = BotAI.RangeHard,
+            AIType = BotAI.Demolitionist,
             Modifiers = new PlayerModifiers()
             {
                 MaxHealth = 150,
@@ -4055,10 +4225,11 @@ namespace SFDScript.MoreBot
             { BotType.Zombie, ZombieInfo },
             { BotType.ZombieBruiser, ZombieBruiserInfo },
             { BotType.ZombieChild, ZombieChildInfo },
+            { BotType.ZombieFat, ZombieFatInfo },
+            { BotType.ZombieFighter, ZombieFighterInfo },
             { BotType.ZombieFlamer, ZombieFlamerInfo },
 
             { BotType.ZombieAgent, ZombieInfo },
-            //{ BotType.ZombieFighter, ZombieInfo },
             { BotType.ZombieGangster, ZombieInfo },
             { BotType.ZombieNinja, ZombieInfo },
             { BotType.ZombiePolice, ZombieInfo },
@@ -4193,6 +4364,13 @@ namespace SFDScript.MoreBot
             BotType.ZombieSoldier,
             BotType.ZombieThug,
             BotType.ZombieWorker,
+        };
+        private static List<BotType> MutatedZombieTypes = new List<BotType>()
+        {
+            BotType.ZombieBruiser,
+            BotType.ZombieChild,
+            BotType.ZombieFat,
+            BotType.ZombieFlamer,
         };
 
         private static List<GroupSet> BotGroupSets = new List<GroupSet>()
@@ -4375,12 +4553,58 @@ namespace SFDScript.MoreBot
                 new Group(new List<SubGroup>()
                 {
                     new SubGroup(CommonZombieTypes, 0.8f),
+                    new SubGroup(BotType.ZombieFat, 0.2f),
+                }),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(CommonZombieTypes, 0.6f),
+                    new SubGroup(BotType.ZombieFat, 0.4f),
+                }),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(CommonZombieTypes, 0.8f),
                     new SubGroup(BotType.ZombieFlamer, 0.2f),
                 }),
                 new Group(new List<SubGroup>()
                 {
                     new SubGroup(CommonZombieTypes, 0.6f),
                     new SubGroup(BotType.ZombieFlamer, 0.4f),
+                }),
+            }),
+            new GroupSet("ZombieHard", new List<Group>()
+            {
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(MutatedZombieTypes, 1f),
+                }),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(CommonZombieTypes, 0.2f),
+                    new SubGroup(MutatedZombieTypes, 0.8f),
+                }),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(CommonZombieTypes, 0.4f),
+                    new SubGroup(MutatedZombieTypes, 0.6f),
+                }),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(CommonZombieTypes, 0.7f),
+                    new SubGroup(MutatedZombieTypes, 0.3f),
+                }),
+            }),
+            new GroupSet("ZombieBoss", new List<Group>()
+            {
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.ZombieFighter),
+                    new SubGroup(CommonZombieTypes, 1f),
+                }),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.ZombieFighter),
+                    new SubGroup(CommonZombieTypes, 0.7f),
+                    new SubGroup(MutatedZombieTypes, 0.3f),
                 }),
             }),
         };
@@ -4516,22 +4740,22 @@ namespace SFDScript.MoreBot
                 }
                 else
                 {
-                    //var bot = SpawnBot(BotType.Thug);
-                    Bot bot;
-                    bot = SpawnBot(BotType.Zombie);
-                    var mod = bot.Info.Modifiers;
-                    mod.MeleeDamageDealtModifier = 2.0f;
-                    bot.Player.SetModifiers(mod);
-                    bot = SpawnBot(BotType.Zombie);
-                    bot.Player.SetModifiers(mod);
-                    bot = SpawnBot(BotType.ThugHulk);
-                    bot.Player.SetTeam(PlayerTeam.Independent);
-                    bot = SpawnBot(BotType.Cowboy);
-                    bot.Player.SetTeam(PlayerTeam.Independent);
-                    bot = SpawnBot(BotType.Police);
-                    bot.Player.SetTeam(PlayerTeam.Independent);
+                    var bot = SpawnBot(BotType.Demolitionist);
+                    //Bot bot;
+                    //bot = SpawnBot(BotType.Zombie);
+                    //var mod = bot.Info.Modifiers;
+                    //mod.MeleeDamageDealtModifier = 2.0f;
+                    //bot.Player.SetModifiers(mod);
+                    //bot = SpawnBot(BotType.Zombie);
+                    //bot.Player.SetModifiers(mod);
+                    //bot = SpawnBot(BotType.ThugHulk);
+                    //bot.Player.SetTeam(PlayerTeam.Independent);
+                    //bot = SpawnBot(BotType.Cowboy);
+                    //bot.Player.SetTeam(PlayerTeam.Independent);
+                    //bot = SpawnBot(BotType.Police);
+                    //bot.Player.SetTeam(PlayerTeam.Independent);
 
-                    //SpawnGroup("Zombie", botSpawnCount);
+                    //SpawnGroup("ZombieBoss", botSpawnCount);
                 }
             }
 
@@ -4560,8 +4784,7 @@ namespace SFDScript.MoreBot
                             }
 
                             var player = Game.CreatePlayer(body.GetWorldPosition());
-                            var botType = GetBotType(body);
-                            var zombie = SpawnBot(GetZombieType(botType), player, equipWeapons: false, setProfile: false);
+                            var zombie = SpawnBot(GetZombieType(body), player, equipWeapons: false, setProfile: false);
                             var zombieBody = zombie.Player;
 
                             var modifiers = body.GetModifiers();
@@ -4623,18 +4846,45 @@ namespace SFDScript.MoreBot
                 return BotType.None;
             }
 
-            private static BotType GetZombieType(BotType botType)
+            private static BotType GetZombieType(IPlayer player)
             {
-                if (botType == BotType.None) return BotType.Zombie;
+                var botType = GetBotType(player);
+
+                if (botType == BotType.None)
+                {
+                    var playerAI = player.GetBotBehavior().PredefinedAI;
+
+                    switch (playerAI)
+                    {
+                        // Expert, Hard
+                        case PredefinedAIType.BotA:
+                        case PredefinedAIType.BotB:
+                            return BotType.ZombieFighter;
+                    }
+                }
+
                 BotAI aiType = BotInfos[botType].AIType;
 
-                if (aiType == BotAI.Hulk)
-                    return BotType.ZombieBruiser;
+                switch (aiType)
+                {
+                    case BotAI.Hacker:
+                    case BotAI.Expert:
+                    case BotAI.Hard:
+                    case BotAI.MeleeHard:
+                    case BotAI.MeleeExpert:
+                        return BotType.ZombieFighter;
+
+                    case BotAI.Hulk:
+                        return BotType.ZombieBruiser;
+                }
 
                 var modifiers = BotInfos[botType].Modifiers;
 
                 if (modifiers.SprintSpeedModifier >= 1.1f)
                     return BotType.ZombieChild;
+
+                if (modifiers.SizeModifier == 1.25f)
+                    return BotType.ZombieFat;
 
                 return BotType.Zombie;
             }
@@ -4811,7 +5061,7 @@ namespace SFDScript.MoreBot
 // Add draw weapon first
 
 // Not grunt:
-// agent
+// agent -> smart grunt?
 // assassin (both)
 // fritzliebe
 // funnyman
@@ -4821,6 +5071,8 @@ namespace SFDScript.MoreBot
 
 // Group
 // mecha/fritzliebe
+// Add infected group (normal superfighters but turn into zombie after death)
+// Add bulletproof and meleeproof superfighters
 
 // Meatgrider block?
 // Multiple spawn|dead lines?
