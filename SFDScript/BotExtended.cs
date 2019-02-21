@@ -28,15 +28,15 @@ namespace SFDScript.MoreBot
                 var player = Game.GetPlayers()[0];
                 var modifiers = player.GetModifiers();
 
-                modifiers.MaxHealth = 5000;
-                modifiers.CurrentHealth = 5000;
-                modifiers.InfiniteAmmo = 1;
+                //modifiers.MaxHealth = 5000;
+                //modifiers.CurrentHealth = 5000;
+                //modifiers.InfiniteAmmo = 1;
                 //modifiers.MeleeStunImmunity = 1;
 
                 player.SetModifiers(modifiers);
                 player.GiveWeaponItem(WeaponItem.KATANA);
                 player.GiveWeaponItem(WeaponItem.REVOLVER);
-                player.GiveWeaponItem(WeaponItem.BAZOOKA);
+                player.GiveWeaponItem(WeaponItem.M60);
                 player.GiveWeaponItem(WeaponItem.MOLOTOVS);
             }
 
@@ -170,6 +170,8 @@ namespace SFDScript.MoreBot
             NaziScientist,
             NaziSoldier,
             SSOfficer,
+
+            Ninja,
 
             // Tier1: Mall Mayhem
             // Tier3: Police Station Escape!
@@ -1667,6 +1669,65 @@ namespace SFDScript.MoreBot
                 Waist = null,
             },
         };
+        private static List<IProfile> NinjaProfiles = new List<IProfile>()
+        {
+            new IProfile()
+            {
+                Name = "Ninja",
+                Accesory = new IProfileClothingItem("Balaclava", "ClothingDarkGray", "ClothingLightGray", ""),
+                ChestOver = null,
+                ChestUnder = new IProfileClothingItem("SweaterBlack", "ClothingDarkGray", "ClothingLightGray", ""),
+                Feet = new IProfileClothingItem("ShoesBlack", "ClothingDarkGray", "ClothingLightGray", ""),
+                Gender = Gender.Male,
+                Hands = new IProfileClothingItem("FingerlessGlovesBlack", "ClothingGray", "ClothingLightGray", ""),
+                Head = null,
+                Legs = new IProfileClothingItem("PantsBlack", "ClothingDarkGray", "ClothingLightGray", ""),
+                Skin = new IProfileClothingItem("Normal", "Skin3", "ClothingLightGray", ""),
+                Waist = null,
+            },
+            new IProfile()
+            {
+                Name = "Ninja",
+                Accesory = new IProfileClothingItem("Balaclava", "ClothingDarkGray", "ClothingLightGray", ""),
+                ChestOver = null,
+                ChestUnder = new IProfileClothingItem("SweaterBlack_fem", "ClothingDarkGray", "ClothingLightGray", ""),
+                Feet = new IProfileClothingItem("ShoesBlack", "ClothingDarkGray", "ClothingLightGray", ""),
+                Gender = Gender.Female,
+                Hands = new IProfileClothingItem("FingerlessGlovesBlack", "ClothingGray", "ClothingLightGray", ""),
+                Head = null,
+                Legs = new IProfileClothingItem("PantsBlack_fem", "ClothingDarkGray", "ClothingLightGray", ""),
+                Skin = new IProfileClothingItem("Normal_fem", "Skin3", "ClothingLightGray", ""),
+                Waist = null,
+            },
+            new IProfile()
+            {
+                Name = "Ninja",
+                Accesory = new IProfileClothingItem("Mask", "ClothingDarkRed", "ClothingLightGray", ""),
+                ChestOver = null,
+                ChestUnder = new IProfileClothingItem("SweaterBlack_fem", "ClothingDarkGray", "ClothingLightGray", ""),
+                Feet = new IProfileClothingItem("ShoesBlack", "ClothingDarkGray", "ClothingLightGray", ""),
+                Gender = Gender.Female,
+                Hands = new IProfileClothingItem("FingerlessGlovesBlack", "ClothingGray", "ClothingLightGray", ""),
+                Head = null,
+                Legs = new IProfileClothingItem("PantsBlack_fem", "ClothingDarkGray", "ClothingLightGray", ""),
+                Skin = new IProfileClothingItem("Normal_fem", "Skin3", "ClothingLightGray", ""),
+                Waist = null,
+            },
+            new IProfile()
+            {
+                Name = "Ninja",
+                Accesory = new IProfileClothingItem("Mask", "ClothingDarkRed", "ClothingLightGray", ""),
+                ChestOver = null,
+                ChestUnder = new IProfileClothingItem("SweaterBlack", "ClothingDarkGray", "ClothingLightGray", ""),
+                Feet = new IProfileClothingItem("ShoesBlack", "ClothingDarkGray", "ClothingLightGray", ""),
+                Gender = Gender.Male,
+                Hands = new IProfileClothingItem("FingerlessGlovesBlack", "ClothingGray", "ClothingLightGray", ""),
+                Head = null,
+                Legs = new IProfileClothingItem("PantsBlack", "ClothingDarkGray", "ClothingLightGray", ""),
+                Skin = new IProfileClothingItem("Normal", "Skin3", "ClothingLightGray", ""),
+                Waist = null,
+            },
+        };
         private static List<IProfile> PoliceProfiles = new List<IProfile>()
         {
             new IProfile()
@@ -2787,6 +2848,7 @@ namespace SFDScript.MoreBot
             { BotType.NaziScientist, NaziScientistProfiles },
             { BotType.NaziSoldier, NaziSoldierProfiles },
             { BotType.SSOfficer, SSOfficerProfiles },
+            { BotType.Ninja, NinjaProfiles },
             { BotType.Police, PoliceProfiles },
             { BotType.PoliceSWAT, PoliceSWATProfiles },
             { BotType.Santa, SantaProfiles },
@@ -3451,6 +3513,16 @@ namespace SFDScript.MoreBot
                 }
             },
             {
+                BotType.Ninja, new List<WeaponSet>()
+                {
+                    new WeaponSet()
+                    {
+                        Melee = WeaponItem.KATANA,
+                        Powerup = WeaponItem.SLOWMO_10,
+                    },
+                }
+            },
+            {
                 BotType.Police, new List<WeaponSet>()
                 {
                     new WeaponSet()
@@ -3836,60 +3908,26 @@ namespace SFDScript.MoreBot
 
         private static Dictionary<BotAI, BotBehaviorSet> BotBehaviors = new Dictionary<BotAI, BotBehaviorSet>()
         {
-            {
-                BotAI.Debug, GetBotBehaviorSet(BotAI.Debug)
-            },
-            {
-                BotAI.Easy, GetBotBehaviorSet(BotAI.Easy)
-            },
-            {
-                BotAI.Normal, GetBotBehaviorSet(BotAI.Normal)
-            },
-            {
-                BotAI.Hard, GetBotBehaviorSet(BotAI.Hard)
-            },
-            {
-                BotAI.Expert, GetBotBehaviorSet(BotAI.Expert)
-            },
-            {
-                BotAI.MeleeExpert, GetBotBehaviorSet(BotAI.MeleeExpert)
-            },
-            {
-                BotAI.RangeExpert, GetBotBehaviorSet(BotAI.RangeExpert)
-            },
-            {
-                BotAI.RangeHard, GetBotBehaviorSet(BotAI.RangeHard)
-            },
-            {
-                BotAI.Grunt, GetBotBehaviorSet(BotAI.Grunt)
-            },
-            {
-                BotAI.Hulk, GetBotBehaviorSet(BotAI.Hulk)
-            },
-            {
-                BotAI.Demolitionist, GetBotBehaviorSet(BotAI.Demolitionist)
-            },
-            {
-                BotAI.Incinerator, GetBotBehaviorSet(BotAI.Incinerator)
-            },
-            {
-                BotAI.Meatgrinder, GetBotBehaviorSet(BotAI.Meatgrinder)
-            },
-            {
-                BotAI.Sniper, GetBotBehaviorSet(BotAI.Sniper)
-            },
-            {
-                BotAI.ZombieSlow, GetBotBehaviorSet(BotAI.ZombieSlow)
-            },
-            {
-                BotAI.ZombieFast, GetBotBehaviorSet(BotAI.ZombieFast)
-            },
-            {
-                BotAI.ZombieHulk, GetBotBehaviorSet(BotAI.ZombieHulk)
-            },
-            {
-                BotAI.ZombieFighter, GetBotBehaviorSet(BotAI.ZombieFighter)
-            },
+            { BotAI.Debug, GetBotBehaviorSet(BotAI.Debug) },
+            { BotAI.Easy, GetBotBehaviorSet(BotAI.Easy) },
+            { BotAI.Normal, GetBotBehaviorSet(BotAI.Normal) },
+            { BotAI.Hard, GetBotBehaviorSet(BotAI.Hard) },
+            { BotAI.Expert, GetBotBehaviorSet(BotAI.Expert) },
+            { BotAI.MeleeExpert, GetBotBehaviorSet(BotAI.MeleeExpert) },
+            { BotAI.MeleeHard, GetBotBehaviorSet(BotAI.MeleeHard) },
+            { BotAI.RangeExpert, GetBotBehaviorSet(BotAI.RangeExpert) },
+            { BotAI.RangeHard, GetBotBehaviorSet(BotAI.RangeHard) },
+            { BotAI.Grunt, GetBotBehaviorSet(BotAI.Grunt) },
+            { BotAI.Hulk, GetBotBehaviorSet(BotAI.Hulk) },
+            { BotAI.Demolitionist, GetBotBehaviorSet(BotAI.Demolitionist) },
+            { BotAI.Incinerator, GetBotBehaviorSet(BotAI.Incinerator) },
+            { BotAI.Meatgrinder, GetBotBehaviorSet(BotAI.Meatgrinder) },
+            { BotAI.Ninja, GetBotBehaviorSet(BotAI.Ninja) },
+            { BotAI.Sniper, GetBotBehaviorSet(BotAI.Sniper) },
+            { BotAI.ZombieSlow, GetBotBehaviorSet(BotAI.ZombieSlow) },
+            { BotAI.ZombieFast, GetBotBehaviorSet(BotAI.ZombieFast) },
+            { BotAI.ZombieHulk, GetBotBehaviorSet(BotAI.ZombieHulk) },
+            { BotAI.ZombieFighter, GetBotBehaviorSet(BotAI.ZombieFighter) },
         };
 
         private static BotBehaviorSet GetBotBehaviorSet(BotAI botAI)
@@ -3969,6 +4007,42 @@ namespace SFDScript.MoreBot
 
                 case BotAI.MeleeExpert:
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.MeleeB);
+                    botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0.9f;
+                    botBehaviorSet.MeleeWaitTimeLimitMin = 600f;
+                    botBehaviorSet.MeleeWaitTimeLimitMax = 800f;
+                    botBehaviorSet.MeleeUsage = true;
+                    botBehaviorSet.MeleeWeaponUsage = true;
+                    botBehaviorSet.MeleeWeaponUseFullRange = true;
+                    break;
+
+                case BotAI.MeleeHard:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.MeleeB);
+                    botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0.75f;
+                    botBehaviorSet.MeleeWaitTimeLimitMin = 800f;
+                    botBehaviorSet.MeleeWaitTimeLimitMax = 1000f;
+                    botBehaviorSet.MeleeUsage = true;
+                    botBehaviorSet.MeleeWeaponUsage = true;
+                    botBehaviorSet.MeleeWeaponUseFullRange = false;
+                    break;
+
+                case BotAI.Ninja:
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.MeleeB);
+                    botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0.9f;
+                    botBehaviorSet.MeleeWaitTimeLimitMin = 600f;
+                    botBehaviorSet.MeleeWaitTimeLimitMax = 800f;
+                    botBehaviorSet.MeleeUsage = true;
+                    botBehaviorSet.MeleeWeaponUsage = true;
+                    botBehaviorSet.MeleeWeaponUseFullRange = true;
+
+                    botBehaviorSet.SearchForItems = true;
+                    botBehaviorSet.SearchItems = SearchItems.Melee;
+                    botBehaviorSet.OffensiveEnrageLevel = 0.5f;
+                    botBehaviorSet.NavigationRandomPausesLevel = 0.1f;
+                    botBehaviorSet.DefensiveRollFireLevel = 0.95f;
+                    botBehaviorSet.DefensiveAvoidProjectilesLevel = 0.9f;
+                    botBehaviorSet.OffensiveClimbingLevel = 0.9f;
+                    botBehaviorSet.OffensiveSprintLevel = 0.9f;
+                    botBehaviorSet.OffensiveDiveLevel = 0.1f; // 0.7f
                     break;
 
                 case BotAI.RangeExpert:
@@ -4433,6 +4507,24 @@ namespace SFDScript.MoreBot
             },
             IsBoss = true,
         };
+        private static BotInfo NinjaInfo = new BotInfo()
+        {
+            AIType = BotAI.Ninja,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 200,
+                CurrentHealth = 200,
+                MeleeDamageDealtModifier = 1.2f,
+                RunSpeedModifier = 1.5f,
+                SprintSpeedModifier = 1.5f,
+                SizeModifier = 0.9f,
+                EnergyRechargeModifier = 0.85f,
+                InfiniteAmmo = 1,
+            },
+            IsBoss = true,
+            SpawnLine = "Tatakai...",
+            DeathLine = "H-h-haji...",
+        };
         private static BotInfo TeddybearInfo = new BotInfo()
         {
             AIType = BotAI.Hulk,
@@ -4493,6 +4585,7 @@ namespace SFDScript.MoreBot
             { BotType.MetroCop2, MetroCopBossInfo },
             { BotType.Meatgrinder, MeatgrinderInfo },
             { BotType.NaziScientist, GruntInfo },
+            { BotType.Ninja, NinjaInfo },
             { BotType.Police, GruntWithWeaponsInfo },
             { BotType.PoliceSWAT, GruntWithWeaponsInfo },
             { BotType.Sniper, SniperInfo },
@@ -4780,6 +4873,13 @@ namespace SFDScript.MoreBot
                 {
                     new SubGroup(BotType.MetroCop2),
                     new SubGroup(BotType.MetroCop, 1f),
+                }),
+            }),
+            new GroupSet("Ninja", new List<Group>()
+            {
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.Ninja),
                 }),
             }),
             new GroupSet("Police", new List<Group>()
@@ -5081,23 +5181,23 @@ namespace SFDScript.MoreBot
                     //SpawnBot(BotType.ZombieBruiser);
                     //SpawnBot(BotType.ZombieBruiser);
 
-                    //var bot = SpawnBot(BotType.Police);
-                    ////var mod = bot.Info.Modifiers;
-                    ////mod.MeleeDamageDealtModifier = 2.0f;
-                    ////bot.Player.SetModifiers(mod);
-                    //bot.Player.SetTeam(PlayerTeam.Team1);
+                    var bot = SpawnBot(BotType.Police);
+                    //var mod = bot.Info.Modifiers;
+                    //mod.MeleeDamageDealtModifier = 2.0f;
+                    //bot.Player.SetModifiers(mod);
+                    bot.Player.SetTeam(PlayerTeam.Team1);
+                    bot = SpawnBot(BotType.Police);
+                    //bot.Player.SetModifiers(mod);
+                    bot.Player.SetTeam(PlayerTeam.Team1);
+                    bot = SpawnBot(BotType.Police);
+                    bot.Player.SetTeam(PlayerTeam.Team1);
+                    bot = SpawnBot(BotType.Police);
+                    bot.Player.SetTeam(PlayerTeam.Team1);
                     //bot = SpawnBot(BotType.Police);
-                    ////bot.Player.SetModifiers(mod);
                     //bot.Player.SetTeam(PlayerTeam.Team1);
-                    //bot = SpawnBot(BotType.Police);
-                    //bot.Player.SetTeam(PlayerTeam.Team1);
-                    //bot = SpawnBot(BotType.Police);
-                    //bot.Player.SetTeam(PlayerTeam.Team1);
-                    ////bot = SpawnBot(BotType.Police);
-                    ////bot.Player.SetTeam(PlayerTeam.Team1);
-                    //Game.GetPlayers()[0].SetTeam(PlayerTeam.Team1);
+                    Game.GetPlayers()[0].SetTeam(PlayerTeam.Team1);
 
-                    SpawnGroup("MetroCop", botSpawnCount);
+                    SpawnGroup("Ninja", botSpawnCount);
                 }
             }
 
@@ -5196,6 +5296,9 @@ namespace SFDScript.MoreBot
                     case BotAI.MeleeHard:
                     case BotAI.MeleeExpert:
                         return BotType.ZombieFighter;
+
+                    case BotAI.Ninja:
+                        return BotType.ZombieChild;
 
                     case BotAI.Hulk:
                         return BotType.ZombieBruiser;
@@ -5397,7 +5500,6 @@ namespace SFDScript.MoreBot
 // Add draw weapon first
 
 // Not grunt:
-// agent -> smart grunt?
 // assassin (both)
 // fritzliebe
 // funnyman
@@ -5411,9 +5513,7 @@ namespace SFDScript.MoreBot
 
 // Group
 // mecha/fritzliebe
-// Add infected group (normal fighters but turn into zombie after death)
 // Add bulletproof and meleeproof superfighters
 
 // Meatgrider block?
 // Multiple spawn|dead lines?
-// Ninja will turn into child zombie
