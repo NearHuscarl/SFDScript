@@ -101,9 +101,9 @@
             AssassinMelee,
             AssassinRange,
             // Tier1: Subway Shakedown
-            Agent,
+            Agent, // Smart agent, weak weapon
             // Tier2: Piston Posse, Tower Trouble
-            Agent2, // pair with metro cop
+            Agent2, // Dumb agent, strong weapon
             // Tier1: High Moon Holdout
             Bandido,
             // Tier1: Police Station Punchout, Warehouse Wreckage
@@ -1184,7 +1184,7 @@
         {
             new IProfile()
             {
-                Name = "Biker",
+                Name = "Marauder",
                 Accesory = null,
                 ChestOver = new IProfileClothingItem("JacketBlack", "ClothingDarkGray", "ClothingGray", ""),
                 ChestUnder = new IProfileClothingItem("TShirt", "ClothingLightGray", "ClothingLightGray", ""),
@@ -1201,7 +1201,7 @@
         {
             new IProfile()
             {
-                Name = "Crazy",
+                Name = "Marauder",
                 Accesory = null,
                 ChestOver = null,
                 ChestUnder = null,
@@ -1218,7 +1218,7 @@
         {
             new IProfile()
             {
-                Name = "Naked",
+                Name = "Marauder",
                 Accesory = new IProfileClothingItem("DogTag", "ClothingLightGray", "ClothingLightGray", ""),
                 ChestOver = null,
                 ChestUnder = null,
@@ -1235,7 +1235,7 @@
         {
             new IProfile()
             {
-                Name = "Rifleman",
+                Name = "Marauder",
                 Accesory = null,
                 ChestOver = null,
                 ChestUnder = new IProfileClothingItem("TShirt", "ClothingDarkBlue", "ClothingLightGray", ""),
@@ -1252,7 +1252,7 @@
         {
             new IProfile()
             {
-                Name = "Robber",
+                Name = "Marauder",
                 Accesory = null,
                 ChestOver = new IProfileClothingItem("JacketBlack", "ClothingDarkGray", "ClothingGray", ""),
                 ChestUnder = new IProfileClothingItem("TShirt", "ClothingGray", "ClothingLightGray", ""),
@@ -1269,7 +1269,7 @@
         {
             new IProfile()
             {
-                Name = "Tough",
+                Name = "Marauder",
                 Accesory = null,
                 ChestOver = new IProfileClothingItem("KevlarVest", "ClothingDarkGray", "ClothingLightGray", ""),
                 ChestUnder = new IProfileClothingItem("LumberjackShirt2", "ClothingBrown", "ClothingDarkBrown", ""),
@@ -2922,6 +2922,11 @@
                     {
                         Secondary = WeaponItem.PISTOL,
                     },
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.PISTOL,
+                        UseLazer = true,
+                    },
                 }
             },
             {
@@ -4137,6 +4142,18 @@
         // MeleeDamageDealtModifier = 0.95f,
         // SizeModifier = 0.95f,
 
+        private static BotInfo AgentInfo = new BotInfo()
+        {
+            AIType = BotAI.Hard,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 70,
+                CurrentHealth = 70,
+                ProjectileDamageDealtModifier = 0.9f,
+                MeleeDamageDealtModifier = 0.9f,
+                SizeModifier = 0.95f,
+            },
+        };
         private static BotInfo GruntInfo = new BotInfo()
         {
             AIType = BotAI.Grunt,
@@ -4447,6 +4464,8 @@
 
         public static Dictionary<BotType, BotInfo> BotInfos = new Dictionary<BotType, BotInfo>()
         {
+            { BotType.Agent, AgentInfo },
+            { BotType.Agent2, GruntWithWeaponsInfo },
             { BotType.Bandido, GruntWithWeaponsInfo },
             { BotType.Biker, GruntInfo },
             { BotType.BikerHulk, HulkInfo },
@@ -4630,10 +4649,13 @@
 
         private static List<GroupSet> BotGroupSets = new List<GroupSet>()
         {
-            //new GroupSet("Agent", new Group(new Dictionary<BotType, float>()
-            //{
-            //    { BotType.Agent, 1.0f },
-            //})),
+            new GroupSet("Agent", new List<Group>()
+            {
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.Agent, 1f),
+                }),
+            }),
             new GroupSet("Bandido", new List<Group>()
             {
                 new Group(new List<SubGroup>()
@@ -4736,6 +4758,19 @@
                 {
                     new SubGroup(BotType.MetroCop, 1f),
                 }),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.MetroCop, 0.7f),
+                    new SubGroup(BotType.Agent2, 0.3f),
+                }),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.MetroCop, 0.5f),
+                    new SubGroup(BotType.Agent2, 0.5f),
+                }),
+            }),
+            new GroupSet("MetroCopHard", new List<Group>()
+            {
                 new Group(new List<SubGroup>()
                 {
                     new SubGroup(BotType.MetroCop2),
@@ -5038,26 +5073,26 @@
                 }
                 else
                 {
-                    SpawnBot(BotType.ZombieBruiser);
-                    SpawnBot(BotType.ZombieBruiser);
+                    //SpawnBot(BotType.ZombieBruiser);
+                    //SpawnBot(BotType.ZombieBruiser);
 
-                    var bot = SpawnBot(BotType.Police);
-                    //var mod = bot.Info.Modifiers;
-                    //mod.MeleeDamageDealtModifier = 2.0f;
-                    //bot.Player.SetModifiers(mod);
-                    bot.Player.SetTeam(PlayerTeam.Team1);
-                    bot = SpawnBot(BotType.Police);
-                    //bot.Player.SetModifiers(mod);
-                    bot.Player.SetTeam(PlayerTeam.Team1);
-                    bot = SpawnBot(BotType.Police);
-                    bot.Player.SetTeam(PlayerTeam.Team1);
-                    bot = SpawnBot(BotType.Police);
-                    bot.Player.SetTeam(PlayerTeam.Team1);
+                    //var bot = SpawnBot(BotType.Police);
+                    ////var mod = bot.Info.Modifiers;
+                    ////mod.MeleeDamageDealtModifier = 2.0f;
+                    ////bot.Player.SetModifiers(mod);
+                    //bot.Player.SetTeam(PlayerTeam.Team1);
+                    //bot = SpawnBot(BotType.Police);
+                    ////bot.Player.SetModifiers(mod);
+                    //bot.Player.SetTeam(PlayerTeam.Team1);
                     //bot = SpawnBot(BotType.Police);
                     //bot.Player.SetTeam(PlayerTeam.Team1);
-                    Game.GetPlayers()[0].SetTeam(PlayerTeam.Team1);
+                    //bot = SpawnBot(BotType.Police);
+                    //bot.Player.SetTeam(PlayerTeam.Team1);
+                    ////bot = SpawnBot(BotType.Police);
+                    ////bot.Player.SetTeam(PlayerTeam.Team1);
+                    //Game.GetPlayers()[0].SetTeam(PlayerTeam.Team1);
 
-                    //SpawnGroup("Marauder", botSpawnCount);
+                    SpawnGroup("MetroCop", botSpawnCount);
                 }
             }
 

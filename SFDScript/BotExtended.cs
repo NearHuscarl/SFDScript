@@ -106,9 +106,9 @@ namespace SFDScript.MoreBot
             AssassinMelee,
             AssassinRange,
             // Tier1: Subway Shakedown
-            Agent,
+            Agent, // Smart agent, weak weapon
             // Tier2: Piston Posse, Tower Trouble
-            Agent2, // pair with metro cop
+            Agent2, // Dumb agent, strong weapon
             // Tier1: High Moon Holdout
             Bandido,
             // Tier1: Police Station Punchout, Warehouse Wreckage
@@ -1189,7 +1189,7 @@ namespace SFDScript.MoreBot
         {
             new IProfile()
             {
-                Name = "Biker",
+                Name = "Marauder",
                 Accesory = null,
                 ChestOver = new IProfileClothingItem("JacketBlack", "ClothingDarkGray", "ClothingGray", ""),
                 ChestUnder = new IProfileClothingItem("TShirt", "ClothingLightGray", "ClothingLightGray", ""),
@@ -1206,7 +1206,7 @@ namespace SFDScript.MoreBot
         {
             new IProfile()
             {
-                Name = "Crazy",
+                Name = "Marauder",
                 Accesory = null,
                 ChestOver = null,
                 ChestUnder = null,
@@ -1223,7 +1223,7 @@ namespace SFDScript.MoreBot
         {
             new IProfile()
             {
-                Name = "Naked",
+                Name = "Marauder",
                 Accesory = new IProfileClothingItem("DogTag", "ClothingLightGray", "ClothingLightGray", ""),
                 ChestOver = null,
                 ChestUnder = null,
@@ -1240,7 +1240,7 @@ namespace SFDScript.MoreBot
         {
             new IProfile()
             {
-                Name = "Rifleman",
+                Name = "Marauder",
                 Accesory = null,
                 ChestOver = null,
                 ChestUnder = new IProfileClothingItem("TShirt", "ClothingDarkBlue", "ClothingLightGray", ""),
@@ -1257,7 +1257,7 @@ namespace SFDScript.MoreBot
         {
             new IProfile()
             {
-                Name = "Robber",
+                Name = "Marauder",
                 Accesory = null,
                 ChestOver = new IProfileClothingItem("JacketBlack", "ClothingDarkGray", "ClothingGray", ""),
                 ChestUnder = new IProfileClothingItem("TShirt", "ClothingGray", "ClothingLightGray", ""),
@@ -1274,7 +1274,7 @@ namespace SFDScript.MoreBot
         {
             new IProfile()
             {
-                Name = "Tough",
+                Name = "Marauder",
                 Accesory = null,
                 ChestOver = new IProfileClothingItem("KevlarVest", "ClothingDarkGray", "ClothingLightGray", ""),
                 ChestUnder = new IProfileClothingItem("LumberjackShirt2", "ClothingBrown", "ClothingDarkBrown", ""),
@@ -2927,6 +2927,11 @@ namespace SFDScript.MoreBot
                     {
                         Secondary = WeaponItem.PISTOL,
                     },
+                    new WeaponSet()
+                    {
+                        Secondary = WeaponItem.PISTOL,
+                        UseLazer = true,
+                    },
                 }
             },
             {
@@ -4142,6 +4147,18 @@ namespace SFDScript.MoreBot
         // MeleeDamageDealtModifier = 0.95f,
         // SizeModifier = 0.95f,
 
+        private static BotInfo AgentInfo = new BotInfo()
+        {
+            AIType = BotAI.Hard,
+            Modifiers = new PlayerModifiers()
+            {
+                MaxHealth = 70,
+                CurrentHealth = 70,
+                ProjectileDamageDealtModifier = 0.9f,
+                MeleeDamageDealtModifier = 0.9f,
+                SizeModifier = 0.95f,
+            },
+        };
         private static BotInfo GruntInfo = new BotInfo()
         {
             AIType = BotAI.Grunt,
@@ -4452,6 +4469,8 @@ namespace SFDScript.MoreBot
 
         public static Dictionary<BotType, BotInfo> BotInfos = new Dictionary<BotType, BotInfo>()
         {
+            { BotType.Agent, AgentInfo },
+            { BotType.Agent2, GruntWithWeaponsInfo },
             { BotType.Bandido, GruntWithWeaponsInfo },
             { BotType.Biker, GruntInfo },
             { BotType.BikerHulk, HulkInfo },
@@ -4635,10 +4654,13 @@ namespace SFDScript.MoreBot
 
         private static List<GroupSet> BotGroupSets = new List<GroupSet>()
         {
-            //new GroupSet("Agent", new Group(new Dictionary<BotType, float>()
-            //{
-            //    { BotType.Agent, 1.0f },
-            //})),
+            new GroupSet("Agent", new List<Group>()
+            {
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.Agent, 1f),
+                }),
+            }),
             new GroupSet("Bandido", new List<Group>()
             {
                 new Group(new List<SubGroup>()
@@ -4741,6 +4763,19 @@ namespace SFDScript.MoreBot
                 {
                     new SubGroup(BotType.MetroCop, 1f),
                 }),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.MetroCop, 0.7f),
+                    new SubGroup(BotType.Agent2, 0.3f),
+                }),
+                new Group(new List<SubGroup>()
+                {
+                    new SubGroup(BotType.MetroCop, 0.5f),
+                    new SubGroup(BotType.Agent2, 0.5f),
+                }),
+            }),
+            new GroupSet("MetroCopHard", new List<Group>()
+            {
                 new Group(new List<SubGroup>()
                 {
                     new SubGroup(BotType.MetroCop2),
@@ -5043,26 +5078,26 @@ namespace SFDScript.MoreBot
                 }
                 else
                 {
-                    SpawnBot(BotType.ZombieBruiser);
-                    SpawnBot(BotType.ZombieBruiser);
+                    //SpawnBot(BotType.ZombieBruiser);
+                    //SpawnBot(BotType.ZombieBruiser);
 
-                    var bot = SpawnBot(BotType.Police);
-                    //var mod = bot.Info.Modifiers;
-                    //mod.MeleeDamageDealtModifier = 2.0f;
-                    //bot.Player.SetModifiers(mod);
-                    bot.Player.SetTeam(PlayerTeam.Team1);
-                    bot = SpawnBot(BotType.Police);
-                    //bot.Player.SetModifiers(mod);
-                    bot.Player.SetTeam(PlayerTeam.Team1);
-                    bot = SpawnBot(BotType.Police);
-                    bot.Player.SetTeam(PlayerTeam.Team1);
-                    bot = SpawnBot(BotType.Police);
-                    bot.Player.SetTeam(PlayerTeam.Team1);
+                    //var bot = SpawnBot(BotType.Police);
+                    ////var mod = bot.Info.Modifiers;
+                    ////mod.MeleeDamageDealtModifier = 2.0f;
+                    ////bot.Player.SetModifiers(mod);
+                    //bot.Player.SetTeam(PlayerTeam.Team1);
+                    //bot = SpawnBot(BotType.Police);
+                    ////bot.Player.SetModifiers(mod);
+                    //bot.Player.SetTeam(PlayerTeam.Team1);
                     //bot = SpawnBot(BotType.Police);
                     //bot.Player.SetTeam(PlayerTeam.Team1);
-                    Game.GetPlayers()[0].SetTeam(PlayerTeam.Team1);
+                    //bot = SpawnBot(BotType.Police);
+                    //bot.Player.SetTeam(PlayerTeam.Team1);
+                    ////bot = SpawnBot(BotType.Police);
+                    ////bot.Player.SetTeam(PlayerTeam.Team1);
+                    //Game.GetPlayers()[0].SetTeam(PlayerTeam.Team1);
 
-                    //SpawnGroup("Marauder", botSpawnCount);
+                    SpawnGroup("MetroCop", botSpawnCount);
                 }
             }
 
@@ -5368,7 +5403,11 @@ namespace SFDScript.MoreBot
 // funnyman
 // Kriegbär
 // mecha
-// Flamethrower boss -> Explose with fire on death
+
+// Commands:
+// botextended -> show current group
+// botextended [list of group]
+// botextended list 
 
 // Group
 // mecha/fritzliebe
@@ -5378,4 +5417,3 @@ namespace SFDScript.MoreBot
 // Meatgrider block?
 // Multiple spawn|dead lines?
 // Ninja will turn into child zombie
-// Specialize each marauder
