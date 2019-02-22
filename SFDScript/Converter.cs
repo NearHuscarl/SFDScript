@@ -20,67 +20,10 @@ namespace SFDScript.ProfileConverter
             //var profile = playerProfileInfo.GetProfile();
             //var profileStr = Convert(profile);
 
-            var playerProfileInfos = new List<IObject>(Game.GetObjectsByCustomID("SS Officer"));
+            var playerProfileInfos = new List<IObject>(Game.GetObjectsByCustomID("NinjaA"));
+            System.Diagnostics.Debugger.Break();
             var playerProfileInfosList = playerProfileInfos.Select(Q => ((IObjectPlayerProfileInfo)Q).GetProfile()).ToList();
             var profilesStr = Convert(playerProfileInfosList);
-            System.Diagnostics.Debugger.Break();
-
-            //var profiles = new List<IProfile>
-            //{
-            //    ((IObjectPlayerProfileInfo)Game.GetSingleObjectByCustomID("ClownCowboyProfile")).GetProfile(),
-            //    ((IObjectPlayerProfileInfo)Game.GetSingleObjectByCustomID("ClownGangsterProfile")).GetProfile(),
-            //    ((IObjectPlayerProfileInfo)Game.GetSingleObjectByCustomID("ClownBoxerProfile")).GetProfile(),
-            //    ((IObjectPlayerProfileInfo)Game.GetSingleObjectByCustomID("TheDemolitionist")).GetProfile(),
-            //    ((IObjectPlayerProfileInfo)Game.GetSingleObjectByCustomID("BodyguardA")).GetProfile(),
-            //    ((IObjectPlayerProfileInfo)Game.GetSingleObjectByCustomID("Kingpin")).GetProfile(),
-            //    ((IObjectPlayerProfileInfo)Game.GetSingleObjectByCustomID("Santa")).GetProfile(),
-            //};
-            //var profilesStr = Convert(profiles);
-
-            //var modifiers = new List<PlayerModifiers>()
-            //{
-            //    ((IObjectPlayerModifierInfo)Game.GetSingleObjectByCustomID("ClownBoxerModifiers")).GetModifiers(),
-            //    ((IObjectPlayerModifierInfo)Game.GetSingleObjectByCustomID("ClownCowboyModifiers")).GetModifiers(),
-            //    ((IObjectPlayerModifierInfo)Game.GetSingleObjectByCustomID("ClownGangsterModifiers")).GetModifiers(),
-            //};
-
-            //foreach (var mod in modifiers)
-            //{
-            //    var modifiersStr = Convert(mod);
-            //}
-
-            //var player = Game.GetPlayers()[0];
-            //var player2 = Game.GetPlayers()[1];
-            //var player3 = Game.GetPlayers()[2];
-
-            //var modifier = player.GetModifiers();
-
-            //player.GiveWeaponItem(WeaponItem.GRENADE_LAUNCHER);
-            //player.GiveWeaponItem(WeaponItem.SNIPER);
-            //player.GiveWeaponItem(WeaponItem.BASEBALL);
-            //player.GiveWeaponItem(WeaponItem.ASSAULT);
-            //player.GiveWeaponItem(WeaponItem.PISTOL);
-            //player2.GiveWeaponItem(WeaponItem.GRENADE_LAUNCHER);
-            //player3.GiveWeaponItem(WeaponItem.GRENADE_LAUNCHER);
-
-            //modifier.SizeModifier = 0.95f;
-            //modifier.MeleeDamageDealtModifier = 1.5f;
-            //modifier.ProjectileDamageDealtModifier = 5.0f;
-            //modifier.ProjectileCritChanceDealtModifier = 5.0f;
-            //modifier.RunSpeedModifier = 0.5f;
-            //modifier.SprintSpeedModifier = 0.5f;
-
-            //player.SetModifiers(modifier);
-
-            //var mod2 = player2.GetModifiers();
-
-            //mod2.MaxHealth = 100;
-            //mod2.CurrentHealth = 100;
-
-            //player2.SetModifiers(mod2);
-            //player3.SetModifiers(mod2);
-
-            //System.Diagnostics.Debugger.Break();
         }
 
         public string Convert(PlayerModifiers playerModifiers, string indent = "")
