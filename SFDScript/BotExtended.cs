@@ -4984,6 +4984,11 @@ namespace SFDScript.MoreBot
 
         public class Bot
         {
+            private static Color dialogueColor = new Color(128, 32, 32);
+            public IPlayer Player { get; private set; }
+            public BotType Type { get; private set; }
+            public BotInfo Info { get; private set; }
+
             public Bot(IPlayer player, BotType type, BotInfo info)
             {
                 Player = player;
@@ -4995,9 +5000,6 @@ namespace SFDScript.MoreBot
 
                 SaySpawnLine();
             }
-            public IPlayer Player { get; private set; }
-            public BotType Type { get; private set; }
-            public BotInfo Info { get; private set; }
 
             public void SaySpawnLine()
             {
@@ -5005,7 +5007,7 @@ namespace SFDScript.MoreBot
                 var spawnLineChance = Info.SpawnLineChance;
 
                 if (!string.IsNullOrWhiteSpace(spawnLine) && Helper.RandomBetween(0f, 1f) < spawnLineChance)
-                    Game.CreateDialogue(spawnLine, new Color(128, 32, 32), Player, duration: 3000f);
+                    Game.CreateDialogue(spawnLine, dialogueColor, Player, duration: 3000f);
             }
 
             public void SayDeathLine()
@@ -5014,7 +5016,7 @@ namespace SFDScript.MoreBot
                 var deathLineChance = Info.DeathLineChance;
 
                 if (!string.IsNullOrWhiteSpace(deathLine) && Helper.RandomBetween(0f, 1f) < deathLineChance)
-                    Game.CreateDialogue(deathLine, new Color(128, 32, 32), Player, duration: 3000f);
+                    Game.CreateDialogue(deathLine, dialogueColor, Player, duration: 3000f);
             }
 
             public void OnDeath()
@@ -5033,17 +5035,17 @@ namespace SFDScript.MoreBot
                 public bool IsTurningIntoZombie { get; private set; }
                 public bool TurnIntoZombie()
                 {
-                    if (Body.IsRemoved || Body.IsBurning)
-                    {
-                        return false;
-                    }
+                    if (Body.IsRemoved) return false;
 
                     var player = Game.CreatePlayer(Body.GetWorldPosition());
                     var zombie = SpawnBot(GetZombieType(Body), player, equipWeapons: false, setProfile: false);
                     var zombieBody = zombie.Player;
 
                     var modifiers = Body.GetModifiers();
-                    modifiers.CurrentHealth = modifiers.MaxHealth * 0.75f;
+                    if (IsTheInfected(GetBotType(Body))) // Marauder has fake MaxHealth to has blood effect on the face
+                        modifiers.CurrentHealth = modifiers.MaxHealth = 75;
+                    else
+                        modifiers.CurrentHealth = modifiers.MaxHealth * 0.75f;
                     zombieBody.SetModifiers(modifiers);
 
                     var profile = Body.GetProfile();
@@ -5102,7 +5104,7 @@ namespace SFDScript.MoreBot
                 m_playerSpawners = GetEmptyPlayerSpawners();
                 m_playerDamageEvent = Events.PlayerDamageCallback.Start(OnPlayerDamage);
                 m_playerDeathEvent = Events.PlayerDeathCallback.Start(OnPlayerDeath);
-                m_updateEvent = Events.UpdateCallback.Start(OnUpdate, 50);
+                m_updateEvent = Events.UpdateCallback.Start(OnUpdate);
 
                 var playerCount = Game.GetPlayers().Length;
                 var botCount = MAX_PLAYERS - playerCount;
@@ -5132,6 +5134,9 @@ namespace SFDScript.MoreBot
             public static void OnUpdate(float elapsed)
             {
                 UpdateCorpses();
+
+                if (m_updateOnPlayerDeadNextFrame)
+                    OnPlayerDeathNextFrame();
             }
 
             // Turning corpses killed by zombie into another one after some time
@@ -5168,6 +5173,20 @@ namespace SFDScript.MoreBot
                 }
             }
 
+            private static bool m_updateOnPlayerDeadNextFrame = false;
+            private static Bot m_deadBot = null;
+            private static void OnPlayerDeathNextFrame()
+            {
+                // Have to wait until next frame after OnPlayerDeath event to confirm if IPlayer.IsRemoved
+                // is true (player instance is removed from the map by either gibbed or exploded into pieces)
+                if (!m_deadBot.Player.IsRemoved)
+                {
+                    m_deadBot.SayDeathLine();
+                }
+
+                m_updateOnPlayerDeadNextFrame = false;
+                m_deadBot = null;
+            }
 
             private static void OnPlayerDeath(IPlayer player)
             {
@@ -5179,7 +5198,8 @@ namespace SFDScript.MoreBot
                         Bot enemy;
                         if (m_bots.TryGetValue(player.UniqueID, out enemy))
                         {
-                            enemy.SayDeathLine();
+                            m_deadBot = enemy;
+                            m_updateOnPlayerDeadNextFrame = true;
                             enemy.OnDeath();
                         }
                         break;
@@ -5188,6 +5208,7 @@ namespace SFDScript.MoreBot
                 if (m_infectedPlayers.ContainsKey(player.UniqueID))
                 {
                     var infectedPlayer = m_infectedPlayers[player.UniqueID];
+                    if (infectedPlayer.IsBurning) return;
                     m_infectedCorpses.Add(new PlayerCorpse(infectedPlayer));
                 }
             }
@@ -5448,6 +5469,9 @@ namespace SFDScript.MoreBot
 // Group
 // mecha/fritzliebe
 // Add bulletproof and meleeproof superfighters
+// Add assassin
+// Add jo boss (thug or biker group)
 
 // Meatgrider block?
 // Multiple spawn|dead lines?
+// Fix infected corpse turn into zombie even if it's is burned (it should not)
