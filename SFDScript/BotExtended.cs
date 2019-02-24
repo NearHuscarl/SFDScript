@@ -136,6 +136,7 @@ namespace SFDScript.MoreBot
             Demolitionist,
             // Tier3: Holiday Hullabaloo
             Elf,
+            Jo,
             Fritzliebe,
             Funnyman,
             // Tier1: Heavy Hostility
@@ -260,67 +261,64 @@ namespace SFDScript.MoreBot
                     break;
                 }
                 case BotType.AssassinMelee:
-                {
-                    profiles.Add(new IProfile()
-                    {
-                        Name = "Assassin",
-                        Accesory = new IProfileClothingItem("Mask", "ClothingDarkBlue", "ClothingLightGray", ""),
-                        ChestOver = null,
-                        ChestUnder = new IProfileClothingItem("SweaterBlack", "ClothingDarkBlue", "ClothingLightGray", ""),
-                        Feet = new IProfileClothingItem("ShoesBlack", "ClothingGray", "ClothingLightGray", ""),
-                        Gender = Gender.Male,
-                        Hands = null,
-                        Head = null,
-                        Legs = new IProfileClothingItem("PantsBlack", "ClothingDarkBlue", "ClothingLightGray", ""),
-                        Skin = new IProfileClothingItem("Normal", "Skin4", "ClothingLightGray", ""),
-                        Waist = null,
-                    });
-                    profiles.Add(new IProfile()
-                    {
-                        Name = "Assassin",
-                        Accesory = new IProfileClothingItem("Mask", "ClothingDarkBlue", "ClothingLightGray", ""),
-                        ChestOver = null,
-                        ChestUnder = new IProfileClothingItem("SweaterBlack_fem", "ClothingDarkBlue", "ClothingLightGray", ""),
-                        Feet = new IProfileClothingItem("ShoesBlack", "ClothingGray", "ClothingLightGray", ""),
-                        Gender = Gender.Female,
-                        Hands = null,
-                        Head = null,
-                        Legs = new IProfileClothingItem("PantsBlack_fem", "ClothingDarkBlue", "ClothingLightGray", ""),
-                        Skin = new IProfileClothingItem("Normal_fem", "Skin4", "ClothingLightGray", ""),
-                        Waist = null,
-                    });
-                    profiles.Add(new IProfile()
-                    {
-                        Name = "Assassin",
-                        Accesory = new IProfileClothingItem("Balaclava", "ClothingDarkBlue", "ClothingLightGray", ""),
-                        ChestOver = null,
-                        ChestUnder = new IProfileClothingItem("SweaterBlack", "ClothingDarkBlue", "ClothingLightGray", ""),
-                        Feet = new IProfileClothingItem("ShoesBlack", "ClothingGray", "ClothingLightGray", ""),
-                        Gender = Gender.Male,
-                        Hands = null,
-                        Head = null,
-                        Legs = new IProfileClothingItem("PantsBlack", "ClothingDarkBlue", "ClothingLightGray", ""),
-                        Skin = new IProfileClothingItem("Normal", "Skin4", "ClothingLightGray", ""),
-                        Waist = null,
-                    });
-                    profiles.Add(new IProfile()
-                    {
-                        Name = "Assassin",
-                        Accesory = new IProfileClothingItem("Balaclava", "ClothingDarkBlue", "ClothingLightGray", ""),
-                        ChestOver = null,
-                        ChestUnder = new IProfileClothingItem("SweaterBlack_fem", "ClothingDarkBlue", "ClothingLightGray", ""),
-                        Feet = new IProfileClothingItem("ShoesBlack", "ClothingGray", "ClothingLightGray", ""),
-                        Gender = Gender.Female,
-                        Hands = null,
-                        Head = null,
-                        Legs = new IProfileClothingItem("PantsBlack_fem", "ClothingDarkBlue", "ClothingLightGray", ""),
-                        Skin = new IProfileClothingItem("Normal_fem", "Skin4", "ClothingLightGray", ""),
-                        Waist = null,
-                    });
-                    break;
-                }
                 case BotType.AssassinRange:
                 {
+                    profiles.Add(new IProfile()
+                    {
+                        Name = "Assassin",
+                        Accesory = new IProfileClothingItem("Mask", "ClothingDarkBlue", "ClothingLightGray", ""),
+                        ChestOver = null,
+                        ChestUnder = new IProfileClothingItem("SweaterBlack", "ClothingDarkBlue", "ClothingLightGray", ""),
+                        Feet = new IProfileClothingItem("ShoesBlack", "ClothingGray", "ClothingLightGray", ""),
+                        Gender = Gender.Male,
+                        Hands = null,
+                        Head = null,
+                        Legs = new IProfileClothingItem("PantsBlack", "ClothingDarkBlue", "ClothingLightGray", ""),
+                        Skin = new IProfileClothingItem("Normal", "Skin4", "ClothingLightGray", ""),
+                        Waist = null,
+                    });
+                    profiles.Add(new IProfile()
+                    {
+                        Name = "Assassin",
+                        Accesory = new IProfileClothingItem("Mask", "ClothingDarkBlue", "ClothingLightGray", ""),
+                        ChestOver = null,
+                        ChestUnder = new IProfileClothingItem("SweaterBlack_fem", "ClothingDarkBlue", "ClothingLightGray", ""),
+                        Feet = new IProfileClothingItem("ShoesBlack", "ClothingGray", "ClothingLightGray", ""),
+                        Gender = Gender.Female,
+                        Hands = null,
+                        Head = null,
+                        Legs = new IProfileClothingItem("PantsBlack_fem", "ClothingDarkBlue", "ClothingLightGray", ""),
+                        Skin = new IProfileClothingItem("Normal_fem", "Skin4", "ClothingLightGray", ""),
+                        Waist = null,
+                    });
+                    profiles.Add(new IProfile()
+                    {
+                        Name = "Assassin",
+                        Accesory = new IProfileClothingItem("Balaclava", "ClothingDarkBlue", "ClothingLightGray", ""),
+                        ChestOver = null,
+                        ChestUnder = new IProfileClothingItem("SweaterBlack", "ClothingDarkBlue", "ClothingLightGray", ""),
+                        Feet = new IProfileClothingItem("ShoesBlack", "ClothingGray", "ClothingLightGray", ""),
+                        Gender = Gender.Male,
+                        Hands = null,
+                        Head = null,
+                        Legs = new IProfileClothingItem("PantsBlack", "ClothingDarkBlue", "ClothingLightGray", ""),
+                        Skin = new IProfileClothingItem("Normal", "Skin4", "ClothingLightGray", ""),
+                        Waist = null,
+                    });
+                    profiles.Add(new IProfile()
+                    {
+                        Name = "Assassin",
+                        Accesory = new IProfileClothingItem("Balaclava", "ClothingDarkBlue", "ClothingLightGray", ""),
+                        ChestOver = null,
+                        ChestUnder = new IProfileClothingItem("SweaterBlack_fem", "ClothingDarkBlue", "ClothingLightGray", ""),
+                        Feet = new IProfileClothingItem("ShoesBlack", "ClothingGray", "ClothingLightGray", ""),
+                        Gender = Gender.Female,
+                        Hands = null,
+                        Head = null,
+                        Legs = new IProfileClothingItem("PantsBlack_fem", "ClothingDarkBlue", "ClothingLightGray", ""),
+                        Skin = new IProfileClothingItem("Normal_fem", "Skin4", "ClothingLightGray", ""),
+                        Waist = null,
+                    });
                     profiles.Add(new IProfile()
                     {
                         Name = "Assassin",
@@ -944,6 +942,24 @@ namespace SFDScript.MoreBot
                         Legs = new IProfileClothingItem("StripedPants", "ClothingLightBlue", "ClothingLightGray", ""),
                         Skin = new IProfileClothingItem("Normal", "Skin4", "ClothingLightGray", ""),
                         Waist = null,
+                    });
+                    break;
+                }
+                case BotType.Jo:
+                {
+                    profiles.Add(new IProfile()
+                    {
+                        Name = "Jo",
+                        Accesory = new IProfileClothingItem("Cigar", "ClothingDarkGray", "ClothingLightGray", ""),
+                        ChestOver = null,
+                        ChestUnder = new IProfileClothingItem("SleevelessShirt_fem", "ClothingLightGray", "ClothingLightGray", ""),
+                        Feet = new IProfileClothingItem("BootsBlack", "ClothingDarkOrange", "ClothingLightGray", ""),
+                        Gender = Gender.Female,
+                        Hands = null,
+                        Head = null,
+                        Legs = new IProfileClothingItem("TornPants_fem", "ClothingLightBlue", "ClothingLightGray", ""),
+                        Skin = new IProfileClothingItem("Normal_fem", "Skin1", "ClothingLightGray", ""),
+                        Waist = new IProfileClothingItem("SmallBelt_fem", "ClothingLightBrown", "ClothingLightGray", ""),
                     });
                     break;
                 }
@@ -3170,6 +3186,15 @@ namespace SFDScript.MoreBot
                     });
                     break;
                 }
+                case BotType.Jo:
+                {
+                    weapons.Add(new WeaponSet()
+                    {
+                        Melee = WeaponItem.BOTTLE,
+                        Powerup = WeaponItem.SLOWMO_10,
+                    });
+                    break;
+                }
                 case BotType.Gangster:
                 {
                     weapons.Add(new WeaponSet()
@@ -3895,7 +3920,7 @@ namespace SFDScript.MoreBot
                     botBehaviorSet.MeleeWeaponUseFullRange = false;
                     break;
 
-                case BotAI.Ninja:
+                case BotAI.Ninja: // == BotAI.MeleeExpert + more offensive melee tactic
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.MeleeB);
                     botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0.9f;
                     botBehaviorSet.MeleeWaitTimeLimitMin = 600f;
@@ -4046,6 +4071,7 @@ namespace SFDScript.MoreBot
             {
                 EquipWeaponChance = 1f;
                 OnSpawn = null;
+                OnUpdate = null;
                 OnDeath = null;
                 IsBoss = false;
                 InitialWeaponDrawn = WeaponItemType.NONE;
@@ -4061,6 +4087,7 @@ namespace SFDScript.MoreBot
             public PlayerModifiers Modifiers { get; set; }
             public bool IsBoss { get; set; }
             public Action<Bot> OnSpawn { get; set; }
+            public Action<Bot> OnUpdate { get; set; }
             public Action<Bot> OnDeath { get; set; }
             public WeaponItemType InitialWeaponDrawn { get; set; }
             public string SpawnLine { get; set; }
@@ -4086,6 +4113,38 @@ namespace SFDScript.MoreBot
                         CurrentHealth = 70,
                         ProjectileDamageDealtModifier = 0.9f,
                         MeleeDamageDealtModifier = 0.9f,
+                        SizeModifier = 0.95f,
+                    };
+                    break;
+                }
+
+                // Assassin
+                case BotType.AssassinMelee:
+                {
+                    botInfo.AIType = BotAI.MeleeHard;
+                    botInfo.Modifiers = new PlayerModifiers()
+                    {
+                        MaxHealth = 70,
+                        CurrentHealth = 70,
+                        ProjectileDamageDealtModifier = 0.9f,
+                        MeleeDamageDealtModifier = 0.95f,
+                        RunSpeedModifier = 1.25f,
+                        SprintSpeedModifier = 1.4f,
+                        SizeModifier = 0.95f,
+                    };
+                    break;
+                }
+                case BotType.AssassinRange:
+                {
+                    botInfo.AIType = BotAI.RangeHard;
+                    botInfo.Modifiers = new PlayerModifiers()
+                    {
+                        MaxHealth = 70,
+                        CurrentHealth = 70,
+                        ProjectileDamageDealtModifier = 0.9f,
+                        MeleeDamageDealtModifier = 0.95f,
+                        RunSpeedModifier = 1.25f,
+                        SprintSpeedModifier = 1.4f,
                         SizeModifier = 0.95f,
                     };
                     break;
@@ -4128,6 +4187,7 @@ namespace SFDScript.MoreBot
 
                 // Hulk
                 case BotType.BikerHulk:
+                case BotType.GangsterHulk:
                 case BotType.ThugHulk:
                 {
                     botInfo.AIType = BotAI.Hulk;
@@ -4167,8 +4227,10 @@ namespace SFDScript.MoreBot
                 case BotType.Agent2:
                 case BotType.Bandido:
                 case BotType.Bodyguard:
+                case BotType.Bodyguard2:
                 case BotType.ClownGangster:
                 case BotType.Elf:
+                case BotType.Gangster:
                 case BotType.MetroCop:
                 case BotType.Police:
                 case BotType.PoliceSWAT:
@@ -4342,6 +4404,18 @@ namespace SFDScript.MoreBot
                     botInfo.IsBoss = true;
                     break;
                 }
+                case BotType.Jo:
+                {
+                    botInfo.AIType = BotAI.MeleeExpert;
+                    botInfo.Modifiers = new PlayerModifiers()
+                    {
+                        MaxHealth = 250,
+                        CurrentHealth = 250,
+                        SizeModifier = 1.1f,
+                    };
+                    botInfo.IsBoss = true;
+                    break;
+                }
                 case BotType.Incinerator:
                 {
                     botInfo.AIType = BotAI.Incinerator;
@@ -4374,8 +4448,6 @@ namespace SFDScript.MoreBot
                     {
                         MaxHealth = 250,
                         CurrentHealth = 250,
-                        ProjectileDamageDealtModifier = 1.2f,
-                        MeleeDamageDealtModifier = 1.2f,
                         SizeModifier = 1.05f,
                     };
                     botInfo.IsBoss = true;
@@ -4510,7 +4582,7 @@ namespace SFDScript.MoreBot
             public SubGroup(BotType type)
             {
                 Types = new List<BotType>() { type };
-                Weight = -1f;
+                Weight = 0f;
             }
             private List<BotType> types;
             public List<BotType> Types
@@ -4544,7 +4616,11 @@ namespace SFDScript.MoreBot
                 foreach (var subGroup in subGroups)
                 {
                     var hasBoss = subGroup.HasBoss;
-                    if (hasBoss) HasBoss = true;
+                    if (hasBoss)
+                    {
+                        HasBoss = true;
+                        continue;
+                    }
 
                     TotalScore += subGroup.Weight;
                 }
@@ -4554,29 +4630,31 @@ namespace SFDScript.MoreBot
             {
                 var subGroupCount = 0;
                 var groupCountRemaining = groupCount;
+                var mobCount = HasBoss ? groupCount - 1 : groupCount;
 
                 foreach (var subGroup in SubGroups)
                 {
                     subGroupCount++;
 
-                    var weight = subGroup.Weight;
-                    var share = weight / TotalScore;
-                    var botCount = groupCount * share;
-
                     if (!subGroup.HasBoss)
                     {
-                        while (groupCountRemaining > 0 && (botCount > 0 || subGroupCount == SubGroups.Count))
+                        var weight = subGroup.Weight;
+                        var share = weight / TotalScore;
+                        var botCountRemainingThisType = Math.Round(mobCount * share);
+
+                        while (groupCountRemaining > 0 && (botCountRemainingThisType > 0 || subGroupCount == SubGroups.Count))
                         {
                             var botType = subGroup.GetRandomType();
                             BotHelper.SpawnBot(botType);
                             groupCountRemaining--;
-                            botCount--;
+                            botCountRemainingThisType--;
                         }
                     }
                     else
                     {
                         var botType = subGroup.GetRandomType();
                         BotHelper.SpawnBot(botType);
+                        groupCountRemaining--;
                     }
                 }
             }
@@ -4624,11 +4702,13 @@ namespace SFDScript.MoreBot
 
         public enum BotGroup
         {
-            Agent = 0,
+            Assassin = 0,
+            Agent,
             Bandido,
             Biker,
             Clown,
             Cowboy,
+            Gangster,
             Marauder,
             MetroCop,
             Police,
@@ -4639,6 +4719,7 @@ namespace SFDScript.MoreBot
             ZombieHard,
 
             Boss_Demolitionist = 200,
+            Boss_Jo,
             Boss_Incinerator,
             Boss_Kingpin,
             Boss_Meatgrinder,
@@ -4669,6 +4750,18 @@ namespace SFDScript.MoreBot
 
             switch (botGroup)
             {
+                case BotGroup.Assassin:
+                {
+                    groupSet.AddGroup(new List<SubGroup>()
+                    {
+                        new SubGroup(BotType.AssassinMelee, 1f),
+                    });
+                    groupSet.AddGroup(new List<SubGroup>()
+                    {
+                        new SubGroup(BotType.AssassinRange, 1f),
+                    });
+                    break;
+                }
                 case BotGroup.Agent:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -4723,6 +4816,20 @@ namespace SFDScript.MoreBot
                     groupSet.AddGroup(new List<SubGroup>()
                     {
                         new SubGroup(BotType.Cowboy, 1f),
+                    });
+                    break;
+                }
+                case BotGroup.Gangster:
+                {
+                    groupSet.AddGroup(new List<SubGroup>()
+                    {
+                        new SubGroup(BotType.Gangster, 0.8f),
+                        new SubGroup(BotType.GangsterHulk, 0.2f),
+                    });
+                    groupSet.AddGroup(new List<SubGroup>()
+                    {
+                        new SubGroup(BotType.Gangster, 0.7f),
+                        new SubGroup(BotType.ThugHulk, 0.3f),
                     });
                     break;
                 }
@@ -4799,6 +4906,11 @@ namespace SFDScript.MoreBot
                     groupSet.AddGroup(new List<SubGroup>()
                     {
                         new SubGroup(BotType.Thug, 1f),
+                    });
+                    groupSet.AddGroup(new List<SubGroup>()
+                    {
+                        new SubGroup(BotType.Thug, 0.5f),
+                        new SubGroup(BotType.Biker, 0.5f),
                     });
                     groupSet.AddGroup(new List<SubGroup>()
                     {
@@ -4888,6 +5000,16 @@ namespace SFDScript.MoreBot
                     });
                     break;
                 }
+                case BotGroup.Boss_Jo:
+                {
+                    groupSet.AddGroup(new List<SubGroup>()
+                    {
+                        new SubGroup(BotType.Jo),
+                        new SubGroup(BotType.Biker, 0.6f),
+                        new SubGroup(BotType.BikerHulk, 0.4f),
+                    });
+                    break;
+                }
                 case BotGroup.Boss_Incinerator:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -4903,15 +5025,14 @@ namespace SFDScript.MoreBot
                         new SubGroup(BotType.Kingpin),
                         new SubGroup(BotType.Bodyguard, 1f),
                     });
+                    groupSet.AddGroup(new List<SubGroup>()
+                    {
+                        new SubGroup(BotType.Kingpin),
+                        new SubGroup(BotType.GangsterHulk, 0.55f),
+                        new SubGroup(BotType.Bodyguard2, 0.45f),
+                    });
                     break;
                 }
-                //new Group(new Dictionary<BotType, float>()
-                //{
-                //    { BotType.Kingpin, -1 },
-                //    { BotType.Bodyguard, 1f },
-                //    { BotType.Gangster, 1f },
-                //    { BotType.GangsterHulk, 1f },
-                //}),
                 case BotGroup.Boss_Meatgrinder:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -5019,6 +5140,12 @@ namespace SFDScript.MoreBot
                     Game.CreateDialogue(deathLine, dialogueColor, Player, duration: 3000f);
             }
 
+            public void OnUpdate()
+            {
+                if (Info.OnUpdate != null)
+                    Info.OnUpdate(this);
+            }
+
             public void OnDeath()
             {
                 if (Info.OnDeath != null)
@@ -5097,6 +5224,7 @@ namespace SFDScript.MoreBot
             private static Events.PlayerDeathCallback m_playerDeathEvent = null;
             private static Events.UpdateCallback m_updateEvent = null;
             private static Dictionary<int, Bot> m_bots = new Dictionary<int, Bot>();
+            private static List<Bot> m_updateBots = new List<Bot>();
             private static Dictionary<int, IPlayer> m_infectedPlayers = new Dictionary<int, IPlayer>();
 
             public static void Initialize()
@@ -5134,6 +5262,8 @@ namespace SFDScript.MoreBot
             public static void OnUpdate(float elapsed)
             {
                 UpdateCorpses();
+
+                foreach (var bot in m_updateBots) bot.OnUpdate();
 
                 if (m_updateOnPlayerDeadNextFrame)
                     OnPlayerDeathNextFrame();
@@ -5444,8 +5574,13 @@ namespace SFDScript.MoreBot
                 if (info.StartInfected)
                     m_infectedPlayers.Add(player.UniqueID, player);
 
-                m_bots.Add(player.UniqueID, new Bot(player, botType, info));
-                return m_bots[player.UniqueID];
+                var bot = new Bot(player, botType, info);
+                m_bots.Add(player.UniqueID, bot);
+
+                if (info.OnUpdate != null)
+                    m_updateBots.Add(bot);
+
+                return bot;
             }
         }
     }
