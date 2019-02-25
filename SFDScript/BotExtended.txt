@@ -48,6 +48,30 @@
         {
             private static Random Rnd = new Random();
 
+
+            public static T StringToEnum<T>(string str)
+            {
+                return (T)Enum.Parse(typeof(T), str);
+            }
+            public static T[] GetArrayFromEnum<T>()
+            {
+                return (T[])Enum.GetValues(typeof(T));
+            }
+
+            public static IEnumerable<T> EnumToList<T>()
+            {
+                var enumArray = GetArrayFromEnum<T>();
+
+                foreach (var enumVal in enumArray)
+                {
+                    yield return enumVal;
+                }
+            }
+            public static string EnumToString<T>(T enumVal)
+            {
+                return Enum.GetName(typeof(T), enumVal);
+            }
+
             public static bool IsElapsed(float timeStarted, float timeToElapse)
             {
                 if (Game.TotalElapsedGameTime - timeStarted >= timeToElapse)
@@ -4178,6 +4202,10 @@
                         SprintSpeedModifier = 1.1f,
                         SizeModifier = 0.9f,
                     };
+                    botInfo.SpawnLine = "Move 'em on, head 'em up...";
+                    botInfo.SpawnLineChance = 0.05f;
+                    botInfo.DeathLine = "Count 'em in, ride 'em... oof!";
+                    botInfo.DeathLineChance = 0.05f;
                     break;
                 }
 
@@ -5149,6 +5177,323 @@
             }
         }
 
+        public static class BotExendedCommand
+        {
+            private static Color m_messageColor = new Color(24, 238, 200);
+            private static Color m_errorColor = new Color(244, 77, 77);
+            private static Color m_warningColor = new Color(249, 191, 11);
+            private static IScriptStorage m_storage = Game.LocalStorage;
+            //private static IScriptStorage m_storage = Game.GetSharedStorage("BOTEXTENDED");
+
+            public static void OnUserMessage(UserMessageCallbackArgs args)
+            {
+                try
+                {
+                    if (!args.User.IsHost || !args.IsCommand || (args.Command != "BOTEXTENDED" && args.Command != "BE"))
+                    {
+                        return;
+                    }
+
+                    var message = args.CommandArguments.ToLowerInvariant();
+                    var words = message.Split(' ');
+                    var command = words.FirstOrDefault();
+                    var arguments = words.Skip(1);
+
+                    switch (command)
+                    {
+                        case "?":
+                        case "h":
+                        case "help":
+                            PrintHelp();
+                            break;
+
+                        case "lg":
+                        case "listgroup":
+                            ListBotGroup();
+                            break;
+
+                        case "lb":
+                        case "listbot":
+                            ListBotType();
+                            break;
+
+                        case "/":
+                        case "f":
+                        case "find":
+                            FindGroup(arguments);
+                            break;
+
+                        case "s":
+                        case "setting":
+                            ShowCurrentSettings();
+                            break;
+
+                        case "sp":
+                        case "spawn":
+                            SpawnNewBot(arguments);
+                            break;
+
+                        case "r":
+                        case "random":
+                            RandomGroup(arguments);
+                            break;
+
+                        case "g":
+                        case "group":
+                            SelectGroup(arguments);
+                            break;
+
+                        default:
+                            PrintMessage("Invalid command", m_errorColor);
+                            break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    if (e is NullReferenceException)
+                    {
+                        Game.RunCommand("/msg [BotExtended script]: msg caught null reference exception");
+                    }
+                }
+            }
+
+            private static void PrintMessage(string message, Color? color = null)
+            {
+                if (color == null) color = m_messageColor;
+                Game.ShowChatMessage(message, (Color)color);
+            }
+
+            private static void PrintHelp()
+            {
+                PrintMessage("--Botextended help--", m_errorColor);
+                PrintMessage("/<botextended|be> [help|h|?]: Print this help");
+                PrintMessage("/<botextended|be> [listgroup|lg]: List all bot groups");
+                PrintMessage("/<botextended|be> [listbot|lb]: List all bot types");
+                PrintMessage("/<botextended|be> [find|f|/] <query>: Find bot groups");
+                PrintMessage("/<botextended|be> [settings|s]: Show current script settings");
+                PrintMessage("/<botextended|be> [spawn|sp] <BotType> [Team|_] [Count]: Spawn bot");
+                PrintMessage("/<botextended|be> [random|r] <0|1>: Random all groups at startup if set to 1. This option will disregard the current group list");
+                PrintMessage("/<botextended|be> [group|g] <group names|indexes>: Choose a list of group by either name or index to randomly spawn on startup");
+                PrintMessage("For example:", m_errorColor);
+                PrintMessage("/botextended select metrocop >> select metrocop group");
+                PrintMessage("/be s 0 2 4 >> select assassin, bandido and clown group");
+            }
+
+            private static IEnumerable<string> GetGroupNames()
+            {
+                var groups = Helper.GetArrayFromEnum<BotGroup>();
+                yield return "-1: Random";
+
+                foreach(var group in groups)
+                {
+                    yield return ((int)group).ToString() + ": " + Helper.EnumToString(group);
+                }
+            }
+
+            private static void ListBotGroup()
+            {
+                PrintMessage("--Botextended list group--", m_errorColor);
+
+                foreach (var groupName in GetGroupNames())
+                {
+                    PrintMessage(groupName, m_warningColor);
+                }
+            }
+
+            private static void ListBotType()
+            {
+                PrintMessage("--Botextended list bot type--", m_errorColor);
+
+                foreach (var botType in Helper.EnumToList<BotType>())
+                {
+                    PrintMessage((int)botType + ": " + Helper.EnumToString(botType), m_warningColor);
+                }
+            }
+
+            private static void FindGroup(IEnumerable<string> arguments)
+            {
+                var query = arguments.FirstOrDefault();
+                if (query == null) return;
+
+                PrintMessage("--Botextended find--", m_errorColor);
+
+                foreach (var groupName in GetGroupNames())
+                {
+                    var name = groupName.ToLowerInvariant();
+                    if (name.Contains(query))
+                        PrintMessage(groupName, m_warningColor);
+                }
+            }
+
+            private static void ShowCurrentSettings()
+            {
+                PrintMessage("--Botextended settings--", m_errorColor);
+
+                string[] groups = null;
+                if (m_storage.TryGetItemStringArr(BotHelper.BOT_GROUPS, out groups))
+                {
+                    PrintMessage("-Current groups", m_warningColor);
+                    for (var i = 0; i < groups.Length; i++)
+                    {
+                        var botGroup = Helper.StringToEnum<BotGroup>(groups[i]);
+                        var index = (int)botGroup;
+                        PrintMessage(index + ": " + groups[i], m_messageColor);
+                    }
+                }
+
+                bool randomGroup;
+                if (m_storage.TryGetItemBool(BotHelper.RANDOM_GROUP, out randomGroup))
+                {
+                    PrintMessage("-Random groups: " + randomGroup, m_warningColor);
+                }
+            }
+
+            private static void SpawnNewBot(IEnumerable<string> arguments)
+            {
+                var query = arguments.FirstOrDefault();
+                if (query == null) return;
+                var argList = arguments.ToList();
+
+                var team = PlayerTeam.Independent;
+                if (arguments.Count() >= 2 && argList[1] != "_")
+                {
+                    if (!Enum.TryParse(argList[1], ignoreCase: true, result: out team))
+                        team = PlayerTeam.Independent;
+                }
+
+                var count = 1;
+                if (arguments.Count() >= 3)
+                {
+                    if (int.TryParse(argList[2], out count))
+                        count = (int)MathHelper.Clamp(count, 1, 15);
+                    else
+                        count = 1;
+                }
+
+                var botType = BotType.None;
+                var botName = "";
+                var invalidQuery = "";
+
+                int index = -1;
+                if (int.TryParse(query, out index))
+                {
+                    if (Enum.IsDefined(typeof(BotType), index))
+                    {
+                        botType = (BotType)index;
+                        botName = Helper.EnumToString(botType);
+                    }
+                    else
+                    {
+                        invalidQuery = index.ToString();
+                    }
+                }
+                else
+                {
+                    if (Enum.TryParse(query, ignoreCase: true, result: out botType))
+                    {
+                        botName = query;
+                    }
+                    else
+                    {
+                        invalidQuery = query;
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(invalidQuery))
+                {
+                    PrintMessage("--Botextended spawn bot--", m_errorColor);
+                    PrintMessage("Invalid query: " + invalidQuery, m_warningColor);
+                }
+                else
+                {
+                    for (var i = 0; i < count; i++)
+                    {
+                        BotHelper.SpawnBot(botType, player: null,
+                            equipWeapons: true,
+                            setProfile: true,
+                            team: team,
+                            ignoreFullSpawner: true);
+                    }
+
+                    PrintMessage("Spawned " + botName + " bot");
+                }
+            }
+
+            private static void RandomGroup(IEnumerable<string> arguments)
+            {
+                var firstArg = arguments.FirstOrDefault();
+                if (firstArg == null) return;
+                int value = -1;
+
+                if (firstArg != "0" && firstArg != "1")
+                {
+                    PrintMessage("--Botextended random group--", m_errorColor);
+                    PrintMessage("Invalid value: " + value + "Value is either 1 (true) or 0 (false): ", m_warningColor);
+                    return;
+                }
+
+                if (int.TryParse(firstArg, out value))
+                {
+                    if (value == 1)
+                        m_storage.SetItem(BotHelper.RANDOM_GROUP, true);
+                    if (value == 0)
+                        m_storage.SetItem(BotHelper.RANDOM_GROUP, false);
+                    PrintMessage("Update successfully");
+                }
+            }
+
+            private static void SelectGroup(IEnumerable<string> arguments)
+            {
+                var botGroups = new List<string>();
+                var invalidQuery = "";
+
+                foreach (var query in arguments)
+                {
+                    int index = -1;
+                    if (int.TryParse(query, out index))
+                    {
+                        if (Enum.IsDefined(typeof(BotGroup), index))
+                        {
+                            var botGroup = (BotGroup)index;
+                            var botGroupStr = Helper.EnumToString(botGroup);
+                            botGroups.Add(botGroupStr);
+                        }
+                        else
+                        {
+                            invalidQuery = index.ToString(); 
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        BotGroup botGroup;
+                        if (Enum.TryParse(query, ignoreCase: true, result: out botGroup))
+                        {
+                            var botGroupStr = Helper.EnumToString(botGroup);
+                            botGroups.Add(botGroupStr);
+                        }
+                        else
+                        {
+                            invalidQuery = query; 
+                            break;
+                        }
+                    }
+                }
+                
+                if (!string.IsNullOrEmpty(invalidQuery))
+                {
+                    PrintMessage("--Botextended select--", m_errorColor);
+                    PrintMessage("Invalid query: " + invalidQuery, m_warningColor);
+                }
+                else
+                {
+                    botGroups.Sort();
+                    m_storage.SetItem(BotHelper.BOT_GROUPS, botGroups.Distinct().ToArray());
+                    PrintMessage("Update successfully");
+                }
+            }
+        }
+
         public static class BotHelper
         {
             private class PlayerCorpse
@@ -5213,15 +5558,21 @@
                 }
             }
 
-            // Player corpses waiting to be transform into zombies
-            private static List<PlayerCorpse> m_infectedCorpses = new List<PlayerCorpse>();
-            private static List<PlayerSpawner> m_playerSpawners;
+            public static readonly string BOT_GROUPS = "BOT_EXTENDED_NH_BOT_GROUPS";
+            public static readonly string RANDOM_GROUP = "BOT_EXTENDED_NH_RANDOM_GROUP";
+            private static bool RANDOM_GROUP_DEFAULT_VALUE = true;
+
             private static Events.PlayerDamageCallback m_playerDamageEvent = null;
             private static Events.PlayerDeathCallback m_playerDeathEvent = null;
             private static Events.UpdateCallback m_updateEvent = null;
+            private static Events.UserMessageCallback m_userMessageEvent = null;
+
+            // Player corpses waiting to be transformed into zombies
+            private static List<PlayerCorpse> m_infectedCorpses = new List<PlayerCorpse>();
+            private static Dictionary<int, IPlayer> m_infectedPlayers = new Dictionary<int, IPlayer>();
+            private static List<PlayerSpawner> m_playerSpawners;
             private static Dictionary<int, Bot> m_bots = new Dictionary<int, Bot>();
             private static List<Bot> m_updateBots = new List<Bot>();
-            private static Dictionary<int, IPlayer> m_infectedPlayers = new Dictionary<int, IPlayer>();
 
             public static void Initialize()
             {
@@ -5229,38 +5580,55 @@
                 m_playerDamageEvent = Events.PlayerDamageCallback.Start(OnPlayerDamage);
                 m_playerDeathEvent = Events.PlayerDeathCallback.Start(OnPlayerDeath);
                 m_updateEvent = Events.UpdateCallback.Start(OnUpdate);
+                m_userMessageEvent = Events.UserMessageCallback.Start(BotExendedCommand.OnUserMessage);
+
+
+                bool randomGroup;
+                if (!Game.LocalStorage.TryGetItemBool(RANDOM_GROUP, out randomGroup))
+                {
+                    randomGroup = RANDOM_GROUP_DEFAULT_VALUE;
+                }
+
 
                 var playerCount = Game.GetPlayers().Length;
                 var botCount = MAX_PLAYERS - playerCount;
                 var botSpawnCount = Math.Min(botCount, m_playerSpawners.Count);
 
-                if (!Game.IsEditorTest)
+                if (randomGroup)
                 {
-                    if (botSpawnCount < 3) // Too few for a group, spawn boss instead
+                    if (!Game.IsEditorTest)
                     {
-                        var bossGroupSet = Helper.GetRandomItem(GetBossGroups());
-                        var group = Helper.GetRandomItem(GetGroupSet(bossGroupSet).Groups);
-                        group.Spawn(botSpawnCount);
+                        if (botSpawnCount < 3) // Too few for a group, spawn boss instead
+                        {
+                            var bossGroupSet = Helper.GetRandomItem(GetBossGroups());
+                            var group = Helper.GetRandomItem(GetGroupSet(bossGroupSet).Groups);
+                            group.Spawn(botSpawnCount);
+                        }
+                        else
+                        {
+                            var groupSet = GetGroupSet(Helper.GetRandomEnumValue<BotGroup>());
+                            var group = Helper.GetRandomItem(groupSet.Groups);
+                            group.Spawn(botSpawnCount);
+                        }
                     }
                     else
                     {
-                        var groupSet = GetGroupSet(Helper.GetRandomEnumValue<BotGroup>());
-                        var group = Helper.GetRandomItem(groupSet.Groups);
-                        group.Spawn(botSpawnCount);
+                        SpawnGroup(BotGroup.Cowboy, botSpawnCount);
                     }
                 }
                 else
                 {
-                    SpawnGroup(BotGroup.Boss_Zombie, botSpawnCount, 1);
-                    //var bot = SpawnBot(BotType.Ninja);
-                    //var mod = bot.Player.GetModifiers();
-                    //mod.CurrentHealth = 15;
-                    //mod.RunSpeedModifier = 0.5f;
-                    //mod.SprintSpeedModifier = 0.5f;
-                    //bot.Player.SetModifiers(mod);
-                    //bot.Player.Gib();
-                    //var isRemoved = bot.Player.IsRemoved;
-                    //System.Diagnostics.Debugger.Break();
+                    string[] groups = null;
+                    if (!Game.LocalStorage.TryGetItemStringArr(BOT_GROUPS, out groups))
+                    {
+                        // TODO
+                    }
+                    else
+                    {
+                        var rndBotGroupName = Helper.GetRandomItem(new List<string>(groups));
+                        var botGroup = Helper.StringToEnum<BotGroup>(rndBotGroupName);
+                        SpawnGroup(botGroup, botSpawnCount);
+                    }
                 }
             }
 
@@ -5509,18 +5877,27 @@
                 group.Spawn(botCount);
             }
 
-            private static IPlayer SpawnPlayer(BotInfo botInfo, WeaponSet weaponSet)
+            private static IPlayer SpawnPlayer(BotInfo botInfo, WeaponSet weaponSet, bool ignoreFullSpawner)
             {
-                var emptySpawners = m_playerSpawners
-                    .Select((playerSpawner, index) => new { playerSpawner, index })
-                    .Where(Q => Q.playerSpawner.HasSpawned == false)
-                    .ToList();
+                List<PlayerSpawner> emptySpawners = null;
+
+                if (ignoreFullSpawner)
+                {
+                    emptySpawners = m_playerSpawners;
+                }
+                else
+                {
+                    emptySpawners = m_playerSpawners
+                        .Select(Q => Q)
+                        .Where(Q => Q.HasSpawned == false)
+                        .ToList();
+                }
 
                 if (!emptySpawners.Any())
                     return null;
 
                 var rndSpawner = Helper.GetRandomItem(emptySpawners);
-                var spawnTrigger = rndSpawner.playerSpawner.Trigger;
+                var spawnTrigger = rndSpawner.Trigger;
 
                 // TODO: fix runtime error
                 //spawnTrigger.SetSpawnWeaponItemMelee(weaponSet.Melee);
@@ -5541,7 +5918,7 @@
                 if (weaponSet.UseLazer)
                     player.GiveWeaponItem(WeaponItem.LAZER);
 
-                m_playerSpawners[rndSpawner.index].HasSpawned = true;
+                rndSpawner.HasSpawned = true;
 
                 return player;
             }
@@ -5550,7 +5927,9 @@
                 BotType botType,
                 IPlayer player = null,
                 bool equipWeapons = true,
-                bool setProfile = true)
+                bool setProfile = true,
+                PlayerTeam team = PlayerTeam.Team4,
+                bool ignoreFullSpawner = false)
             {
                 var info = GetInfo(botType);
                 var weaponSet = WeaponSet.Empty;
@@ -5561,7 +5940,7 @@
                         weaponSet = Helper.GetRandomItem(GetWeapons(botType));
                 }
 
-                if (player == null) player = SpawnPlayer(info, weaponSet);
+                if (player == null) player = SpawnPlayer(info, weaponSet, ignoreFullSpawner);
                 if (player == null) return null;
 
                 if (setProfile)
@@ -5574,7 +5953,7 @@
                 player.SetModifiers(info.Modifiers);
                 player.SetBotBehaviorSet(GetBehaviorSet(info.AIType));
                 player.SetBotBehaviorActive(true);
-                player.SetTeam(PlayerTeam.Team4);
+                player.SetTeam(team);
 
                 if (info.StartInfected)
                     m_infectedPlayers.Add(player.UniqueID, player);
