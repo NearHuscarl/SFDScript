@@ -50,10 +50,9 @@ namespace SFDScript.MoreBot
 
         #region Helper class
 
-        public static class Helper
+        public static class SharpHelper
         {
             private static Random Rnd = new Random();
-
 
             public static T StringToEnum<T>(string str)
             {
@@ -77,13 +76,37 @@ namespace SFDScript.MoreBot
             {
                 return Enum.GetName(typeof(T), enumVal);
             }
-
-            public static bool IsElapsed(float timeStarted, float timeToElapse)
+            public static bool TryParseEnum<T>(string str, out T result) where T : struct, IConvertible
             {
-                if (Game.TotalElapsedGameTime - timeStarted >= timeToElapse)
-                    return true;
-                else
+                result = default(T);
+
+                if (!typeof(T).IsEnum)
+                {
                     return false;
+                }
+
+                int index = -1;
+                if (int.TryParse(str, out index))
+                {
+                    if (Enum.IsDefined(typeof(T), index))
+                    {
+                        // https://stackoverflow.com/questions/10387095/cast-int-to-generic-enum-in-c-sharp
+                        result = (T)(object)index;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (!Enum.TryParse(str, ignoreCase: true, result: out result))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
             }
 
             public static float RandomBetween(float min, float max)
@@ -101,6 +124,32 @@ namespace SFDScript.MoreBot
             {
                 var enumValues = Enum.GetValues(typeof(T));
                 return (T)enumValues.GetValue(Rnd.Next(enumValues.Length));
+            }
+
+            public static string GetNamespace<T>()
+            {
+                return typeof(T).Namespace;
+            }
+        }
+
+        public static class ScriptHelper
+        {
+            public static readonly Color MESSAGE_COLOR = new Color(24, 238, 200);
+            public static readonly Color ERROR_COLOR = new Color(244, 77, 77);
+            public static readonly Color WARNING_COLOR = new Color(249, 191, 11);
+
+            public static void PrintMessage(string message, Color? color = null)
+            {
+                if (color == null) color = MESSAGE_COLOR;
+                Game.ShowChatMessage(message, (Color)color);
+            }
+
+            public static bool IsElapsed(float timeStarted, float timeToElapse)
+            {
+                if (Game.TotalElapsedGameTime - timeStarted >= timeToElapse)
+                    return true;
+                else
+                    return false;
             }
 
             public static bool SpawnPlayerHasPlayer(IObject spawnPlayer)
@@ -4628,7 +4677,7 @@ namespace SFDScript.MoreBot
             public bool HasBoss { get; private set; }
             public BotType GetRandomType()
             {
-                return Helper.GetRandomItem(Types);
+                return SharpHelper.GetRandomItem(Types);
             }
         }
 
@@ -4730,6 +4779,7 @@ namespace SFDScript.MoreBot
             BotType.ZombieFlamer,
         };
 
+        private const int BOSS_GROUP_START_INDEX = 200;
         public enum BotGroup
         {
             Assassin = 0,
@@ -4748,7 +4798,7 @@ namespace SFDScript.MoreBot
             Zombie,
             ZombieHard,
 
-            Boss_Demolitionist = 200,
+            Boss_Demolitionist = BOSS_GROUP_START_INDEX,
             Boss_Jo,
             Boss_Incinerator,
             Boss_Kingpin,
@@ -4758,20 +4808,6 @@ namespace SFDScript.MoreBot
             Boss_Santa,
             Boss_Teddybear,
             Boss_Zombie,
-        }
-
-        private static List<BotGroup> GetBossGroups()
-        {
-            var botGroupArray = (BotGroup[])Enum.GetValues(typeof(BotGroup));
-            var bossGroups = new List<BotGroup>();
-
-            foreach (var botGroup in botGroupArray)
-            {
-                if ((int)botGroup >= 200)
-                    bossGroups.Add(botGroup);
-            }
-
-            return bossGroups;
         }
 
         private static GroupSet GetGroupSet(BotGroup botGroup)
@@ -5157,7 +5193,7 @@ namespace SFDScript.MoreBot
                 var spawnLine = Info.SpawnLine;
                 var spawnLineChance = Info.SpawnLineChance;
 
-                if (!string.IsNullOrWhiteSpace(spawnLine) && Helper.RandomBetween(0f, 1f) < spawnLineChance)
+                if (!string.IsNullOrWhiteSpace(spawnLine) && SharpHelper.RandomBetween(0f, 1f) < spawnLineChance)
                     Game.CreateDialogue(spawnLine, dialogueColor, Player, duration: 3000f);
             }
 
@@ -5166,7 +5202,7 @@ namespace SFDScript.MoreBot
                 var deathLine = Info.DeathLine;
                 var deathLineChance = Info.DeathLineChance;
 
-                if (!string.IsNullOrWhiteSpace(deathLine) && Helper.RandomBetween(0f, 1f) < deathLineChance)
+                if (!string.IsNullOrWhiteSpace(deathLine) && SharpHelper.RandomBetween(0f, 1f) < deathLineChance)
                     Game.CreateDialogue(deathLine, dialogueColor, Player, duration: 3000f);
             }
 
@@ -5185,9 +5221,6 @@ namespace SFDScript.MoreBot
 
         public static class BotExendedCommand
         {
-            private static Color m_messageColor = new Color(24, 238, 200);
-            private static Color m_errorColor = new Color(244, 77, 77);
-            private static Color m_warningColor = new Color(249, 191, 11);
             private static IScriptStorage m_storage = Game.LocalStorage;
             //private static IScriptStorage m_storage = Game.GetSharedStorage("BOTEXTENDED");
 
@@ -5250,69 +5283,71 @@ namespace SFDScript.MoreBot
                             break;
 
                         default:
-                            PrintMessage("Invalid command", m_errorColor);
+                            ScriptHelper.PrintMessage("Invalid command", ScriptHelper.ERROR_COLOR);
                             break;
                     }
                 }
                 catch (Exception e)
                 {
-                    if (e is NullReferenceException)
+                    var stackTrace = e.StackTrace;
+                    var lines = stackTrace.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+                    var thisNamespace = SharpHelper.GetNamespace<Bot>();
+
+                    foreach (var line in lines)
                     {
-                        Game.RunCommand("/msg [BotExtended script]: msg caught null reference exception");
+                        if (line.Contains(thisNamespace))
+                        {
+                            Game.RunCommand("/msg [BotExtended script]: " + line);
+                            Game.RunCommand("/msg [BotExtended script]: " + e.Message);
+                            break;
+                        }
                     }
                 }
             }
 
-            private static void PrintMessage(string message, Color? color = null)
-            {
-                if (color == null) color = m_messageColor;
-                Game.ShowChatMessage(message, (Color)color);
-            }
-
             private static void PrintHelp()
             {
-                PrintMessage("--Botextended help--", m_errorColor);
-                PrintMessage("/<botextended|be> [help|h|?]: Print this help");
-                PrintMessage("/<botextended|be> [listgroup|lg]: List all bot groups");
-                PrintMessage("/<botextended|be> [listbot|lb]: List all bot types");
-                PrintMessage("/<botextended|be> [find|f|/] <query>: Find bot groups");
-                PrintMessage("/<botextended|be> [settings|s]: Show current script settings");
-                PrintMessage("/<botextended|be> [spawn|sp] <BotType> [Team|_] [Count]: Spawn bot");
-                PrintMessage("/<botextended|be> [random|r] <0|1>: Random all groups at startup if set to 1. This option will disregard the current group list");
-                PrintMessage("/<botextended|be> [group|g] <group names|indexes>: Choose a list of group by either name or index to randomly spawn on startup");
-                PrintMessage("For example:", m_errorColor);
-                PrintMessage("/botextended select metrocop >> select metrocop group");
-                PrintMessage("/be s 0 2 4 >> select assassin, bandido and clown group");
+                ScriptHelper.PrintMessage("--Botextended help--", ScriptHelper.ERROR_COLOR);
+                ScriptHelper.PrintMessage("/<botextended|be> [help|h|?]: Print this help");
+                ScriptHelper.PrintMessage("/<botextended|be> [listgroup|lg]: List all bot groups");
+                ScriptHelper.PrintMessage("/<botextended|be> [listbot|lb]: List all bot types");
+                ScriptHelper.PrintMessage("/<botextended|be> [find|f|/] <query>: Find bot groups");
+                ScriptHelper.PrintMessage("/<botextended|be> [settings|s]: Show current script settings");
+                ScriptHelper.PrintMessage("/<botextended|be> [spawn|sp] <BotType> [Team|_] [Count]: Spawn bot");
+                ScriptHelper.PrintMessage("/<botextended|be> [random|r] <0|1>: Random all groups at startup if set to 1. This option will disregard the current group list");
+                ScriptHelper.PrintMessage("/<botextended|be> [group|g] <group names|indexes>: Choose a list of group by either name or index to randomly spawn on startup");
+                ScriptHelper.PrintMessage("For example:", ScriptHelper.ERROR_COLOR);
+                ScriptHelper.PrintMessage("/botextended select metrocop >> select metrocop group");
+                ScriptHelper.PrintMessage("/be s 0 2 4 >> select assassin, bandido and clown group");
             }
 
             private static IEnumerable<string> GetGroupNames()
             {
-                var groups = Helper.GetArrayFromEnum<BotGroup>();
-                yield return "-1: Random";
+                var groups = SharpHelper.GetArrayFromEnum<BotGroup>();
 
                 foreach(var group in groups)
                 {
-                    yield return ((int)group).ToString() + ": " + Helper.EnumToString(group);
+                    yield return ((int)group).ToString() + ": " + SharpHelper.EnumToString(group);
                 }
             }
 
             private static void ListBotGroup()
             {
-                PrintMessage("--Botextended list group--", m_errorColor);
+                ScriptHelper.PrintMessage("--Botextended list group--", ScriptHelper.ERROR_COLOR);
 
                 foreach (var groupName in GetGroupNames())
                 {
-                    PrintMessage(groupName, m_warningColor);
+                    ScriptHelper.PrintMessage(groupName, ScriptHelper.WARNING_COLOR);
                 }
             }
 
             private static void ListBotType()
             {
-                PrintMessage("--Botextended list bot type--", m_errorColor);
+                ScriptHelper.PrintMessage("--Botextended list bot type--", ScriptHelper.ERROR_COLOR);
 
-                foreach (var botType in Helper.EnumToList<BotType>())
+                foreach (var botType in SharpHelper.EnumToList<BotType>())
                 {
-                    PrintMessage((int)botType + ": " + Helper.EnumToString(botType), m_warningColor);
+                    ScriptHelper.PrintMessage((int)botType + ": " + SharpHelper.EnumToString(botType), ScriptHelper.WARNING_COLOR);
                 }
             }
 
@@ -5321,36 +5356,36 @@ namespace SFDScript.MoreBot
                 var query = arguments.FirstOrDefault();
                 if (query == null) return;
 
-                PrintMessage("--Botextended find--", m_errorColor);
+                ScriptHelper.PrintMessage("--Botextended find--", ScriptHelper.ERROR_COLOR);
 
                 foreach (var groupName in GetGroupNames())
                 {
                     var name = groupName.ToLowerInvariant();
                     if (name.Contains(query))
-                        PrintMessage(groupName, m_warningColor);
+                        ScriptHelper.PrintMessage(groupName, ScriptHelper.WARNING_COLOR);
                 }
             }
 
             private static void ShowCurrentSettings()
             {
-                PrintMessage("--Botextended settings--", m_errorColor);
+                ScriptHelper.PrintMessage("--Botextended settings--", ScriptHelper.ERROR_COLOR);
 
                 string[] groups = null;
                 if (m_storage.TryGetItemStringArr(BotHelper.BOT_GROUPS, out groups))
                 {
-                    PrintMessage("-Current groups", m_warningColor);
+                    ScriptHelper.PrintMessage("-Current groups", ScriptHelper.WARNING_COLOR);
                     for (var i = 0; i < groups.Length; i++)
                     {
-                        var botGroup = Helper.StringToEnum<BotGroup>(groups[i]);
+                        var botGroup = SharpHelper.StringToEnum<BotGroup>(groups[i]);
                         var index = (int)botGroup;
-                        PrintMessage(index + ": " + groups[i], m_messageColor);
+                        ScriptHelper.PrintMessage(index + ": " + groups[i]);
                     }
                 }
 
                 bool randomGroup;
                 if (m_storage.TryGetItemBool(BotHelper.RANDOM_GROUP, out randomGroup))
                 {
-                    PrintMessage("-Random groups: " + randomGroup, m_warningColor);
+                    ScriptHelper.PrintMessage("-Random groups: " + randomGroup, ScriptHelper.WARNING_COLOR);
                 }
             }
 
@@ -5377,40 +5412,8 @@ namespace SFDScript.MoreBot
                 }
 
                 var botType = BotType.None;
-                var botName = "";
-                var invalidQuery = "";
 
-                int index = -1;
-                if (int.TryParse(query, out index))
-                {
-                    if (Enum.IsDefined(typeof(BotType), index))
-                    {
-                        botType = (BotType)index;
-                        botName = Helper.EnumToString(botType);
-                    }
-                    else
-                    {
-                        invalidQuery = index.ToString();
-                    }
-                }
-                else
-                {
-                    if (Enum.TryParse(query, ignoreCase: true, result: out botType))
-                    {
-                        botName = query;
-                    }
-                    else
-                    {
-                        invalidQuery = query;
-                    }
-                }
-
-                if (!string.IsNullOrEmpty(invalidQuery))
-                {
-                    PrintMessage("--Botextended spawn bot--", m_errorColor);
-                    PrintMessage("Invalid query: " + invalidQuery, m_warningColor);
-                }
-                else
+                if (SharpHelper.TryParseEnum(query, out botType))
                 {
                     for (var i = 0; i < count; i++)
                     {
@@ -5421,7 +5424,13 @@ namespace SFDScript.MoreBot
                             ignoreFullSpawner: true);
                     }
 
-                    PrintMessage("Spawned " + botName + " bot");
+                    // Dont use the string name in case it just an index
+                    ScriptHelper.PrintMessage("Spawned " + SharpHelper.EnumToString(botType) + " bot");
+                }
+                else
+                {
+                    ScriptHelper.PrintMessage("--Botextended spawn bot--", ScriptHelper.ERROR_COLOR);
+                    ScriptHelper.PrintMessage("Invalid query: " + query, ScriptHelper.WARNING_COLOR);
                 }
             }
 
@@ -5433,8 +5442,8 @@ namespace SFDScript.MoreBot
 
                 if (firstArg != "0" && firstArg != "1")
                 {
-                    PrintMessage("--Botextended random group--", m_errorColor);
-                    PrintMessage("Invalid value: " + value + "Value is either 1 (true) or 0 (false): ", m_warningColor);
+                    ScriptHelper.PrintMessage("--Botextended random group--", ScriptHelper.ERROR_COLOR);
+                    ScriptHelper.PrintMessage("Invalid value: " + value + "Value is either 1 (true) or 0 (false): ", ScriptHelper.WARNING_COLOR);
                     return;
                 }
 
@@ -5444,59 +5453,32 @@ namespace SFDScript.MoreBot
                         m_storage.SetItem(BotHelper.RANDOM_GROUP, true);
                     if (value == 0)
                         m_storage.SetItem(BotHelper.RANDOM_GROUP, false);
-                    PrintMessage("Update successfully");
+                    ScriptHelper.PrintMessage("Update successfully");
                 }
             }
 
             private static void SelectGroup(IEnumerable<string> arguments)
             {
                 var botGroups = new List<string>();
-                var invalidQuery = "";
+                BotGroup botGroup;
 
                 foreach (var query in arguments)
                 {
-                    int index = -1;
-                    if (int.TryParse(query, out index))
+                    if (SharpHelper.TryParseEnum(query, out botGroup))
                     {
-                        if (Enum.IsDefined(typeof(BotGroup), index))
-                        {
-                            var botGroup = (BotGroup)index;
-                            var botGroupStr = Helper.EnumToString(botGroup);
-                            botGroups.Add(botGroupStr);
-                        }
-                        else
-                        {
-                            invalidQuery = index.ToString(); 
-                            break;
-                        }
+                        botGroups.Add(SharpHelper.EnumToString(botGroup));
                     }
                     else
                     {
-                        BotGroup botGroup;
-                        if (Enum.TryParse(query, ignoreCase: true, result: out botGroup))
-                        {
-                            var botGroupStr = Helper.EnumToString(botGroup);
-                            botGroups.Add(botGroupStr);
-                        }
-                        else
-                        {
-                            invalidQuery = query; 
-                            break;
-                        }
+                        ScriptHelper.PrintMessage("--Botextended select--", ScriptHelper.ERROR_COLOR);
+                        ScriptHelper.PrintMessage("Invalid query: " + query, ScriptHelper.WARNING_COLOR);
+                        return;
                     }
                 }
-                
-                if (!string.IsNullOrEmpty(invalidQuery))
-                {
-                    PrintMessage("--Botextended select--", m_errorColor);
-                    PrintMessage("Invalid query: " + invalidQuery, m_warningColor);
-                }
-                else
-                {
-                    botGroups.Sort();
-                    m_storage.SetItem(BotHelper.BOT_GROUPS, botGroups.Distinct().ToArray());
-                    PrintMessage("Update successfully");
-                }
+
+                botGroups.Sort();
+                m_storage.SetItem(BotHelper.BOT_GROUPS, botGroups.Distinct().ToArray());
+                ScriptHelper.PrintMessage("Update successfully");
             }
         }
 
@@ -5554,7 +5536,7 @@ namespace SFDScript.MoreBot
                     }
                     else
                     {
-                        if (Helper.IsElapsed(kneelingTime, 700))
+                        if (ScriptHelper.IsElapsed(kneelingTime, 700))
                         {
                             Body.AddCommand(new PlayerCommand(PlayerCommandType.StopCrouch));
                             Body.SetBotBehaivorActive(true);
@@ -5588,53 +5570,56 @@ namespace SFDScript.MoreBot
                 m_updateEvent = Events.UpdateCallback.Start(OnUpdate);
                 m_userMessageEvent = Events.UserMessageCallback.Start(BotExendedCommand.OnUserMessage);
 
-
                 bool randomGroup;
                 if (!Game.LocalStorage.TryGetItemBool(RANDOM_GROUP, out randomGroup))
                 {
                     randomGroup = RANDOM_GROUP_DEFAULT_VALUE;
                 }
 
-
                 var playerCount = Game.GetPlayers().Length;
                 var botCount = MAX_PLAYERS - playerCount;
                 var botSpawnCount = Math.Min(botCount, m_playerSpawners.Count);
+                var groups = new List<BotGroup>();
 
-                if (randomGroup)
+                if (randomGroup) // Random all bot groups
                 {
-                    if (!Game.IsEditorTest)
+                    groups = SharpHelper.GetArrayFromEnum<BotGroup>().ToList();
+                }
+                else // Random selected bot groups from user settings
+                {
+                    string[] selectedGroups = null;
+                    if (!Game.LocalStorage.TryGetItemStringArr(BOT_GROUPS, out selectedGroups))
                     {
-                        if (botSpawnCount < 3) // Too few for a group, spawn boss instead
-                        {
-                            var bossGroupSet = Helper.GetRandomItem(GetBossGroups());
-                            var group = Helper.GetRandomItem(GetGroupSet(bossGroupSet).Groups);
-                            group.Spawn(botSpawnCount);
-                        }
-                        else
-                        {
-                            var groupSet = GetGroupSet(Helper.GetRandomEnumValue<BotGroup>());
-                            var group = Helper.GetRandomItem(groupSet.Groups);
-                            group.Spawn(botSpawnCount);
-                        }
+                        ScriptHelper.PrintMessage(
+                            "Error when retrieving bot groups to spawn. Default to randomize all available bot groups",
+                            ScriptHelper.ERROR_COLOR);
+                        groups = SharpHelper.GetArrayFromEnum<BotGroup>().ToList();
                     }
                     else
                     {
-                        SpawnGroup(BotGroup.Cowboy, botSpawnCount);
+                        foreach (var groupName in selectedGroups)
+                            groups.Add(SharpHelper.StringToEnum<BotGroup>(groupName));
                     }
+                }
+
+                SpawnRandomGroup(botSpawnCount, groups);
+                //SpawnGroup(BotGroup.Cowboy, botSpawnCount);
+            }
+
+            private static void SpawnRandomGroup(int botCount, List<BotGroup> groups)
+            {
+                if (botCount < 3) // Too few for a group, spawn boss instead
+                {
+                    var bossGroups = groups.Select(g => g).Where(g => (int)g >= BOSS_GROUP_START_INDEX).ToList();
+                    var bossGroupSet = SharpHelper.GetRandomItem(bossGroups);
+                    var group = SharpHelper.GetRandomItem(GetGroupSet(bossGroupSet).Groups);
+                    group.Spawn(botCount);
                 }
                 else
                 {
-                    string[] groups = null;
-                    if (!Game.LocalStorage.TryGetItemStringArr(BOT_GROUPS, out groups))
-                    {
-                        // TODO
-                    }
-                    else
-                    {
-                        var rndBotGroupName = Helper.GetRandomItem(new List<string>(groups));
-                        var botGroup = Helper.StringToEnum<BotGroup>(rndBotGroupName);
-                        SpawnGroup(botGroup, botSpawnCount);
-                    }
+                    var groupSet = GetGroupSet(SharpHelper.GetRandomItem(groups));
+                    var group = SharpHelper.GetRandomItem(groupSet.Groups);
+                    group.Spawn(botCount);
                 }
             }
 
@@ -5654,7 +5639,7 @@ namespace SFDScript.MoreBot
                 // loop the copied list since the original one can be modified when OnPlayerDeath() is called
                 foreach (var corpse in m_infectedCorpses.ToList())
                 {
-                    if (Helper.IsElapsed(corpse.DeathTime, 5000))
+                    if (ScriptHelper.IsElapsed(corpse.DeathTime, 5000))
                     {
                         if (!corpse.IsTurningIntoZombie)
                         {
@@ -5710,6 +5695,7 @@ namespace SFDScript.MoreBot
                             m_deadBot = enemy;
                             m_updateOnPlayerDeadNextFrame = true;
                             enemy.OnDeath();
+                            m_bots.Remove(enemy.Player.UniqueID);
                         }
                         break;
                 }
@@ -5729,6 +5715,10 @@ namespace SFDScript.MoreBot
 
             private static BotType GetZombieType(IPlayer player)
             {
+                if (player == null)
+                {
+                    throw new Exception("Player cannot be null");
+                }
                 var botType = GetBotType(player);
 
                 if (botType == BotType.None)
@@ -5849,7 +5839,7 @@ namespace SFDScript.MoreBot
 
                 foreach (var spawnPlayer in spawnPlayers)
                 {
-                    if (!Helper.SpawnPlayerHasPlayer(spawnPlayer))
+                    if (!ScriptHelper.SpawnPlayerHasPlayer(spawnPlayer))
                     {
                         var playerSpawnTrigger = (IObjectPlayerSpawnTrigger)Game.CreateObject("PlayerSpawnTrigger");
 
@@ -5876,7 +5866,7 @@ namespace SFDScript.MoreBot
 
                 Group group = null;
                 if (groupIndex == -1)
-                    group = Helper.GetRandomItem(groupSet.Groups);
+                    group = SharpHelper.GetRandomItem(groupSet.Groups);
                 else
                     group = groupSet.Groups[groupIndex];
 
@@ -5900,9 +5890,11 @@ namespace SFDScript.MoreBot
                 }
 
                 if (!emptySpawners.Any())
+                {
                     return null;
+                }
 
-                var rndSpawner = Helper.GetRandomItem(emptySpawners);
+                var rndSpawner = SharpHelper.GetRandomItem(emptySpawners);
                 var spawnTrigger = rndSpawner.Trigger;
 
                 // TODO: fix runtime error
@@ -5942,8 +5934,8 @@ namespace SFDScript.MoreBot
 
                 if (equipWeapons)
                 {
-                    if (Helper.RandomBetween(0f, 1f) < info.EquipWeaponChance)
-                        weaponSet = Helper.GetRandomItem(GetWeapons(botType));
+                    if (SharpHelper.RandomBetween(0f, 1f) < info.EquipWeaponChance)
+                        weaponSet = SharpHelper.GetRandomItem(GetWeapons(botType));
                 }
 
                 if (player == null) player = SpawnPlayer(info, weaponSet, ignoreFullSpawner);
@@ -5951,7 +5943,7 @@ namespace SFDScript.MoreBot
 
                 if (setProfile)
                 {
-                    var profile = Helper.GetRandomItem(GetProfiles(botType));
+                    var profile = SharpHelper.GetRandomItem(GetProfiles(botType));
                     player.SetProfile(profile);
                     player.SetBotName(profile.Name);
                 }
@@ -5994,6 +5986,9 @@ namespace SFDScript.MoreBot
 // botextended spawn (BotType)
 // botextended setting
 // botextended groupInterval
+
+// Uninfected body should turn infected if is hit by zombies
+// Fix be sp police _ 10 or more
 
 // Group
 // mecha/fritzliebe
