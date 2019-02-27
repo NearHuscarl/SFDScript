@@ -32,7 +32,6 @@ namespace SFDScript.MoreBot
                 player.SetModifiers(modifiers);
                 player.GiveWeaponItem(WeaponItem.KATANA);
                 player.GiveWeaponItem(WeaponItem.REVOLVER);
-                player.GiveWeaponItem(WeaponItem.BAZOOKA);
                 player.GiveWeaponItem(WeaponItem.FLAMETHROWER);
                 player.GiveWeaponItem(WeaponItem.MOLOTOVS);
             }
@@ -196,7 +195,7 @@ namespace SFDScript.MoreBot
             BikerHulk,
             // Tier1: The Teahouse Job, Rooftop Retribution
             Bodyguard,
-            Bodyguard2,
+            Bodyguard2, // heavy bodyguard
 
             ClownBodyguard,
             ClownBoxer,
@@ -3913,30 +3912,36 @@ namespace SFDScript.MoreBot
             switch (botAI)
             {
                 case BotAI.Debug:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotD);
                     botBehaviorSet.RangedWeaponBurstTimeMin = 5000;
                     botBehaviorSet.RangedWeaponBurstTimeMax = 5000;
                     botBehaviorSet.RangedWeaponBurstPauseMin = 0;
                     botBehaviorSet.RangedWeaponBurstPauseMax = 0;
                     break;
-
+                }
                 case BotAI.Easy:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotD);
                     break;
-
+                }
                 case BotAI.Normal:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotC);
                     break;
-
+                }
                 case BotAI.Hard:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotB);
                     break;
-
+                }
                 case BotAI.Expert:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotA);
                     break;
-
+                }
                 case BotAI.Hacker:
+                {
                     botBehaviorSet.NavigationMode = BotBehaviorNavigationMode.PathFinding;
                     botBehaviorSet.MeleeMode = BotBehaviorMeleeMode.Default;
                     botBehaviorSet.EliminateEnemies = true;
@@ -3974,8 +3979,9 @@ namespace SFDScript.MoreBot
                     botBehaviorSet.RangedWeaponPrecisionBurstPauseMin = 100f;
                     botBehaviorSet.RangedWeaponPrecisionBurstPauseMax = 200f;
                     break;
-
+                }
                 case BotAI.MeleeExpert:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.MeleeB);
                     botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0.9f;
                     botBehaviorSet.MeleeWaitTimeLimitMin = 600f;
@@ -3984,8 +3990,9 @@ namespace SFDScript.MoreBot
                     botBehaviorSet.MeleeWeaponUsage = true;
                     botBehaviorSet.MeleeWeaponUseFullRange = true;
                     break;
-
+                }
                 case BotAI.MeleeHard:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.MeleeB);
                     botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0.75f;
                     botBehaviorSet.MeleeWaitTimeLimitMin = 800f;
@@ -3994,8 +4001,9 @@ namespace SFDScript.MoreBot
                     botBehaviorSet.MeleeWeaponUsage = true;
                     botBehaviorSet.MeleeWeaponUseFullRange = false;
                     break;
-
+                }
                 case BotAI.Ninja: // == BotAI.MeleeExpert + more offensive melee tactic
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.MeleeB);
                     botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0.9f;
                     botBehaviorSet.MeleeWaitTimeLimitMin = 600f;
@@ -4014,24 +4022,27 @@ namespace SFDScript.MoreBot
                     botBehaviorSet.OffensiveSprintLevel = 0.9f;
                     botBehaviorSet.OffensiveDiveLevel = 0.1f; // 0.7f
                     break;
-
+                }
                 case BotAI.RangeExpert:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.RangedA);
                     botBehaviorSet.RangedWeaponAccuracy = 0.85f;
                     botBehaviorSet.RangedWeaponAimShootDelayMin = 600f;
                     botBehaviorSet.RangedWeaponPrecisionInterpolateTime = 2000f;
                     botBehaviorSet.RangedWeaponPrecisionAccuracy = 0.95f;
                     break;
-
+                }
                 case BotAI.RangeHard:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.RangedA);
                     botBehaviorSet.RangedWeaponAccuracy = 0.75f;
                     botBehaviorSet.RangedWeaponAimShootDelayMin = 600f;
                     botBehaviorSet.RangedWeaponPrecisionInterpolateTime = 2000f;
                     botBehaviorSet.RangedWeaponPrecisionAccuracy = 0.9f;
                     break;
-
+                }
                 case BotAI.Demolitionist:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.RangedA);
                     botBehaviorSet.SearchForItems = true;
                     botBehaviorSet.SearchItems = SearchItems.Primary;
@@ -4040,15 +4051,17 @@ namespace SFDScript.MoreBot
                     botBehaviorSet.RangedWeaponPrecisionInterpolateTime = 2000f;
                     botBehaviorSet.RangedWeaponPrecisionAccuracy = 0.9f;
                     break;
-
+                }
                 case BotAI.Incinerator:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotB);
                     botBehaviorSet.SearchForItems = false;
                     botBehaviorSet.RangedWeaponAccuracy = 0.4f;
                     botBehaviorSet.RangedWeaponPrecisionInterpolateTime = 0f;
                     break;
-
+                }
                 case BotAI.Sniper:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.RangedA);
                     botBehaviorSet.RangedWeaponMode = BotBehaviorRangedWeaponMode.ManualAim;
                     botBehaviorSet.RangedWeaponAccuracy = 0.85f;
@@ -4065,9 +4078,9 @@ namespace SFDScript.MoreBot
                     botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0f;
                     botBehaviorSet.TeamLineUp = false;
                     break;
-
-
+                }
                 case BotAI.Grunt:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Grunt);
 
                     // Taken from PredefinedAIType.BotB, PredefinedAIType.Grunt is too slow in shooting
@@ -4080,24 +4093,29 @@ namespace SFDScript.MoreBot
                     botBehaviorSet.RangedWeaponBurstPauseMin = 400f;
                     botBehaviorSet.RangedWeaponBurstPauseMax = 800f;
                     break;
-
+                }
                 case BotAI.Hulk:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Hulk);
                     break;
-
+                }
                 case BotAI.Meatgrinder:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Meatgrinder);
                     break;
-
+                }
                 case BotAI.ZombieSlow:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.ZombieA);
                     break;
-
+                }
                 case BotAI.ZombieFast:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.ZombieB);
                     break;
-
+                }
                 case BotAI.ZombieHulk:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Hulk);
                     botBehaviorSet.AttackDeadEnemies = true;
                     botBehaviorSet.SearchForItems = false;
@@ -4110,8 +4128,9 @@ namespace SFDScript.MoreBot
                     botBehaviorSet.OffensiveDiveLevel = 0f;
                     botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0f;
                     break;
-
+                }
                 case BotAI.ZombieFighter:
+                {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.MeleeB);
                     botBehaviorSet.AttackDeadEnemies = true;
                     botBehaviorSet.SearchForItems = false;
@@ -4124,13 +4143,15 @@ namespace SFDScript.MoreBot
                     botBehaviorSet.OffensiveDiveLevel = 0f;
                     botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0f;
                     break;
-
+                }
                 default:
+                {
                     botBehaviorSet.NavigationMode = BotBehaviorNavigationMode.None;
                     botBehaviorSet.MeleeMode = BotBehaviorMeleeMode.None;
                     botBehaviorSet.EliminateEnemies = false;
                     botBehaviorSet.SearchForItems = false;
                     break;
+                }
             }
 
             return botBehaviorSet;
@@ -4307,6 +4328,7 @@ namespace SFDScript.MoreBot
                 case BotType.Bandido:
                 case BotType.Bodyguard:
                 case BotType.Bodyguard2:
+                case BotType.ClownBodyguard:
                 case BotType.ClownGangster:
                 case BotType.Elf:
                 case BotType.Gangster:
@@ -4479,6 +4501,18 @@ namespace SFDScript.MoreBot
                         SprintSpeedModifier = 0.5f,
                         SizeModifier = 0.95f,
                         InfiniteAmmo = 1,
+                    };
+                    botInfo.IsBoss = true;
+                    break;
+                }
+                case BotType.Funnyman:
+                {
+                    botInfo.AIType = BotAI.Expert;
+                    botInfo.Modifiers = new PlayerModifiers()
+                    {
+                        MaxHealth = 250,
+                        CurrentHealth = 250,
+                        SizeModifier = 1.05f,
                     };
                     botInfo.IsBoss = true;
                     break;
@@ -4799,6 +4833,7 @@ namespace SFDScript.MoreBot
             ZombieHard,
 
             Boss_Demolitionist = BOSS_GROUP_START_INDEX,
+            Boss_Funnyman,
             Boss_Jo,
             Boss_Incinerator,
             Boss_Kingpin,
@@ -4849,6 +4884,11 @@ namespace SFDScript.MoreBot
                     groupSet.AddGroup(new List<SubGroup>()
                     {
                         new SubGroup(BotType.Biker, 1f),
+                    });
+                    groupSet.AddGroup(new List<SubGroup>()
+                    {
+                        new SubGroup(BotType.Biker, 0.5f),
+                        new SubGroup(BotType.Thug, 0.5f),
                     });
                     groupSet.AddGroup(new List<SubGroup>()
                     {
@@ -5066,6 +5106,25 @@ namespace SFDScript.MoreBot
                     });
                     break;
                 }
+                case BotGroup.Boss_Funnyman:
+                {
+                    groupSet.AddGroup(new List<SubGroup>()
+                    {
+                        new SubGroup(BotType.Funnyman),
+                        new SubGroup(BotType.ClownBodyguard, 1f),
+                    });
+                    groupSet.AddGroup(new List<SubGroup>()
+                    {
+                        new SubGroup(BotType.Funnyman),
+                        new SubGroup(new List<BotType>()
+                        {
+                            BotType.ClownBoxer,
+                            BotType.ClownCowboy,
+                            BotType.ClownGangster,
+                        }, 1f),
+                    });
+                    break;
+                }
                 case BotGroup.Boss_Jo:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -5113,6 +5172,12 @@ namespace SFDScript.MoreBot
                     {
                         new SubGroup(BotType.MetroCop2),
                         new SubGroup(BotType.MetroCop, 1f),
+                    });
+                    groupSet.AddGroup(new List<SubGroup>()
+                    {
+                        new SubGroup(BotType.MetroCop2),
+                        new SubGroup(BotType.MetroCop, 0.7f),
+                        new SubGroup(BotType.Agent2, 0.3f),
                     });
                     break;
                 }
@@ -5603,7 +5668,24 @@ namespace SFDScript.MoreBot
                 }
 
                 SpawnRandomGroup(botSpawnCount, groups);
-                //SpawnGroup(BotGroup.Cowboy, botSpawnCount);
+
+                // TODO: remove
+                //IPlayer player = null;
+
+                //Game.GetPlayers()[0].SetTeam(PlayerTeam.Team1);
+                //player = SpawnPlayer();
+                //player.SetBotBehavior(new BotBehavior(true, PredefinedAIType.BotA));
+                //player.SetTeam(PlayerTeam.Team1);
+                //player = SpawnPlayer();
+                //player.SetBotBehavior(new BotBehavior(true, PredefinedAIType.BotA));
+                //player.SetTeam(PlayerTeam.Team1);
+                //player = SpawnPlayer();
+                //player.SetBotBehavior(new BotBehavior(true, PredefinedAIType.BotA));
+                //player.SetTeam(PlayerTeam.Team1);
+                //player = SpawnPlayer();
+                //player.SetBotBehavior(new BotBehavior(true, PredefinedAIType.BotA));
+                //player.SetTeam(PlayerTeam.Team1);
+                //SpawnGroup(BotGroup.Boss_Funnyman, botSpawnCount);
             }
 
             private static void SpawnRandomGroup(int botCount, List<BotGroup> groups)
@@ -5873,7 +5955,7 @@ namespace SFDScript.MoreBot
                 group.Spawn(botCount);
             }
 
-            private static IPlayer SpawnPlayer(BotInfo botInfo, WeaponSet weaponSet, bool ignoreFullSpawner)
+            private static IPlayer SpawnPlayer(BotInfo botInfo = null, WeaponSet weaponSet = null, bool ignoreFullSpawner = false)
             {
                 List<PlayerSpawner> emptySpawners = null;
 
@@ -5903,18 +5985,23 @@ namespace SFDScript.MoreBot
                 //spawnTrigger.SetSpawnWeaponItemHandgun(weaponSet.Secondary);
                 //spawnTrigger.SetSpawnWeaponItemThrown(weaponSet.Throwable);
                 //spawnTrigger.SetSpawnWeaponItemPowerup(weaponSet.Powerup);
-                spawnTrigger.SetInitialWeaponDrawn(botInfo.InitialWeaponDrawn);
+                if (botInfo != null)
+                    spawnTrigger.SetInitialWeaponDrawn(botInfo.InitialWeaponDrawn);
                 spawnTrigger.Trigger();
 
                 var player = spawnTrigger.GetLastCreatedPlayer();
 
-                player.GiveWeaponItem(weaponSet.Melee);
-                player.GiveWeaponItem(weaponSet.Primary);
-                player.GiveWeaponItem(weaponSet.Secondary);
-                player.GiveWeaponItem(weaponSet.Throwable);
-                player.GiveWeaponItem(weaponSet.Powerup);
-                if (weaponSet.UseLazer)
-                    player.GiveWeaponItem(WeaponItem.LAZER);
+                if (weaponSet != null)
+                {
+                    player.GiveWeaponItem(weaponSet.Melee);
+                    player.GiveWeaponItem(weaponSet.Primary);
+                    player.GiveWeaponItem(weaponSet.Secondary);
+                    player.GiveWeaponItem(weaponSet.Throwable);
+                    player.GiveWeaponItem(weaponSet.Powerup);
+
+                    if (weaponSet.UseLazer)
+                        player.GiveWeaponItem(WeaponItem.LAZER);
+                }
 
                 rndSpawner.HasSpawned = true;
 
@@ -5979,12 +6066,6 @@ namespace SFDScript.MoreBot
 // mecha
 
 // Commands:
-// botextended -> show current group
-// botextended [list of group]
-// botextended list
-// botextended group
-// botextended spawn (BotType)
-// botextended setting
 // botextended groupInterval
 
 // Uninfected body should turn infected if is hit by zombies
