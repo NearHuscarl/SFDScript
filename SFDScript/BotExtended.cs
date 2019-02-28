@@ -39,14 +39,6 @@ namespace SFDScript.MoreBot
             BotHelper.Initialize();
         }
 
-        public void OnBotSpawn(CreateTriggerArgs args)
-        {
-            IObjectPlayerSpawnTrigger trigger = (IObjectPlayerSpawnTrigger)args.Caller;
-            IPlayer player = (IPlayer)args.CreatedObject;
-
-            player.CustomID = trigger.CustomID;
-        }
-
         #region Helper class
 
         public static class SharpHelper
@@ -210,6 +202,7 @@ namespace SFDScript.MoreBot
             Demolitionist,
             // Tier3: Holiday Hullabaloo
             Elf,
+            Hacker,
             Jo,
             Fritzliebe,
             Funnyman,
@@ -1034,6 +1027,38 @@ namespace SFDScript.MoreBot
                         Legs = new IProfileClothingItem("TornPants_fem", "ClothingLightBlue", "ClothingLightGray", ""),
                         Skin = new IProfileClothingItem("Normal_fem", "Skin1", "ClothingLightGray", ""),
                         Waist = new IProfileClothingItem("SmallBelt_fem", "ClothingLightBrown", "ClothingLightGray", ""),
+                    });
+                    break;
+                }
+                case BotType.Hacker:
+                {
+                    profiles.Add(new IProfile()
+                    {
+                        Name = "Hacker",
+                        Accesory = new IProfileClothingItem("Goggles", "ClothingDarkGreen", "ClothingLightCyan", ""),
+                        ChestOver = new IProfileClothingItem("Jacket", "ClothingDarkGray", "ClothingLightCyan", ""),
+                        ChestUnder = new IProfileClothingItem("TShirt", "ClothingGray", "ClothingLightGray", ""),
+                        Feet = new IProfileClothingItem("Boots", "ClothingOrange", "ClothingLightGray", ""),
+                        Gender = Gender.Male,
+                        Hands = new IProfileClothingItem("SafetyGloves", "ClothingLightGray", "ClothingLightGray", ""),
+                        Head = new IProfileClothingItem("BaseballCap", "ClothingDarkGray", "ClothingLightCyan", ""),
+                        Legs = new IProfileClothingItem("Pants", "ClothingGray", "ClothingLightGray", ""),
+                        Skin = new IProfileClothingItem("Normal", "Skin3", "ClothingLightGray", ""),
+                        Waist = null,
+                    });
+                    profiles.Add(new IProfile()
+                    {
+                        Name = "Hacker",
+                        Accesory = new IProfileClothingItem("Vizor", "ClothingDarkGray", "ClothingLightRed", ""),
+                        ChestOver = new IProfileClothingItem("Jacket", "ClothingDarkGray", "ClothingLightCyan", ""),
+                        ChestUnder = new IProfileClothingItem("TShirt", "ClothingGray", "ClothingLightGray", ""),
+                        Feet = new IProfileClothingItem("Boots", "ClothingOrange", "ClothingLightGray", ""),
+                        Gender = Gender.Male,
+                        Hands = new IProfileClothingItem("SafetyGloves", "ClothingLightGray", "ClothingLightGray", ""),
+                        Head = new IProfileClothingItem("BaseballCap", "ClothingDarkGray", "ClothingLightCyan", ""),
+                        Legs = new IProfileClothingItem("Pants", "ClothingGray", "ClothingLightGray", ""),
+                        Skin = new IProfileClothingItem("Normal", "Skin3", "ClothingLightGray", ""),
+                        Waist = null,
                     });
                     break;
                 }
@@ -3269,6 +3294,11 @@ namespace SFDScript.MoreBot
                     });
                     break;
                 }
+                case BotType.Hacker:
+                {
+                    weapons.Add(WeaponSet.Empty);
+                    break;
+                }
                 case BotType.Gangster:
                 {
                     weapons.Add(new WeaponSet()
@@ -3956,16 +3986,16 @@ namespace SFDScript.MoreBot
                     botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0.9f;
                     botBehaviorSet.ChokePointPlayerCountThreshold = 1;
                     botBehaviorSet.ChokePointValue = 150f;
-                    botBehaviorSet.MeleeWaitTimeLimitMin = 600f;
-                    botBehaviorSet.MeleeWaitTimeLimitMax = 800f;
+                    botBehaviorSet.MeleeWaitTimeLimitMin = 100f;
+                    botBehaviorSet.MeleeWaitTimeLimitMax = 200f;
                     botBehaviorSet.MeleeUsage = true;
                     botBehaviorSet.SetMeleeActionsToExpert();
                     botBehaviorSet.MeleeWeaponUsage = true;
                     botBehaviorSet.RangedWeaponUsage = true;
                     botBehaviorSet.RangedWeaponAccuracy = 0.85f;
-                    botBehaviorSet.RangedWeaponAimShootDelayMin = 100f;
-                    botBehaviorSet.RangedWeaponHipFireAimShootDelayMin = 100f;
-                    botBehaviorSet.RangedWeaponHipFireAimShootDelayMax = 100f;
+                    botBehaviorSet.RangedWeaponAimShootDelayMin = 50f;
+                    botBehaviorSet.RangedWeaponHipFireAimShootDelayMin = 50f;
+                    botBehaviorSet.RangedWeaponHipFireAimShootDelayMax = 50f;
                     botBehaviorSet.RangedWeaponBurstTimeMin = 400f;
                     botBehaviorSet.RangedWeaponBurstTimeMax = 800f;
                     botBehaviorSet.RangedWeaponBurstPauseMin = 400f;
@@ -4167,10 +4197,10 @@ namespace SFDScript.MoreBot
             {
                 EquipWeaponChance = 1f;
                 OnSpawn = null;
+                UpdateInterval = 1000;
                 OnUpdate = null;
                 OnDeath = null;
                 IsBoss = false;
-                InitialWeaponDrawn = WeaponItemType.NONE;
                 SpawnLine = "";
                 SpawnLineChance = 1f;
                 DeathLine = "";
@@ -4183,9 +4213,9 @@ namespace SFDScript.MoreBot
             public PlayerModifiers Modifiers { get; set; }
             public bool IsBoss { get; set; }
             public Action<Bot> OnSpawn { get; set; }
+            public int UpdateInterval { get; set; } // in ms
             public Action<Bot> OnUpdate { get; set; }
             public Action<Bot> OnDeath { get; set; }
-            public WeaponItemType InitialWeaponDrawn { get; set; }
             public string SpawnLine { get; set; }
             public float SpawnLineChance { get; set; }
             public string DeathLine { get; set; }
@@ -4529,6 +4559,62 @@ namespace SFDScript.MoreBot
                     botInfo.IsBoss = true;
                     break;
                 }
+                case BotType.Hacker:
+                {
+                    botInfo.AIType = BotAI.Hacker;
+                    botInfo.UpdateInterval = 200;
+                    botInfo.OnUpdate = (Bot bot) =>
+                    {
+                        if (bot.Player.IsRemoved) return;
+
+                        var profile = bot.Player.GetProfile();
+                        var currentColor = profile.Head.Color2;
+                        var newColor = "";
+
+                        switch (currentColor)
+                        {
+                            case "ClothingLightRed":
+                                newColor = "ClothingLightOrange";
+                                break;
+                            case "ClothingLightOrange":
+                                newColor = "ClothingLightYellow";
+                                break;
+                            case "ClothingLightYellow":
+                                newColor = "ClothingLightGreen";
+                                break;
+                            case "ClothingLightGreen":
+                                newColor = "ClothingLightCyan";
+                                break;
+                            case "ClothingLightCyan":
+                                newColor = "ClothingLightBlue";
+                                break;
+                            case "ClothingLightBlue":
+                                newColor = "ClothingLightPurple";
+                                break;
+                            case "ClothingLightPurple":
+                                newColor = "ClothingLightRed";
+                                break;
+                            default:
+                                newColor = "ClothingLightCyan";
+                                break;
+                        }
+                        profile.Head.Color2 = newColor;
+                        profile.ChestOver.Color2 = newColor;
+                        profile.Feet.Color1 = newColor;
+                        bot.Player.SetProfile(profile);
+                    };
+                    botInfo.Modifiers = new PlayerModifiers()
+                    {
+                        MaxHealth = 125,
+                        CurrentHealth = 125,
+                        EnergyConsumptionModifier = 0f,
+                        MeleeForceModifier = 3f,
+                        RunSpeedModifier = 1.1f,
+                        SprintSpeedModifier = 1.1f,
+                    };
+                    botInfo.IsBoss = true;
+                    break;
+                }
                 case BotType.Incinerator:
                 {
                     botInfo.AIType = BotAI.Incinerator;
@@ -4584,7 +4670,6 @@ namespace SFDScript.MoreBot
                         InfiniteAmmo = 1,
                     };
                     botInfo.IsBoss = true;
-                    botInfo.InitialWeaponDrawn = WeaponItemType.Melee;
                     break;
                 }
                 case BotType.MetroCop2:
@@ -4835,6 +4920,7 @@ namespace SFDScript.MoreBot
             Boss_Demolitionist = BOSS_GROUP_START_INDEX,
             Boss_Funnyman,
             Boss_Jo,
+            Boss_Hacker,
             Boss_Incinerator,
             Boss_Kingpin,
             Boss_Meatgrinder,
@@ -5135,6 +5221,15 @@ namespace SFDScript.MoreBot
                     });
                     break;
                 }
+                case BotGroup.Boss_Hacker:
+                {
+                    groupSet.AddGroup(new List<SubGroup>()
+                    {
+                        new SubGroup(BotType.Hacker),
+                        new SubGroup(BotType.Hacker),
+                    });
+                    break;
+                }
                 case BotGroup.Boss_Incinerator:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -5230,7 +5325,7 @@ namespace SFDScript.MoreBot
 
         public class PlayerSpawner
         {
-            public IObjectPlayerSpawnTrigger Trigger { get; set; }
+            public Vector2 Position { get; set; }
             public bool HasSpawned { get; set; }
         }
 
@@ -5271,10 +5366,16 @@ namespace SFDScript.MoreBot
                     Game.CreateDialogue(deathLine, dialogueColor, Player, duration: 3000f);
             }
 
-            public void OnUpdate()
+            private int lastUpdateElapsed = 0;
+            public void OnUpdate(float elapsed)
             {
-                if (Info.OnUpdate != null)
+                lastUpdateElapsed += (int)elapsed;
+
+                if (lastUpdateElapsed >= Info.UpdateInterval && Info.OnUpdate != null)
+                {
                     Info.OnUpdate(this);
+                    lastUpdateElapsed = 0;
+                }
             }
 
             public void OnDeath()
@@ -5490,7 +5591,8 @@ namespace SFDScript.MoreBot
                     }
 
                     // Dont use the string name in case it just an index
-                    ScriptHelper.PrintMessage("Spawned " + SharpHelper.EnumToString(botType) + " bot");
+                    var bot = count > 1 ? " bots" : " bot";
+                    ScriptHelper.PrintMessage("Spawned " + count + " " + SharpHelper.EnumToString(botType) + bot + " as " + team);
                 }
                 else
                 {
@@ -5563,7 +5665,7 @@ namespace SFDScript.MoreBot
                     var zombieBody = zombie.Player;
 
                     var modifiers = Body.GetModifiers();
-                    if (IsTheInfected(GetBotType(Body))) // Marauder has fake MaxHealth to has blood effect on the face
+                    if (IsTheInfected(GetBotType(Body))) // Marauder has fake MaxHealth to have blood effect on the face
                         modifiers.CurrentHealth = modifiers.MaxHealth = 75;
                     else
                         modifiers.CurrentHealth = modifiers.MaxHealth * 0.75f;
@@ -5671,21 +5773,7 @@ namespace SFDScript.MoreBot
 
                 // TODO: remove
                 //IPlayer player = null;
-
-                //Game.GetPlayers()[0].SetTeam(PlayerTeam.Team1);
-                //player = SpawnPlayer();
-                //player.SetBotBehavior(new BotBehavior(true, PredefinedAIType.BotA));
-                //player.SetTeam(PlayerTeam.Team1);
-                //player = SpawnPlayer();
-                //player.SetBotBehavior(new BotBehavior(true, PredefinedAIType.BotA));
-                //player.SetTeam(PlayerTeam.Team1);
-                //player = SpawnPlayer();
-                //player.SetBotBehavior(new BotBehavior(true, PredefinedAIType.BotA));
-                //player.SetTeam(PlayerTeam.Team1);
-                //player = SpawnPlayer();
-                //player.SetBotBehavior(new BotBehavior(true, PredefinedAIType.BotA));
-                //player.SetTeam(PlayerTeam.Team1);
-                //SpawnGroup(BotGroup.Boss_Funnyman, botSpawnCount);
+                //SpawnBot(BotType.MarauderNaked);
             }
 
             private static void SpawnRandomGroup(int botCount, List<BotGroup> groups)
@@ -5709,7 +5797,7 @@ namespace SFDScript.MoreBot
             {
                 UpdateCorpses();
 
-                foreach (var bot in m_updateBots) bot.OnUpdate();
+                foreach (var bot in m_updateBots) bot.OnUpdate(elapsed);
 
                 if (m_updateOnPlayerDeadNextFrame)
                     OnPlayerDeathNextFrame();
@@ -5777,7 +5865,6 @@ namespace SFDScript.MoreBot
                             m_deadBot = enemy;
                             m_updateOnPlayerDeadNextFrame = true;
                             enemy.OnDeath();
-                            m_bots.Remove(enemy.Player.UniqueID);
                         }
                         break;
                 }
@@ -5787,7 +5874,10 @@ namespace SFDScript.MoreBot
                     var infectedPlayer = m_infectedPlayers[player.UniqueID];
                     if (infectedPlayer.IsBurning) return;
                     m_infectedCorpses.Add(new PlayerCorpse(infectedPlayer));
+                    m_infectedPlayers.Remove(player.UniqueID);
                 }
+                else
+                    m_bots.Remove(player.UniqueID);
             }
 
             private static BotType GetBotType(IPlayer player)
@@ -5923,15 +6013,9 @@ namespace SFDScript.MoreBot
                 {
                     if (!ScriptHelper.SpawnPlayerHasPlayer(spawnPlayer))
                     {
-                        var playerSpawnTrigger = (IObjectPlayerSpawnTrigger)Game.CreateObject("PlayerSpawnTrigger");
-
-                        playerSpawnTrigger.SetWorldPosition(spawnPlayer.GetWorldPosition());
-                        playerSpawnTrigger.SetScriptMethod("OnBotSpawn");
-                        playerSpawnTrigger.SetActivateOnStartup(false); // Default to false, just to make it explicit
-
                         emptyPlayerSpawners.Add(new PlayerSpawner
                         {
-                            Trigger = playerSpawnTrigger,
+                            Position = spawnPlayer.GetWorldPosition(),
                             HasSpawned = false,
                         });
                     }
@@ -5977,19 +6061,7 @@ namespace SFDScript.MoreBot
                 }
 
                 var rndSpawner = SharpHelper.GetRandomItem(emptySpawners);
-                var spawnTrigger = rndSpawner.Trigger;
-
-                // TODO: fix runtime error
-                //spawnTrigger.SetSpawnWeaponItemMelee(weaponSet.Melee);
-                //spawnTrigger.SetSpawnWeaponItemRifle(weaponSet.Primary);
-                //spawnTrigger.SetSpawnWeaponItemHandgun(weaponSet.Secondary);
-                //spawnTrigger.SetSpawnWeaponItemThrown(weaponSet.Throwable);
-                //spawnTrigger.SetSpawnWeaponItemPowerup(weaponSet.Powerup);
-                if (botInfo != null)
-                    spawnTrigger.SetInitialWeaponDrawn(botInfo.InitialWeaponDrawn);
-                spawnTrigger.Trigger();
-
-                var player = spawnTrigger.GetLastCreatedPlayer();
+                var player = Game.CreatePlayer(rndSpawner.Position);
 
                 if (weaponSet != null)
                 {
