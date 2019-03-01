@@ -39,11 +39,72 @@ namespace SFDScript.MoreBot
             BotHelper.Initialize();
         }
 
+        public void OnShutdown()
+        {
+            var storage = Game.LocalStorage;
+            var players = Game.GetPlayers();
+            var groupDead = true;
+
+            foreach (var player in players)
+            {
+                var botType = BotHelper.GetBotType(player);
+                if (botType == BotType.None) continue;
+                var botTypeKeyPrefix = BotHelper.GET_BOTTYPE_STORAGE_KEY(botType);
+
+                var botWinCountKey = botTypeKeyPrefix + "_WIN_COUNT";
+                int botOldWinCount;
+                var getBotWinCountAttempt = storage.TryGetItemInt(botWinCountKey, out botOldWinCount);
+
+                var botTotalMatchKey = botTypeKeyPrefix + "_TOTAL_MATCH";
+                int botOldTotalMatch;
+                var getBotTotalMatchAttempt = storage.TryGetItemInt(botTotalMatchKey, out botOldTotalMatch);
+
+                if (getBotWinCountAttempt && getBotTotalMatchAttempt)
+                {
+                    if (!player.IsDead)
+                        storage.SetItem(botWinCountKey, botOldWinCount + 1);
+                    storage.SetItem(botTotalMatchKey, botOldTotalMatch + 1);
+                }
+                else
+                {
+                    if (!player.IsDead)
+                        storage.SetItem(botWinCountKey, 1);
+                    storage.SetItem(botTotalMatchKey, 1);
+                }
+                if (player.IsDead) groupDead = false;
+            }
+
+            var currentBotGroup = BotHelper.CurrentBotGroup;
+            var currentGroupSetIndex = BotHelper.CurrentGroupSetIndex;
+            var botGroupKeyPrefix = BotHelper.GET_GROUP_STORAGE_KEY(BotHelper.CurrentBotGroup);
+
+            var groupWinCountKey = botGroupKeyPrefix + "_WIN_COUNT";
+            int groupOldWinCount;
+            var getGroupWinCountAttempt = storage.TryGetItemInt(groupWinCountKey, out groupOldWinCount);
+
+            var groupTotalMatchKey = botGroupKeyPrefix + "_TOTAL_MATCH";
+            int groupOldTotalMatch;
+            var getGroupTotalMatchAttempt = storage.TryGetItemInt(groupTotalMatchKey, out groupOldTotalMatch);
+
+            if (getGroupWinCountAttempt && getGroupTotalMatchAttempt)
+            {
+                if (!groupDead)
+                    storage.SetItem(groupWinCountKey, groupOldWinCount + 1);
+                storage.SetItem(groupTotalMatchKey, groupOldTotalMatch + 1);
+            }
+            else
+            {
+                if (!groupDead)
+                    storage.SetItem(groupWinCountKey, 1);
+                storage.SetItem(groupTotalMatchKey, 1);
+            }
+        }
+
         #region Helper class
 
         public static class SharpHelper
         {
-            private static Random Rnd = new Random();
+            public static Random Rnd = new Random();
 
             public static T StringToEnum<T>(string str)
             {
@@ -128,6 +189,12 @@ namespace SFDScript.MoreBot
             public static readonly Color MESSAGE_COLOR = new Color(24, 238, 200);
             public static readonly Color ERROR_COLOR = new Color(244, 77, 77);
             public static readonly Color WARNING_COLOR = new Color(249, 191, 11);
+
+            public static readonly string EFFECT_ACS = "ACS";
+            public static readonly string EFFECT_CAM_S = "CAM_S";
+            public static readonly string EFFECT_SMOKE = "CFTXT";
+            public static readonly string EFFECT_ELECTRIC = "Electric";
+            public static readonly string EFFECT_TR_D = "TR_D";
 
             public static void PrintMessage(string message, Color? color = null)
             {
@@ -4789,7 +4856,7 @@ namespace SFDScript.MoreBot
                 set
                 {
                     types = value;
-                    HasBoss = types.Where(t => GetInfo(t).IsBoss).Any();
+                    HasBoss = GetInfo(types.First()).IsBoss;
                 }
             }
             public float Weight { get; set; }
@@ -5448,6 +5515,11 @@ namespace SFDScript.MoreBot
                             SelectGroup(arguments);
                             break;
 
+                        case "st":
+                        case "stats":
+                            PrintStats();
+                            break;
+
                         default:
                             ScriptHelper.PrintMessage("Invalid command", ScriptHelper.ERROR_COLOR);
                             break;
@@ -5482,6 +5554,7 @@ namespace SFDScript.MoreBot
                 ScriptHelper.PrintMessage("/<botextended|be> [spawn|sp] <BotType> [Team|_] [Count]: Spawn bot");
                 ScriptHelper.PrintMessage("/<botextended|be> [random|r] <0|1>: Random all groups at startup if set to 1. This option will disregard the current group list");
                 ScriptHelper.PrintMessage("/<botextended|be> [group|g] <group names|indexes>: Choose a list of group by either name or index to randomly spawn on startup");
+                ScriptHelper.PrintMessage("/<botextended|be> [stats|st]: List all bot types and bot groups stats");
                 ScriptHelper.PrintMessage("For example:", ScriptHelper.ERROR_COLOR);
                 ScriptHelper.PrintMessage("/botextended select metrocop >> select metrocop group");
                 ScriptHelper.PrintMessage("/be s 0 2 4 >> select assassin, bandido and clown group");
@@ -5647,6 +5720,45 @@ namespace SFDScript.MoreBot
                 m_storage.SetItem(BotHelper.BOT_GROUPS, botGroups.Distinct().ToArray());
                 ScriptHelper.PrintMessage("Update successfully");
             }
+
+            private static void PrintStats()
+            {
+                ScriptHelper.PrintMessage("--Botextended stats--", ScriptHelper.ERROR_COLOR);
+
+                var botTypes = SharpHelper.EnumToList<BotType>();
+                ScriptHelper.PrintMessage("-[BotType] [Survival rate] [Win Count] [Total Match]", ScriptHelper.WARNING_COLOR);
+                foreach (var botType in botTypes)
+                {
+                    var botTypeKeyPrefix = BotHelper.GET_BOTTYPE_STORAGE_KEY(botType);
+                    int winCount;
+                    var getWinCountAttempt = m_storage.TryGetItemInt(botTypeKeyPrefix + "_WIN_COUNT", out winCount);
+                    int totalMatch;
+                    var getTotalMatchAttempt = m_storage.TryGetItemInt(botTypeKeyPrefix + "_TOTAL_MATCH", out totalMatch);
+
+                    if (getWinCountAttempt && getTotalMatchAttempt)
+                    {
+                        var survivalRate = winCount / totalMatch;
+                        ScriptHelper.PrintMessage(SharpHelper.EnumToString(botType) + ": " + survivalRate + " " + winCount + " " + totalMatch);
+                    }
+                }
+
+                var botGroups = SharpHelper.EnumToList<BotGroup>();
+                ScriptHelper.PrintMessage("-[BotGroup] [Survival rate] [Win Count] [Total Match]", ScriptHelper.WARNING_COLOR);
+                foreach (var botGroup in botGroups)
+                {
+                    var groupKeyPrefix = BotHelper.GET_GROUP_STORAGE_KEY(botGroup);
+                    int winCount;
+                    var getWinCountAttempt = m_storage.TryGetItemInt(groupKeyPrefix + "_WIN_COUNT", out winCount);
+                    int totalMatch;
+                    var getTotalMatchAttempt = m_storage.TryGetItemInt(groupKeyPrefix + "_TOTAL_MATCH", out totalMatch);
+
+                    if (getWinCountAttempt && getTotalMatchAttempt)
+                    {
+                        var survivalRate = (float)winCount / totalMatch;
+                        ScriptHelper.PrintMessage(SharpHelper.EnumToString(botGroup) + ": " + survivalRate + " " + winCount + " " + totalMatch);
+                    }
+                }
+            }
         }
 
         public static class BotHelper
@@ -5713,9 +5825,17 @@ namespace SFDScript.MoreBot
                 }
             }
 
-            public static readonly string BOT_GROUPS = "BOT_EXTENDED_NH_BOT_GROUPS";
-            public static readonly string RANDOM_GROUP = "BOT_EXTENDED_NH_RANDOM_GROUP";
+            public static readonly string STORAGE_PREFIX = "BOT_EXTENDED_NH";
+            public static readonly string BOT_GROUPS = STORAGE_PREFIX + "BOT_EXTENDED_NH_BOT_GROUPS";
+            public static readonly string RANDOM_GROUP = STORAGE_PREFIX + "BOT_EXTENDED_NH_RANDOM_GROUP";
+            public static readonly string VERSION = STORAGE_PREFIX + "BOT_EXTENDED_NH_VERSION";
+            public static Func<BotType, string> GET_BOTTYPE_STORAGE_KEY = (botType) => "BOT_EXTENDED_NH" + SharpHelper.EnumToString(botType);
+            public static Func<BotGroup, string> GET_GROUP_STORAGE_KEY = (botGroup) => "BOT_EXTENDED_NH" + SharpHelper.EnumToString(CurrentBotGroup)
+                + "_" + CurrentGroupSetIndex.ToString() + "_";
+
             private static bool RANDOM_GROUP_DEFAULT_VALUE = true;
+            public static BotGroup CurrentBotGroup { get; private set; }
+            public static int CurrentGroupSetIndex { get; private set; }
 
             private static Events.PlayerDamageCallback m_playerDamageEvent = null;
             private static Events.PlayerDeathCallback m_playerDeathEvent = null;
@@ -5746,11 +5866,11 @@ namespace SFDScript.MoreBot
                 var playerCount = Game.GetPlayers().Length;
                 var botCount = MAX_PLAYERS - playerCount;
                 var botSpawnCount = Math.Min(botCount, m_playerSpawners.Count);
-                var groups = new List<BotGroup>();
+                var botGroups = new List<BotGroup>();
 
                 if (randomGroup) // Random all bot groups
                 {
-                    groups = SharpHelper.GetArrayFromEnum<BotGroup>().ToList();
+                    botGroups = SharpHelper.GetArrayFromEnum<BotGroup>().ToList();
                 }
                 else // Random selected bot groups from user settings
                 {
@@ -5760,37 +5880,38 @@ namespace SFDScript.MoreBot
                         ScriptHelper.PrintMessage(
                             "Error when retrieving bot groups to spawn. Default to randomize all available bot groups",
                             ScriptHelper.ERROR_COLOR);
-                        groups = SharpHelper.GetArrayFromEnum<BotGroup>().ToList();
+                        botGroups = SharpHelper.GetArrayFromEnum<BotGroup>().ToList();
                     }
                     else
                     {
                         foreach (var groupName in selectedGroups)
-                            groups.Add(SharpHelper.StringToEnum<BotGroup>(groupName));
+                            botGroups.Add(SharpHelper.StringToEnum<BotGroup>(groupName));
                     }
                 }
 
-                SpawnRandomGroup(botSpawnCount, groups);
+                SpawnRandomGroup(botSpawnCount, botGroups);
 
                 // TODO: remove
                 //IPlayer player = null;
                 //SpawnBot(BotType.MarauderNaked);
             }
 
-            private static void SpawnRandomGroup(int botCount, List<BotGroup> groups)
+            private static void SpawnRandomGroup(int botCount, List<BotGroup> botGroups)
             {
+                List<BotGroup> filteredBotGroups = null;
                 if (botCount < 3) // Too few for a group, spawn boss instead
                 {
-                    var bossGroups = groups.Select(g => g).Where(g => (int)g >= BOSS_GROUP_START_INDEX).ToList();
-                    var bossGroupSet = SharpHelper.GetRandomItem(bossGroups);
-                    var group = SharpHelper.GetRandomItem(GetGroupSet(bossGroupSet).Groups);
-                    group.Spawn(botCount);
+                    filteredBotGroups = botGroups.Select(g => g).Where(g => (int)g >= BOSS_GROUP_START_INDEX).ToList();
                 }
-                else
-                {
-                    var groupSet = GetGroupSet(SharpHelper.GetRandomItem(groups));
-                    var group = SharpHelper.GetRandomItem(groupSet.Groups);
-                    group.Spawn(botCount);
-                }
+
+                var rndBotGroup = SharpHelper.GetRandomItem(filteredBotGroups);
+                var groupSet = GetGroupSet(rndBotGroup);
+                var rndGroupIndex = SharpHelper.Rnd.Next(groupSet.Groups.Count);
+                var group = groupSet.Groups[rndGroupIndex];
+
+                group.Spawn(botCount);
+                CurrentBotGroup = rndBotGroup;
+                CurrentGroupSetIndex = rndGroupIndex;
             }
 
             public static void OnUpdate(float elapsed)
@@ -5829,6 +5950,8 @@ namespace SFDScript.MoreBot
 
             private static void OnPlayerDamage(IPlayer player, float damage)
             {
+                Game.PlayEffect(ScriptHelper.EFFECT_TR_D, player.GetWorldPosition()); // TODO: remove
+
                 if (player == null || m_infectedPlayers.ContainsKey(player.UniqueID)) return;
 
                 if (IsHitByZombieOrTheInfected(player))
@@ -5880,7 +6003,7 @@ namespace SFDScript.MoreBot
                     m_bots.Remove(player.UniqueID);
             }
 
-            private static BotType GetBotType(IPlayer player)
+            public static BotType GetBotType(IPlayer player)
             {
                 return m_bots.ContainsKey(player.UniqueID) ? m_bots[player.UniqueID].Type : BotType.None;
             }
@@ -6144,7 +6267,7 @@ namespace SFDScript.MoreBot
 // Fix be sp police _ 10 or more
 
 // Group
-// mecha/fritzliebe
+// mecha/fritzliebe -> play electric effect when low on health
 // Add bulletproof and meleeproof superfighters
 // Meatgrider block?
 // Multiple spawn|dead lines?
