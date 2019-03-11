@@ -36,7 +36,26 @@ namespace SFDScript.MoreBot
                 player.GiveWeaponItem(WeaponItem.MOLOTOVS);
             }
 
-            BotHelper.Initialize();
+            try
+            {
+                BotHelper.Initialize();
+            }
+            catch (Exception e)
+            {
+                var stackTrace = e.StackTrace;
+                var lines = stackTrace.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+                var thisNamespace = SharpHelper.GetNamespace<Bot>();
+
+                foreach (var line in lines)
+                {
+                    if (line.Contains(thisNamespace))
+                    {
+                        Game.RunCommand("/msg [BotExtended script]: " + line);
+                        Game.RunCommand("/msg [BotExtended script]: " + e.Message);
+                        break;
+                    }
+                }
+            }
         }
 
         public void OnShutdown()
@@ -5839,9 +5858,10 @@ namespace SFDScript.MoreBot
                 public bool IsTurningIntoZombie { get; private set; }
                 public bool TurnIntoZombie()
                 {
-                    if (Body.IsRemoved) return false;
+                    if (Body.IsRemoved || Body.IsBurnedCorpse) return false;
 
                     var player = Game.CreatePlayer(Body.GetWorldPosition());
+                    player.CustomID = Guid.NewGuid().ToString("N");
                     var zombie = SpawnBot(GetZombieType(Body), player, equipWeapons: false, setProfile: false);
                     var zombieBody = zombie.Player;
 
@@ -5963,7 +5983,7 @@ namespace SFDScript.MoreBot
 
                 // TODO: remove
                 //IPlayer player = null;
-                //SpawnGroup(BotGroup.Boss_Hacker, botSpawnCount);
+                //SpawnGroup(BotGroup.Marauder, botSpawnCount);
             }
 
             private static void SpawnRandomGroup(int botCount, List<BotGroup> botGroups)
@@ -5973,6 +5993,8 @@ namespace SFDScript.MoreBot
                 {
                     filteredBotGroups = botGroups.Select(g => g).Where(g => (int)g >= BOSS_GROUP_START_INDEX).ToList();
                 }
+                else
+                    filteredBotGroups = botGroups;
 
                 var rndBotGroup = SharpHelper.GetRandomItem(filteredBotGroups);
                 var groupSet = GetGroupSet(rndBotGroup);
@@ -6071,7 +6093,6 @@ namespace SFDScript.MoreBot
                 if (m_infectedPlayers.ContainsKey(player.CustomID))
                 {
                     var infectedPlayer = m_infectedPlayers[player.CustomID];
-                    if (infectedPlayer.IsBurning) return;
                     m_infectedCorpses.Add(new PlayerCorpse(infectedPlayer));
                     m_infectedPlayers.Remove(player.CustomID);
                 }
@@ -6316,10 +6337,7 @@ namespace SFDScript.MoreBot
 // TODO:
 // Add draw weapon first
 
-// Not grunt:
-// assassin (both)
 // fritzliebe
-// funnyman
 // Kriegbär
 // mecha
 
