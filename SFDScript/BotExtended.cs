@@ -65,6 +65,8 @@ namespace SFDScript.MoreBot
 
         private void StoreStatistics()
         {
+            if (Game.IsEditorTest) return;
+
             var storage = Game.LocalStorage;
             var players = Game.GetPlayers();
             var groupDead = true;
@@ -4014,8 +4016,6 @@ namespace SFDScript.MoreBot
             Grunt,
             Hulk,
 
-            Demolitionist,
-            Incinerator,
             Meatgrinder,
             Ninja,
             Sniper,
@@ -4034,7 +4034,9 @@ namespace SFDScript.MoreBot
                 MeleeActions = BotMeleeActions.Default,
                 MeleeActionsWhenHit = BotMeleeActions.DefaultWhenHit,
                 MeleeActionsWhenEnraged = BotMeleeActions.DefaultWhenEnraged,
-                MeleeActionsWhenEnragedAndHit = BotMeleeActions.DefaultWhenEnragedAndHit
+                MeleeActionsWhenEnragedAndHit = BotMeleeActions.DefaultWhenEnragedAndHit,
+                ChaseRange = 44f,
+                GuardRange = 40f,
             };
 
             switch (botAI)
@@ -4169,26 +4171,7 @@ namespace SFDScript.MoreBot
                     botBehaviorSet.RangedWeaponPrecisionAccuracy = 0.9f;
                     break;
                 }
-                case BotAI.Demolitionist:
-                {
-                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.RangedA);
-                    botBehaviorSet.SearchForItems = true;
-                    botBehaviorSet.SearchItems = SearchItems.Primary;
-                    botBehaviorSet.RangedWeaponAccuracy = 0.75f;
-                    botBehaviorSet.RangedWeaponAimShootDelayMin = 600f;
-                    botBehaviorSet.RangedWeaponPrecisionInterpolateTime = 2000f;
-                    botBehaviorSet.RangedWeaponPrecisionAccuracy = 0.9f;
-                    break;
-                }
-                case BotAI.Incinerator:
-                {
-                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotB);
-                    botBehaviorSet.SearchForItems = false;
-                    botBehaviorSet.RangedWeaponAccuracy = 0.4f;
-                    botBehaviorSet.RangedWeaponPrecisionInterpolateTime = 0f;
-                    break;
-                }
-                case BotAI.Sniper:
+                case BotAI.Sniper: // == BotAI.RangeExpert + more defensive melee tactic
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.RangedA);
                     botBehaviorSet.RangedWeaponMode = BotBehaviorRangedWeaponMode.ManualAim;
@@ -4297,6 +4280,7 @@ namespace SFDScript.MoreBot
                 OnSpawn = null;
                 UpdateInterval = 1000;
                 OnUpdate = null;
+                OnDamage = null;
                 OnDeath = null;
                 IsBoss = false;
                 SpawnLine = "";
@@ -4310,9 +4294,10 @@ namespace SFDScript.MoreBot
             public BotAI AIType { get; set; }
             public PlayerModifiers Modifiers { get; set; }
             public bool IsBoss { get; set; }
-            public Action<Bot> OnSpawn { get; set; }
+            public Action<Bot, List<Bot>> OnSpawn { get; set; }
             public int UpdateInterval { get; set; } // in ms
             public Action<Bot> OnUpdate { get; set; }
+            public Action<Bot> OnDamage { get; set; }
             public Action<Bot> OnDeath { get; set; }
             public string SpawnLine { get; set; }
             public float SpawnLineChance { get; set; }
@@ -4581,7 +4566,7 @@ namespace SFDScript.MoreBot
                 case BotType.ZombieFlamer:
                 {
                     botInfo.AIType = BotAI.ZombieFast;
-                    botInfo.OnSpawn = (Bot bot) => bot.Player.SetMaxFire();
+                    botInfo.OnSpawn = (Bot bot, List<Bot> others) => bot.Player.SetMaxFire();
                     botInfo.Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 35,
@@ -4617,7 +4602,14 @@ namespace SFDScript.MoreBot
                 // --Bosses--
                 case BotType.Demolitionist:
                 {
-                    botInfo.AIType = BotAI.Demolitionist;
+                    botInfo.AIType = BotAI.RangeHard;
+                    botInfo.OnSpawn = (Bot bot, List<Bot> others) =>
+                    {
+                        var behavior = bot.Player.GetBotBehaviorSet();
+                        behavior.SearchForItems = true;
+                        behavior.SearchItems = SearchItems.Primary;
+                        bot.Player.SetBotBehaviorSet(behavior);
+                    };
                     botInfo.Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 150,
@@ -4633,6 +4625,18 @@ namespace SFDScript.MoreBot
                     botInfo.IsBoss = true;
                     break;
                 }
+                case BotType.Fritzliebe:
+                {
+                    botInfo.AIType = BotAI.Expert;
+                    botInfo.Modifiers = new PlayerModifiers()
+                    {
+                        MaxHealth = 200,
+                        CurrentHealth = 200,
+                        SizeModifier = 0.95f,
+                    };
+                    botInfo.IsBoss = true;
+                    break;
+                }
                 case BotType.Funnyman:
                 {
                     botInfo.AIType = BotAI.Expert;
@@ -4641,18 +4645,6 @@ namespace SFDScript.MoreBot
                         MaxHealth = 250,
                         CurrentHealth = 250,
                         SizeModifier = 1.05f,
-                    };
-                    botInfo.IsBoss = true;
-                    break;
-                }
-                case BotType.Jo:
-                {
-                    botInfo.AIType = BotAI.MeleeExpert;
-                    botInfo.Modifiers = new PlayerModifiers()
-                    {
-                        MaxHealth = 250,
-                        CurrentHealth = 250,
-                        SizeModifier = 1.1f,
                     };
                     botInfo.IsBoss = true;
                     break;
@@ -4715,7 +4707,14 @@ namespace SFDScript.MoreBot
                 }
                 case BotType.Incinerator:
                 {
-                    botInfo.AIType = BotAI.Incinerator;
+                    botInfo.AIType = BotAI.Hard;
+                    botInfo.OnSpawn = (Bot bot, List<Bot> others) =>
+                    {
+                        var behavior = bot.Player.GetBotBehaviorSet();
+                        behavior.SearchForItems = false;
+                        behavior.RangedWeaponPrecisionInterpolateTime = 0f;
+                        bot.Player.SetBotBehaviorSet(behavior);
+                    };
                     botInfo.OnDeath = (Bot bot) =>
                     {
                         var player = bot.Player;
@@ -4738,9 +4737,35 @@ namespace SFDScript.MoreBot
                     botInfo.IsBoss = true;
                     break;
                 }
+                case BotType.Jo:
+                {
+                    botInfo.AIType = BotAI.MeleeExpert;
+                    botInfo.Modifiers = new PlayerModifiers()
+                    {
+                        MaxHealth = 250,
+                        CurrentHealth = 250,
+                        SizeModifier = 1.1f,
+                    };
+                    botInfo.IsBoss = true;
+                    break;
+                }
                 case BotType.Kingpin:
                 {
                     botInfo.AIType = BotAI.Hard;
+                    botInfo.OnSpawn = (Bot bot, List<Bot> others) =>
+                    {
+                        var bodyguards = others.Where(Q => Q.Type == BotType.Bodyguard || Q.Type == BotType.GangsterHulk).Take(2);
+                        var bodyguardMaxCount = 2;
+                        var bodyguardCount = bodyguards.Count();
+                        var bodyguardMissing = bodyguardMaxCount - bodyguardCount;
+                        if (bodyguardCount < bodyguardMaxCount)
+                            bodyguards.Concat(others.Where(Q => Q.Type == BotType.Bodyguard2).Take(bodyguardMissing));
+
+                        foreach (var bodyguard in bodyguards)
+                        {
+                            bodyguard.Player.SetGuardTarget(bot.Player);
+                        }
+                    };
                     botInfo.Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 250,
@@ -4748,6 +4773,39 @@ namespace SFDScript.MoreBot
                         SizeModifier = 1.05f,
                     };
                     botInfo.IsBoss = true;
+                    break;
+                }
+                case BotType.Kriegbär:
+                {
+                    botInfo.AIType = BotAI.Expert;
+                    botInfo.OnSpawn = (Bot bot, List<Bot> others) =>
+                    {
+                        var behavior = bot.Player.GetBotBehaviorSet();
+                        behavior.RangedWeaponUsage = false;
+                        behavior.SearchForItems = false;
+                        behavior.GuardRange = 32;
+                        behavior.ChaseRange = 32;
+                        bot.Player.SetBotBehaviorSet(behavior);
+
+                        var fritzliebe = others.Find(Q => Q.Type == BotType.Fritzliebe);
+                        if (fritzliebe.Player == null) return;
+
+                        bot.Player.SetGuardTarget(fritzliebe.Player);
+                    };
+                    botInfo.Modifiers = new PlayerModifiers()
+                    {
+                        MaxHealth = 400,
+                        CurrentHealth = 400,
+                        MaxEnergy = 400,
+                        CurrentEnergy = 400,
+                        FireDamageTakenModifier = 1.5f,
+                        MeleeForceModifier = 1.75f,
+                        RunSpeedModifier = 1.1f,
+                        SprintSpeedModifier = 1.1f,
+                        SizeModifier = 1.25f,
+                    };
+                    botInfo.IsBoss = true;
+                    botInfo.SpawnLine = "HNNNARRRRRRRHHH!";
                     break;
                 }
                 case BotType.Meatgrinder:
@@ -4808,10 +4866,10 @@ namespace SFDScript.MoreBot
                     botInfo.AIType = BotAI.Hulk;
                     botInfo.Modifiers = new PlayerModifiers()
                     {
-                        MaxHealth = 400,
-                        CurrentHealth = 400,
-                        MaxEnergy = 400,
-                        CurrentEnergy = 400,
+                        MaxHealth = 500,
+                        CurrentHealth = 500,
+                        MaxEnergy = 500,
+                        CurrentEnergy = 500,
                         MeleeDamageDealtModifier = 1.25f,
                         MeleeForceModifier = 2.0f,
                         RunSpeedModifier = 0.9f,
@@ -4829,7 +4887,7 @@ namespace SFDScript.MoreBot
                         MaxHealth = 200,
                         CurrentHealth = 200,
                         ExplosionDamageTakenModifier = 0.5f,
-                        MeleeForceModifier = 1.75f,
+                        MeleeForceModifier = 1.5f,
                         SizeModifier = 1.1f,
                         InfiniteAmmo = 1,
                     };
@@ -4927,6 +4985,7 @@ namespace SFDScript.MoreBot
                 var subGroupCount = 0;
                 var groupCountRemaining = groupCount;
                 var mobCount = HasBoss ? groupCount - 1 : groupCount;
+                var newBots = new List<Bot>();
 
                 foreach (var subGroup in SubGroups)
                 {
@@ -4941,7 +5000,9 @@ namespace SFDScript.MoreBot
                         while (groupCountRemaining > 0 && (botCountRemainingThisType > 0 || subGroupCount == SubGroups.Count))
                         {
                             var botType = subGroup.GetRandomType();
-                            BotHelper.SpawnBot(botType);
+                            var bot = BotHelper.SpawnBot(botType);
+
+                            newBots.Add(bot);
                             groupCountRemaining--;
                             botCountRemainingThisType--;
                         }
@@ -4949,9 +5010,16 @@ namespace SFDScript.MoreBot
                     else
                     {
                         var botType = subGroup.GetRandomType();
-                        BotHelper.SpawnBot(botType);
+                        var bot = BotHelper.SpawnBot(botType);
+
+                        newBots.Add(bot);
                         groupCountRemaining--;
                     }
+                }
+
+                foreach (var bot in newBots.ToList())
+                {
+                    bot.OnSpawn(newBots);
                 }
             }
         }
@@ -5020,6 +5088,7 @@ namespace SFDScript.MoreBot
             Boss_Hacker,
             Boss_Incinerator,
             Boss_Kingpin,
+            Boss_MadScientist,
             Boss_Meatgrinder,
             Boss_MetroCop,
             Boss_Ninja,
@@ -5350,6 +5419,15 @@ namespace SFDScript.MoreBot
                     });
                     break;
                 }
+                case BotGroup.Boss_MadScientist:
+                {
+                    groupSet.AddGroup(new List<SubGroup>()
+                    {
+                        new SubGroup(BotType.Kriegbär),
+                        new SubGroup(BotType.Fritzliebe),
+                    });
+                    break;
+                }
                 case BotGroup.Boss_Meatgrinder:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -5433,14 +5511,18 @@ namespace SFDScript.MoreBot
             public BotType Type { get; private set; }
             public BotInfo Info { get; private set; }
 
+            public Bot()
+            {
+                Player = null;
+                Type = BotType.None;
+                Info = null;
+            }
+
             public Bot(IPlayer player, BotType type, BotInfo info)
             {
                 Player = player;
                 Type = type;
                 Info = info;
-
-                if (Info.OnSpawn != null)
-                    Info.OnSpawn(this);
 
                 SaySpawnLine();
             }
@@ -5473,6 +5555,19 @@ namespace SFDScript.MoreBot
                     Info.OnUpdate(this);
                     lastUpdateElapsed = 0;
                 }
+            }
+
+            // Dont call OnSpawn in constructor. Wait until the bot list is initialized fully
+            public void OnSpawn(List<Bot> bots)
+            {
+                if (Info.OnSpawn != null)
+                    Info.OnSpawn(this, bots);
+            }
+
+            public void OnDamage()
+            {
+                if (Info.OnDamage != null)
+                    Info.OnDamage(this);
             }
 
             public void OnDeath()
@@ -5861,7 +5956,6 @@ namespace SFDScript.MoreBot
                     if (Body.IsRemoved || Body.IsBurnedCorpse) return false;
 
                     var player = Game.CreatePlayer(Body.GetWorldPosition());
-                    player.CustomID = Guid.NewGuid().ToString("N");
                     var zombie = SpawnBot(GetZombieType(Body), player, equipWeapons: false, setProfile: false);
                     var zombieBody = zombie.Player;
 
@@ -5979,11 +6073,17 @@ namespace SFDScript.MoreBot
                     }
                 }
 
-                SpawnRandomGroup(botSpawnCount, botGroups);
-
-                // TODO: remove
-                //IPlayer player = null;
-                //SpawnGroup(BotGroup.Marauder, botSpawnCount);
+                if (!Game.IsEditorTest)
+                {
+                    SpawnRandomGroup(botSpawnCount, botGroups);
+                }
+                else
+                {
+                    // TODO: remove
+                    //IPlayer player = null;
+                    //SpawnGroup(BotGroup.Assassin, botSpawnCount);
+                    //SpawnBot(BotType.MarauderBiker);
+                }
             }
 
             private static void SpawnRandomGroup(int botCount, List<BotGroup> botGroups)
@@ -6050,10 +6150,26 @@ namespace SFDScript.MoreBot
             {
                 Game.PlayEffect(ScriptHelper.EFFECT_TR_D, player.GetWorldPosition()); // TODO: remove
 
-                if (player == null || m_infectedPlayers.ContainsKey(player.CustomID)) return;
+                if (player == null) return;
+
+                switch (player.GetTeam())
+                {
+                    case PlayerTeam.Team4:
+                        Bot enemy;
+                        if (m_bots.TryGetValue(player.CustomID, out enemy))
+                        {
+                            enemy.OnDamage();
+                        }
+                        break;
+                }
+
+                if (m_infectedPlayers.ContainsKey(player.CustomID)) return;
 
                 if (IsHitByZombieOrTheInfected(player))
                 {
+                    // Normal players that are not extended bots dont have CustomID by default
+                    if (string.IsNullOrEmpty(player.CustomID))
+                        player.CustomID = Guid.NewGuid().ToString("N");
                     m_infectedPlayers.Add(player.CustomID, player);
                 }
             }
@@ -6306,6 +6422,8 @@ namespace SFDScript.MoreBot
 
                 if (player == null) player = SpawnPlayer(info, weaponSet, ignoreFullSpawner);
                 if (player == null) return null;
+                if (string.IsNullOrEmpty(player.CustomID))
+                    player.CustomID = Guid.NewGuid().ToString("N");
 
                 if (setProfile)
                 {
@@ -6344,12 +6462,11 @@ namespace SFDScript.MoreBot
 // Commands:
 // botextended groupInterval
 
-// Uninfected body should turn infected if is hit by zombies
 // Fix a bug where the group is registered as win if you exit the server instead of continue map
 
 // Group
 // mecha/fritzliebe -> play electric effect when low on health
 // Add bulletproof and meleeproof superfighters
-// Meatgrider block?
 // Multiple spawn|dead lines?
-// Fix infected corpse turn into zombie even if it's is burned (it should not)
+
+// make assassin move a lot more
