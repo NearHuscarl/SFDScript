@@ -18,8 +18,8 @@
                 var player = Game.GetPlayers()[0];
                 var modifiers = player.GetModifiers();
 
-                modifiers.MaxHealth = 5000;
-                modifiers.CurrentHealth = 5000;
+                //modifiers.MaxHealth = 5000;
+                //modifiers.CurrentHealth = 5000;
                 //modifiers.InfiniteAmmo = 1;
                 //modifiers.MeleeStunImmunity = 1;
 
@@ -59,8 +59,6 @@
 
         private void StoreStatistics()
         {
-            if (Game.IsEditorTest) return;
-
             var storage = Game.LocalStorage;
             var players = Game.GetPlayers();
             var groupDead = true;
@@ -4325,6 +4323,13 @@
                 case BotType.AssassinMelee:
                 {
                     botInfo.AIType = BotAI.MeleeHard;
+                    botInfo.OnSpawn = (Bot bot, List<Bot> others) =>
+                    {
+                        var behavior = bot.Player.GetBotBehaviorSet();
+                        behavior.OffensiveClimbingLevel = 0.9f;
+                        behavior.OffensiveSprintLevel = 0.9f;
+                        bot.Player.SetBotBehaviorSet(behavior);
+                    };
                     botInfo.Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 70,
@@ -4340,6 +4345,13 @@
                 case BotType.AssassinRange:
                 {
                     botInfo.AIType = BotAI.RangeHard;
+                    botInfo.OnSpawn = (Bot bot, List<Bot> others) =>
+                    {
+                        var behavior = bot.Player.GetBotBehaviorSet();
+                        behavior.OffensiveClimbingLevel = 0.9f;
+                        behavior.OffensiveSprintLevel = 0.9f;
+                        bot.Player.SetBotBehaviorSet(behavior);
+                    };
                     botInfo.Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 70,
@@ -6006,7 +6018,8 @@
             public static readonly string BOT_GROUPS = STORAGE_PREFIX + "BOT_EXTENDED_NH_BOT_GROUPS";
             public static readonly string RANDOM_GROUP = STORAGE_PREFIX + "BOT_EXTENDED_NH_RANDOM_GROUP";
             public static readonly string VERSION = STORAGE_PREFIX + "BOT_EXTENDED_NH_VERSION";
-            public static Func<BotType, string> GET_BOTTYPE_STORAGE_KEY = (botType) => "BOT_EXTENDED_NH" + SharpHelper.EnumToString(botType);
+            public static Func<BotType, string> GET_BOTTYPE_STORAGE_KEY = (botType) => "BOT_EXTENDED_NH_"
+                + SharpHelper.EnumToString(botType).ToUpperInvariant();
             public static Func<BotGroup, int, string> GET_GROUP_STORAGE_KEY = (botGroup, groupIndex) => "BOT_EXTENDED_NH_"
                 + SharpHelper.EnumToString(botGroup).ToUpperInvariant()
                 + "_" + groupIndex;
@@ -6073,9 +6086,8 @@
                 }
                 else
                 {
-                    // TODO: remove
                     //IPlayer player = null;
-                    //SpawnGroup(BotGroup.Assassin, botSpawnCount);
+                    SpawnGroup(BotGroup.Assassin, botSpawnCount);
                     //SpawnBot(BotType.MarauderBiker);
                 }
             }

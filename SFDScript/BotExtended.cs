@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using SFDGameScriptInterface;
 using System.Text;
 
-namespace SFDScript.MoreBot
+namespace SFDScript.BotExtended
 {
     public partial class GameScript : GameScriptInterface
     {
@@ -65,8 +65,6 @@ namespace SFDScript.MoreBot
 
         private void StoreStatistics()
         {
-            if (Game.IsEditorTest) return;
-
             var storage = Game.LocalStorage;
             var players = Game.GetPlayers();
             var groupDead = true;
@@ -4331,6 +4329,13 @@ namespace SFDScript.MoreBot
                 case BotType.AssassinMelee:
                 {
                     botInfo.AIType = BotAI.MeleeHard;
+                    botInfo.OnSpawn = (Bot bot, List<Bot> others) =>
+                    {
+                        var behavior = bot.Player.GetBotBehaviorSet();
+                        behavior.OffensiveClimbingLevel = 0.9f;
+                        behavior.OffensiveSprintLevel = 0.9f;
+                        bot.Player.SetBotBehaviorSet(behavior);
+                    };
                     botInfo.Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 70,
@@ -4346,6 +4351,13 @@ namespace SFDScript.MoreBot
                 case BotType.AssassinRange:
                 {
                     botInfo.AIType = BotAI.RangeHard;
+                    botInfo.OnSpawn = (Bot bot, List<Bot> others) =>
+                    {
+                        var behavior = bot.Player.GetBotBehaviorSet();
+                        behavior.OffensiveClimbingLevel = 0.9f;
+                        behavior.OffensiveSprintLevel = 0.9f;
+                        bot.Player.SetBotBehaviorSet(behavior);
+                    };
                     botInfo.Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 70,
@@ -6012,7 +6024,8 @@ namespace SFDScript.MoreBot
             public static readonly string BOT_GROUPS = STORAGE_PREFIX + "BOT_EXTENDED_NH_BOT_GROUPS";
             public static readonly string RANDOM_GROUP = STORAGE_PREFIX + "BOT_EXTENDED_NH_RANDOM_GROUP";
             public static readonly string VERSION = STORAGE_PREFIX + "BOT_EXTENDED_NH_VERSION";
-            public static Func<BotType, string> GET_BOTTYPE_STORAGE_KEY = (botType) => "BOT_EXTENDED_NH" + SharpHelper.EnumToString(botType);
+            public static Func<BotType, string> GET_BOTTYPE_STORAGE_KEY = (botType) => "BOT_EXTENDED_NH_"
+                + SharpHelper.EnumToString(botType).ToUpperInvariant();
             public static Func<BotGroup, int, string> GET_GROUP_STORAGE_KEY = (botGroup, groupIndex) => "BOT_EXTENDED_NH_"
                 + SharpHelper.EnumToString(botGroup).ToUpperInvariant()
                 + "_" + groupIndex;
@@ -6079,7 +6092,6 @@ namespace SFDScript.MoreBot
                 }
                 else
                 {
-                    // TODO: remove
                     //IPlayer player = null;
                     //SpawnGroup(BotGroup.Assassin, botSpawnCount);
                     //SpawnBot(BotType.MarauderBiker);
@@ -6468,5 +6480,3 @@ namespace SFDScript.MoreBot
 // mecha/fritzliebe -> play electric effect when low on health
 // Add bulletproof and meleeproof superfighters
 // Multiple spawn|dead lines?
-
-// make assassin move a lot more
