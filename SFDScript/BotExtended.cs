@@ -13,8 +13,6 @@ namespace SFDScript.BotExtended
         /// </summary>
         public GameScript() : base(null) { }
 
-        private const int MAX_PLAYERS = 12;
-
         public void OnStartup()
         {
             //System.Diagnostics.Debugger.Break();
@@ -5616,6 +5614,11 @@ namespace SFDScript.BotExtended
                             PrintHelp();
                             break;
 
+                        case "v":
+                        case "version":
+                            PrintVersion();
+                            break;
+
                         case "lg":
                         case "listgroup":
                             ListBotGroup();
@@ -5637,6 +5640,11 @@ namespace SFDScript.BotExtended
                             ShowCurrentSettings();
                             break;
 
+                        case "bc":
+                        case "botcount":
+                            SetBotCount(arguments);
+                            break;
+
                         case "sp":
                         case "spawn":
                             SpawnNewBot(arguments);
@@ -5644,7 +5652,7 @@ namespace SFDScript.BotExtended
 
                         case "r":
                         case "random":
-                            RandomGroup(arguments);
+                            SetRandomGroup(arguments);
                             break;
 
                         case "g":
@@ -5693,11 +5701,13 @@ namespace SFDScript.BotExtended
             {
                 ScriptHelper.PrintMessage("--Botextended help--", ScriptHelper.ERROR_COLOR);
                 ScriptHelper.PrintMessage("/<botextended|be> [help|h|?]: Print this help");
+                ScriptHelper.PrintMessage("/<botextended|be> [version|v]: Print the current version");
                 ScriptHelper.PrintMessage("/<botextended|be> [listgroup|lg]: List all bot groups");
                 ScriptHelper.PrintMessage("/<botextended|be> [listbot|lb]: List all bot types");
                 ScriptHelper.PrintMessage("/<botextended|be> [find|f|/] <query>: Find bot groups");
                 ScriptHelper.PrintMessage("/<botextended|be> [settings|s]: Show current script settings");
                 ScriptHelper.PrintMessage("/<botextended|be> [spawn|sp] <BotType> [Team|_] [Count]: Spawn bot");
+                ScriptHelper.PrintMessage("/<botextended|be> [botcount|bc] [1-10]: Set maximum bot count");
                 ScriptHelper.PrintMessage("/<botextended|be> [random|r] <0|1>: Random all groups at startup if set to 1. This option will disregard the current group list");
                 ScriptHelper.PrintMessage("/<botextended|be> [group|g] <group names|indexes>: Choose a list of group by either name or index to randomly spawn on startup");
                 ScriptHelper.PrintMessage("/<botextended|be> [stats|st]: List all bot types and bot groups stats");
@@ -5705,6 +5715,12 @@ namespace SFDScript.BotExtended
                 ScriptHelper.PrintMessage("For example:", ScriptHelper.ERROR_COLOR);
                 ScriptHelper.PrintMessage("/botextended select metrocop >> select metrocop group");
                 ScriptHelper.PrintMessage("/be s 0 2 4 >> select assassin, bandido and clown group");
+            }
+
+            private static void PrintVersion()
+            {
+                ScriptHelper.PrintMessage("--Botextended version--", ScriptHelper.ERROR_COLOR);
+                ScriptHelper.PrintMessage("v" + BotHelper.CURRENT_VERSION);
             }
 
             private static IEnumerable<string> GetGroupNames()
@@ -5769,10 +5785,18 @@ namespace SFDScript.BotExtended
                 }
 
                 bool randomGroup;
-                if (m_storage.TryGetItemBool(BotHelper.RANDOM_GROUP, out randomGroup))
+                if (!m_storage.TryGetItemBool(BotHelper.RANDOM_GROUP, out randomGroup))
                 {
-                    ScriptHelper.PrintMessage("-Random groups: " + randomGroup, ScriptHelper.WARNING_COLOR);
+                    randomGroup = BotHelper.RANDOM_GROUP_DEFAULT_VALUE;
                 }
+                ScriptHelper.PrintMessage("-Random groups: " + randomGroup, ScriptHelper.WARNING_COLOR);
+
+                int botCount;
+                if (!m_storage.TryGetItemInt(BotHelper.BOT_COUNT, out botCount))
+                {
+                    botCount = BotHelper.MAX_BOT_COUNT_DEFAULT_VALUE;
+                }
+                ScriptHelper.PrintMessage("-Max bot count: " + botCount, ScriptHelper.WARNING_COLOR);
             }
 
             private static void SpawnNewBot(IEnumerable<string> arguments)
@@ -5821,7 +5845,22 @@ namespace SFDScript.BotExtended
                 }
             }
 
-            private static void RandomGroup(IEnumerable<string> arguments)
+            private static void SetBotCount(IEnumerable<string> arguments)
+            {
+                var firstArg = arguments.FirstOrDefault();
+                if (firstArg == null) return;
+                int value = -1;
+
+                if (int.TryParse(firstArg, out value))
+                {
+                    m_storage.SetItem(BotHelper.BOT_COUNT, value);
+                    ScriptHelper.PrintMessage("[Botextended] Update successfully");
+                }
+                else
+                    ScriptHelper.PrintMessage("[Botextended] Invalid query: " + firstArg, ScriptHelper.WARNING_COLOR);
+            }
+
+            private static void SetRandomGroup(IEnumerable<string> arguments)
             {
                 var firstArg = arguments.FirstOrDefault();
                 if (firstArg == null) return;
@@ -5842,6 +5881,8 @@ namespace SFDScript.BotExtended
                         m_storage.SetItem(BotHelper.RANDOM_GROUP, false);
                     ScriptHelper.PrintMessage("[Botextended] Update successfully");
                 }
+                else
+                    ScriptHelper.PrintMessage("[Botextended] Invalid query: " + firstArg, ScriptHelper.WARNING_COLOR);
             }
 
             private static void SelectGroup(IEnumerable<string> arguments)
@@ -6020,17 +6061,19 @@ namespace SFDScript.BotExtended
                 }
             }
 
-            public static readonly string STORAGE_PREFIX = "BOT_EXTENDED_NH";
-            public static readonly string BOT_GROUPS = STORAGE_PREFIX + "BOT_EXTENDED_NH_BOT_GROUPS";
-            public static readonly string RANDOM_GROUP = STORAGE_PREFIX + "BOT_EXTENDED_NH_RANDOM_GROUP";
-            public static readonly string VERSION = STORAGE_PREFIX + "BOT_EXTENDED_NH_VERSION";
+            public static readonly string CURRENT_VERSION = "0.0";
+            public static readonly string BOT_GROUPS = "BOT_EXTENDED_NH_BOT_GROUPS";
+            public static readonly string RANDOM_GROUP = "BOT_EXTENDED_NH_RANDOM_GROUP";
+            public static readonly string BOT_COUNT = "BOT_EXTENDED_NH_BOT_COUNT";
+            public static readonly string VERSION = "BOT_EXTENDED_NH_VERSION";
             public static Func<BotType, string> GET_BOTTYPE_STORAGE_KEY = (botType) => "BOT_EXTENDED_NH_"
                 + SharpHelper.EnumToString(botType).ToUpperInvariant();
             public static Func<BotGroup, int, string> GET_GROUP_STORAGE_KEY = (botGroup, groupIndex) => "BOT_EXTENDED_NH_"
                 + SharpHelper.EnumToString(botGroup).ToUpperInvariant()
                 + "_" + groupIndex;
 
-            private static bool RANDOM_GROUP_DEFAULT_VALUE = true;
+            public static readonly bool RANDOM_GROUP_DEFAULT_VALUE = true;
+            public static readonly int MAX_BOT_COUNT_DEFAULT_VALUE = 5;
             public static BotGroup CurrentBotGroup { get; private set; }
             public static int CurrentGroupSetIndex { get; private set; }
 
@@ -6060,8 +6103,13 @@ namespace SFDScript.BotExtended
                     randomGroup = RANDOM_GROUP_DEFAULT_VALUE;
                 }
 
-                var playerCount = Game.GetPlayers().Length;
-                var botCount = MAX_PLAYERS - playerCount;
+                int botCount;
+                if (!Game.LocalStorage.TryGetItemInt(BOT_COUNT, out botCount))
+                {
+                    botCount = MAX_BOT_COUNT_DEFAULT_VALUE;
+                }
+
+                botCount = (int)MathHelper.Clamp(botCount, 1, 10);
                 var botSpawnCount = Math.Min(botCount, m_playerSpawners.Count);
                 var botGroups = new List<BotGroup>();
 
@@ -6104,6 +6152,8 @@ namespace SFDScript.BotExtended
                 if (botCount < 3) // Too few for a group, spawn boss instead
                 {
                     filteredBotGroups = botGroups.Select(g => g).Where(g => (int)g >= BOSS_GROUP_START_INDEX).ToList();
+                    if (!filteredBotGroups.Any())
+                        filteredBotGroups = botGroups;
                 }
                 else
                     filteredBotGroups = botGroups;
