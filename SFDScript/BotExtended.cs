@@ -131,6 +131,45 @@ namespace SFDScript.BotExtended
 
         #region Helper class
 
+        // https://www.mythologicinteractiveforums.com/viewtopic.php?f=33&t=2170&p=13526&hilit=effect#p13526
+        public static class Effect
+        {
+            public static readonly string BLOOD = "BLD";
+            // IGame.PlayEffect("CAM_S", Vector2 position, float strength, float milliseconds, bool UNDOCUMENTED)
+            // IGame.PlayEffect("CAM_S", Vector2.Zero, 1f, 500f, true)
+            public static readonly string CAMERA_SHAKER = "CAM_S";
+            // IGame.PlayEffect("CFTXT", Vector2 Position, string Text)
+            public static readonly string CUSTOM_FLOAT_TEXT = "CFTXT";
+            public static readonly string ELECTRIC = "Electric";
+            // IGame.PlayEffect("EXP", Vector2.Zero, float UNDOCUMENTED)
+            public static readonly string EXPLOSION = "EXP";
+            public static readonly string ITEM_GLEAM = "GLM";
+            public static readonly string SPARKS = "S_P";
+            public static readonly string STEAM = "STM";
+
+            public static readonly string ACID_SPLASH = "ACS";
+            public static readonly string WATER_SPLASH = "WS";
+
+            public static readonly string WOOD_PARTICLES = "W_P";
+
+            public static readonly string BLOOD_TRAIL = "TR_B";
+            public static readonly string DUST_TRAIL = "TR_D";
+            public static readonly string SMOKE_TRAIL = "TR_S";
+
+            // From smallest effect to biggest
+            public static readonly string FIRE_TRAIL = "TR_F";
+            public static readonly string FIRE = "FIRE";
+            public static readonly string PLAYER_BURNED = "PLRB";
+
+            // Not working
+            public static readonly string PICKUP_TEXT = "PWT";
+            public static readonly string FIRE_BIG = "FBG";
+            public static readonly string HIT = "HIT";
+            public static readonly string GLASS_PARTICLES = "G_P";
+            public static readonly string PAPER_DESTROYED = "PPR_D";
+            public static readonly string TRACE_SPAWNER = "TR_SPR";
+        }
+
         public static class SharpHelper
         {
             public static Random Rnd = new Random();
@@ -190,6 +229,10 @@ namespace SFDScript.BotExtended
                 return true;
             }
 
+            public static bool RandomBoolean()
+            {
+                return Rnd.NextDouble() >= 0.5;
+            }
             public static float RandomBetween(float min, float max)
             {
                 return (float)Rnd.NextDouble() * (max - min) + min;
@@ -218,12 +261,6 @@ namespace SFDScript.BotExtended
             public static readonly Color MESSAGE_COLOR = new Color(24, 238, 200);
             public static readonly Color ERROR_COLOR = new Color(244, 77, 77);
             public static readonly Color WARNING_COLOR = new Color(249, 191, 11);
-
-            public static readonly string EFFECT_ACS = "ACS";
-            public static readonly string EFFECT_CAM_S = "CAM_S";
-            public static readonly string EFFECT_SMOKE = "CFTXT";
-            public static readonly string EFFECT_ELECTRIC = "Electric";
-            public static readonly string EFFECT_TR_D = "TR_D";
 
             public static void PrintMessage(string message, Color? color = null)
             {
@@ -3112,6 +3149,8 @@ namespace SFDScript.BotExtended
 
             public void Equip(IPlayer player)
             {
+                if (player == null) return;
+
                 player.GiveWeaponItem(Melee);
                 player.GiveWeaponItem(Primary);
                 player.GiveWeaponItem(Secondary);
@@ -3134,6 +3173,17 @@ namespace SFDScript.BotExtended
             public WeaponItem Throwable { get; set; }
             public WeaponItem Powerup { get; set; }
             public bool UseLazer { get; set; }
+            public bool IsEmpty
+            {
+                get {
+                    return Melee == WeaponItem.NONE
+                      && Primary == WeaponItem.NONE
+                      && Secondary == WeaponItem.NONE
+                      && Throwable == WeaponItem.NONE
+                      && Powerup == WeaponItem.NONE
+                      && UseLazer == false;
+                }
+            }
         }
 
         private static List<WeaponSet> GetWeapons(BotType botType)
@@ -4273,33 +4323,43 @@ namespace SFDScript.BotExtended
             public BotInfo()
             {
                 EquipWeaponChance = 1f;
-                OnSpawn = null;
-                UpdateInterval = 1000;
-                OnUpdate = null;
-                OnDamage = null;
-                OnDeath = null;
                 IsBoss = false;
                 SpawnLine = "";
                 SpawnLineChance = 1f;
                 DeathLine = "";
                 DeathLineChance = 1f;
                 StartInfected = false;
+                ImmuneToInfect = false;
             }
 
-            public float EquipWeaponChance { get; set; } // 0-1
+            private float equipWeaponChance;
+            public float EquipWeaponChance
+            {
+                get { return equipWeaponChance; }
+                set { equipWeaponChance = MathHelper.Clamp(value, 0, 1); }
+            }
+
             public BotAI AIType { get; set; }
             public PlayerModifiers Modifiers { get; set; }
             public bool IsBoss { get; set; }
-            public Action<Bot, List<Bot>> OnSpawn { get; set; }
-            public int UpdateInterval { get; set; } // in ms
-            public Action<Bot> OnUpdate { get; set; }
-            public Action<Bot> OnDamage { get; set; }
-            public Action<Bot> OnDeath { get; set; }
             public string SpawnLine { get; set; }
             public float SpawnLineChance { get; set; }
             public string DeathLine { get; set; }
             public float DeathLineChance { get; set; }
-            public bool StartInfected { get; set; } // Starting as infected by zombie
+
+            private bool startInfected;
+            public bool StartInfected
+            {
+                get { return startInfected; }
+                set
+                {
+                    if (ImmuneToInfect && value == true)
+                        throw new Exception("StartInfected and ImmuneToInfected cannot be set to true");
+                    startInfected = value;
+                }
+            } // Starting as infected by zombie
+
+            public bool ImmuneToInfect { get; set; }
         }
 
         private static BotInfo GetInfo(BotType botType)
@@ -4327,13 +4387,6 @@ namespace SFDScript.BotExtended
                 case BotType.AssassinMelee:
                 {
                     botInfo.AIType = BotAI.MeleeHard;
-                    botInfo.OnSpawn = (Bot bot, List<Bot> others) =>
-                    {
-                        var behavior = bot.Player.GetBotBehaviorSet();
-                        behavior.OffensiveClimbingLevel = 0.9f;
-                        behavior.OffensiveSprintLevel = 0.9f;
-                        bot.Player.SetBotBehaviorSet(behavior);
-                    };
                     botInfo.Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 70,
@@ -4349,13 +4402,6 @@ namespace SFDScript.BotExtended
                 case BotType.AssassinRange:
                 {
                     botInfo.AIType = BotAI.RangeHard;
-                    botInfo.OnSpawn = (Bot bot, List<Bot> others) =>
-                    {
-                        var behavior = bot.Player.GetBotBehaviorSet();
-                        behavior.OffensiveClimbingLevel = 0.9f;
-                        behavior.OffensiveSprintLevel = 0.9f;
-                        bot.Player.SetBotBehaviorSet(behavior);
-                    };
                     botInfo.Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 70,
@@ -4559,7 +4605,6 @@ namespace SFDScript.BotExtended
                 case BotType.ZombieFat:
                 {
                     botInfo.AIType = BotAI.ZombieSlow;
-                    botInfo.OnDeath = (Bot bot) => Game.TriggerExplosion(bot.Player.GetWorldPosition());
                     botInfo.Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 20,
@@ -4576,7 +4621,6 @@ namespace SFDScript.BotExtended
                 case BotType.ZombieFlamer:
                 {
                     botInfo.AIType = BotAI.ZombieFast;
-                    botInfo.OnSpawn = (Bot bot, List<Bot> others) => bot.Player.SetMaxFire();
                     botInfo.Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 35,
@@ -4613,13 +4657,6 @@ namespace SFDScript.BotExtended
                 case BotType.Demolitionist:
                 {
                     botInfo.AIType = BotAI.RangeHard;
-                    botInfo.OnSpawn = (Bot bot, List<Bot> others) =>
-                    {
-                        var behavior = bot.Player.GetBotBehaviorSet();
-                        behavior.SearchForItems = true;
-                        behavior.SearchItems = SearchItems.Primary;
-                        bot.Player.SetBotBehaviorSet(behavior);
-                    };
                     botInfo.Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 150,
@@ -4662,47 +4699,6 @@ namespace SFDScript.BotExtended
                 case BotType.Hacker:
                 {
                     botInfo.AIType = BotAI.Hacker;
-                    botInfo.UpdateInterval = 200;
-                    botInfo.OnUpdate = (Bot bot) =>
-                    {
-                        if (bot.Player.IsRemoved) return;
-
-                        var profile = bot.Player.GetProfile();
-                        var currentColor = profile.Head.Color2;
-                        var newColor = "";
-
-                        switch (currentColor)
-                        {
-                            case "ClothingLightRed":
-                                newColor = "ClothingLightOrange";
-                                break;
-                            case "ClothingLightOrange":
-                                newColor = "ClothingLightYellow";
-                                break;
-                            case "ClothingLightYellow":
-                                newColor = "ClothingLightGreen";
-                                break;
-                            case "ClothingLightGreen":
-                                newColor = "ClothingLightCyan";
-                                break;
-                            case "ClothingLightCyan":
-                                newColor = "ClothingLightBlue";
-                                break;
-                            case "ClothingLightBlue":
-                                newColor = "ClothingLightPurple";
-                                break;
-                            case "ClothingLightPurple":
-                                newColor = "ClothingLightRed";
-                                break;
-                            default:
-                                newColor = "ClothingLightCyan";
-                                break;
-                        }
-                        profile.Head.Color2 = newColor;
-                        profile.ChestOver.Color2 = newColor;
-                        profile.Feet.Color1 = newColor;
-                        bot.Player.SetProfile(profile);
-                    };
                     botInfo.Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 125,
@@ -4718,25 +4714,6 @@ namespace SFDScript.BotExtended
                 case BotType.Incinerator:
                 {
                     botInfo.AIType = BotAI.Hard;
-                    botInfo.OnSpawn = (Bot bot, List<Bot> others) =>
-                    {
-                        var behavior = bot.Player.GetBotBehaviorSet();
-                        behavior.SearchForItems = false;
-                        behavior.RangedWeaponPrecisionInterpolateTime = 0f;
-                        bot.Player.SetBotBehaviorSet(behavior);
-                    };
-                    botInfo.OnDeath = (Bot bot) =>
-                    {
-                        var player = bot.Player;
-                        var playerPosition = player.GetWorldPosition();
-
-                        if (player.CurrentPrimaryWeapon.WeaponItem == WeaponItem.FLAMETHROWER)
-                        {
-                            Game.TriggerExplosion(playerPosition);
-                            Game.SpawnFireNodes(playerPosition, 20, 5f, FireNodeType.Flamethrower);
-                            Game.TriggerFireplosion(playerPosition, 60f);
-                        }
-                    };
                     botInfo.Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 250,
@@ -4762,20 +4739,6 @@ namespace SFDScript.BotExtended
                 case BotType.Kingpin:
                 {
                     botInfo.AIType = BotAI.Hard;
-                    botInfo.OnSpawn = (Bot bot, List<Bot> others) =>
-                    {
-                        var bodyguards = others.Where(Q => Q.Type == BotType.Bodyguard || Q.Type == BotType.GangsterHulk).Take(2);
-                        var bodyguardMaxCount = 2;
-                        var bodyguardCount = bodyguards.Count();
-                        var bodyguardMissing = bodyguardMaxCount - bodyguardCount;
-                        if (bodyguardCount < bodyguardMaxCount)
-                            bodyguards.Concat(others.Where(Q => Q.Type == BotType.Bodyguard2).Take(bodyguardMissing));
-
-                        foreach (var bodyguard in bodyguards)
-                        {
-                            bodyguard.Player.SetGuardTarget(bot.Player);
-                        }
-                    };
                     botInfo.Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 250,
@@ -4788,20 +4751,6 @@ namespace SFDScript.BotExtended
                 case BotType.Kriegbär:
                 {
                     botInfo.AIType = BotAI.Expert;
-                    botInfo.OnSpawn = (Bot bot, List<Bot> others) =>
-                    {
-                        var behavior = bot.Player.GetBotBehaviorSet();
-                        behavior.RangedWeaponUsage = false;
-                        behavior.SearchForItems = false;
-                        behavior.GuardRange = 32;
-                        behavior.ChaseRange = 32;
-                        bot.Player.SetBotBehaviorSet(behavior);
-
-                        var fritzliebe = others.Find(Q => Q.Type == BotType.Fritzliebe);
-                        if (fritzliebe.Player == null) return;
-
-                        bot.Player.SetGuardTarget(fritzliebe.Player);
-                    };
                     botInfo.Modifiers = new PlayerModifiers()
                     {
                         MaxHealth = 400,
@@ -4836,6 +4785,27 @@ namespace SFDScript.BotExtended
                         InfiniteAmmo = 1,
                     };
                     botInfo.IsBoss = true;
+                    break;
+                }
+                case BotType.Mecha:
+                {
+                    botInfo.AIType = BotAI.Hulk;
+                    botInfo.Modifiers = new PlayerModifiers()
+                    {
+                        MaxHealth = 400,
+                        CurrentHealth = 400,
+                        ExplosionDamageTakenModifier = 0.2f, // 2000 (400 / 0.2)
+                        ProjectileDamageTakenModifier = 0.5f, // 800
+                        ImpactDamageTakenModifier = 0f,
+                        MeleeForceModifier = 3f,
+                        MeleeStunImmunity = 1,
+                        CanBurn = 0,
+                        RunSpeedModifier = 0.85f,
+                        SprintSpeedModifier = 0.85f,
+                        SizeModifier = 1.2f,
+                    };
+                    botInfo.IsBoss = true;
+                    botInfo.ImmuneToInfect = true;
                     break;
                 }
                 case BotType.MetroCop2:
@@ -5100,6 +5070,7 @@ namespace SFDScript.BotExtended
             Boss_Kingpin,
             Boss_MadScientist,
             Boss_Meatgrinder,
+            Boss_Mecha,
             Boss_MetroCop,
             Boss_Ninja,
             Boss_Santa,
@@ -5446,6 +5417,14 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                case BotGroup.Boss_Mecha:
+                {
+                    groupSet.AddGroup(new List<SubGroup>()
+                    {
+                        new SubGroup(BotType.Mecha),
+                    });
+                    break;
+                }
                 case BotGroup.Boss_MetroCop:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -5517,24 +5496,17 @@ namespace SFDScript.BotExtended
         public class Bot
         {
             private static Color dialogueColor = new Color(128, 32, 32);
-            public IPlayer Player { get; private set; }
-            public BotType Type { get; private set; }
-            public BotInfo Info { get; private set; }
+            public IPlayer Player { get; set; }
+            public BotType Type { get; set; }
+            public BotInfo Info { get; set; }
+            public int UpdateInterval { get; set; }
 
             public Bot()
             {
                 Player = null;
                 Type = BotType.None;
                 Info = null;
-            }
-
-            public Bot(IPlayer player, BotType type, BotInfo info)
-            {
-                Player = player;
-                Type = type;
-                Info = info;
-
-                SaySpawnLine();
+                UpdateInterval = 100;
             }
 
             public void SaySpawnLine()
@@ -5555,35 +5527,282 @@ namespace SFDScript.BotExtended
                     Game.CreateDialogue(deathLine, dialogueColor, Player, duration: 3000f);
             }
 
-            private int lastUpdateElapsed = 0;
-            public void OnUpdate(float elapsed)
+            private int lastUpdateElapsed;
+            public void Update(float elapsed)
             {
                 lastUpdateElapsed += (int)elapsed;
 
-                if (lastUpdateElapsed >= Info.UpdateInterval && Info.OnUpdate != null)
+                if (lastUpdateElapsed >= UpdateInterval)
                 {
-                    Info.OnUpdate(this);
+                    OnUpdate(lastUpdateElapsed + elapsed);
                     lastUpdateElapsed = 0;
                 }
             }
 
-            // Dont call OnSpawn in constructor. Wait until the bot list is initialized fully
-            public void OnSpawn(List<Bot> bots)
+            protected virtual void OnUpdate(float elapsed) { }
+            public virtual void OnSpawn(List<Bot> bots) { }
+            public virtual void OnDamage() { }
+            public virtual void OnDeath() { }
+        }
+
+        public class AssassinBot : Bot
+        {
+            public override void OnSpawn(List<Bot> bots)
             {
-                if (Info.OnSpawn != null)
-                    Info.OnSpawn(this, bots);
+                var behavior = Player.GetBotBehaviorSet();
+                behavior.OffensiveClimbingLevel = 0.9f;
+                behavior.OffensiveSprintLevel = 0.9f;
+                Player.SetBotBehaviorSet(behavior);
+            }
+        }
+
+        public class FatZombieBot : Bot
+        {
+            public override void OnDeath()
+            {
+                Game.TriggerExplosion(Player.GetWorldPosition());
+            }
+        }
+
+        public class FlamerZombieBot : Bot
+        {
+            public override void OnSpawn(List<Bot> bots)
+            {
+                Player.SetMaxFire();
+            }
+        }
+
+        public class DemolitionistBot : Bot
+        {
+            public override void OnSpawn(List<Bot> bots)
+            {
+                var behavior = Player.GetBotBehaviorSet();
+                behavior.SearchForItems = true;
+                behavior.SearchItems = SearchItems.Primary;
+                Player.SetBotBehaviorSet(behavior);
+            }
+        }
+
+        public class HackerBot : Bot
+        {
+            public HackerBot() : base()
+            {
+                UpdateInterval = 200;
             }
 
-            public void OnDamage()
+            protected override void OnUpdate(float elapsed)
             {
-                if (Info.OnDamage != null)
-                    Info.OnDamage(this);
+                if (Player.IsRemoved) return;
+
+                var profile = Player.GetProfile();
+                var currentColor = profile.Head.Color2;
+                var newColor = "";
+
+                switch (currentColor)
+                {
+                    case "ClothingLightRed":
+                        newColor = "ClothingLightOrange";
+                        break;
+                    case "ClothingLightOrange":
+                        newColor = "ClothingLightYellow";
+                        break;
+                    case "ClothingLightYellow":
+                        newColor = "ClothingLightGreen";
+                        break;
+                    case "ClothingLightGreen":
+                        newColor = "ClothingLightCyan";
+                        break;
+                    case "ClothingLightCyan":
+                        newColor = "ClothingLightBlue";
+                        break;
+                    case "ClothingLightBlue":
+                        newColor = "ClothingLightPurple";
+                        break;
+                    case "ClothingLightPurple":
+                        newColor = "ClothingLightRed";
+                        break;
+                    default:
+                        newColor = "ClothingLightCyan";
+                        break;
+                }
+                profile.Head.Color2 = newColor;
+                profile.ChestOver.Color2 = newColor;
+                profile.Feet.Color1 = newColor;
+                Player.SetProfile(profile);
+            }
+        }
+
+        public class IncineratorBot : Bot
+        {
+            public override void OnSpawn(List<Bot> bots)
+            {
+                var behavior = Player.GetBotBehaviorSet();
+                behavior.SearchForItems = false;
+                behavior.RangedWeaponPrecisionInterpolateTime = 0f;
+                Player.SetBotBehaviorSet(behavior);
             }
 
-            public void OnDeath()
+            public override void OnDeath()
             {
-                if (Info.OnDeath != null)
-                    Info.OnDeath(this);
+                var playerPosition = Player.GetWorldPosition();
+
+                if (Player.CurrentPrimaryWeapon.WeaponItem == WeaponItem.FLAMETHROWER)
+                {
+                    Game.TriggerExplosion(playerPosition);
+                    Game.SpawnFireNodes(playerPosition, 20, 5f, FireNodeType.Flamethrower);
+                    Game.TriggerFireplosion(playerPosition, 60f);
+                }
+            }
+        }
+
+        public class KingpinBot : Bot
+        {
+            public override void OnSpawn(List<Bot> others)
+            {
+                var bodyguards = others.Where(Q => Q.Type == BotType.Bodyguard || Q.Type == BotType.GangsterHulk).Take(2);
+                var bodyguardMaxCount = 2;
+                var bodyguardCount = bodyguards.Count();
+                var bodyguardMissing = bodyguardMaxCount - bodyguardCount;
+                if (bodyguardCount < bodyguardMaxCount)
+                    bodyguards.Concat(others.Where(Q => Q.Type == BotType.Bodyguard2).Take(bodyguardMissing));
+
+                foreach (var bodyguard in bodyguards)
+                {
+                    bodyguard.Player.SetGuardTarget(Player);
+                }
+            }
+        }
+
+        public class KriegbärBot : Bot
+        {
+            public override void OnSpawn(List<Bot> others)
+            {
+                var behavior = Player.GetBotBehaviorSet();
+                behavior.RangedWeaponUsage = false;
+                behavior.SearchForItems = false;
+                behavior.GuardRange = 32;
+                behavior.ChaseRange = 32;
+                Player.SetBotBehaviorSet(behavior);
+
+                var fritzliebe = others.Find(Q => Q.Type == BotType.Fritzliebe);
+                if (fritzliebe.Player == null) return;
+
+                Player.SetGuardTarget(fritzliebe.Player);
+            }
+        }
+
+        public class MechaBot : Bot
+        {
+            public MechaBot() : base()
+            {
+                UpdateInterval = 200;
+            }
+
+            public override void OnSpawn(List<Bot> others)
+            {
+                var behavior = Player.GetBotBehaviorSet();
+                behavior.SearchForItems = false;
+                behavior.DefensiveAvoidProjectilesLevel = 0f;
+                behavior.DefensiveBlockLevel = 0f;
+                behavior.MeleeWeaponUsage = false;
+                behavior.RangedWeaponUsage = false;
+
+                Player.SetBotBehaviorSet(behavior);
+                Player.SetHitEffect(PlayerHitEffect.Metal);
+            }
+
+            private float electricElapsed = 0f;
+            protected override void OnUpdate(float elapsed)
+            {
+                if (Player != null && Player.IsDead && !Player.IsRemoved)
+                {
+                    electricElapsed += elapsed;
+
+                    if (electricElapsed >= 800)
+                    {
+                        if (SharpHelper.RandomBoolean())
+                        {
+                            var position = Player.GetWorldPosition();
+                            position.X += SharpHelper.RandomBetween(-10, 10);
+                            position.Y += SharpHelper.RandomBetween(-10, 10);
+
+                            Game.PlayEffect(Effect.ELECTRIC, position);
+                            Game.PlayEffect(Effect.STEAM, position);
+                            // TODO: Customize spark effects
+                            Game.PlayEffect(Effect.SPARKS, position);
+                            Game.PlaySound("ElectricSparks", position);
+                            electricElapsed = 0f;
+                        }
+                        else
+                        {
+                            electricElapsed -= SharpHelper.RandomBetween(0, electricElapsed);
+                        }
+                    }
+                }
+            }
+
+            public override void OnDamage()
+            {
+                var mod = Player.GetModifiers();
+                if (mod.CurrentHealth / mod.MaxHealth <= 0.25f)
+                    Game.PlayEffect(Effect.ELECTRIC, Player.GetWorldPosition());
+            }
+        }
+
+        public static class BotFactory
+        {
+            public static Bot Create(IPlayer player, BotType botType, BotInfo info)
+            {
+                Bot bot = null;
+                switch (botType)
+                {
+                    case BotType.AssassinMelee:
+                    case BotType.AssassinRange:
+                        bot = new AssassinBot();
+                        break;
+
+                    case BotType.ZombieFat:
+                        bot = new FatZombieBot();
+                        break;
+
+                    case BotType.ZombieFlamer:
+                        bot = new FlamerZombieBot();
+                        break;
+
+                    case BotType.Demolitionist:
+                        bot = new DemolitionistBot();
+                        break;
+
+                    case BotType.Hacker:
+                        bot = new HackerBot();
+                        break;
+
+                    case BotType.Incinerator:
+                        bot = new IncineratorBot();
+                        break;
+
+                    case BotType.Kingpin:
+                        bot = new KingpinBot();
+                        break;
+
+                    case BotType.Kriegbär:
+                        bot = new KriegbärBot();
+                        break;
+
+                    case BotType.Mecha:
+                        bot = new MechaBot();
+                        break;
+
+                    default:
+                        bot = new Bot();
+                        break;
+                }
+
+                bot.Player = player;
+                bot.Type = botType;
+                bot.Info = info;
+
+                return bot;
             }
         }
 
@@ -6087,7 +6306,6 @@ namespace SFDScript.BotExtended
             private static Dictionary<string, IPlayer> m_infectedPlayers = new Dictionary<string, IPlayer>();
             private static List<PlayerSpawner> m_playerSpawners;
             private static Dictionary<string, Bot> m_bots = new Dictionary<string, Bot>();
-            private static List<Bot> m_updateBots = new List<Bot>();
 
             public static void Initialize()
             {
@@ -6178,7 +6396,8 @@ namespace SFDScript.BotExtended
             {
                 UpdateCorpses();
 
-                foreach (var bot in m_updateBots) bot.OnUpdate(elapsed);
+                foreach (var bot in m_bots.Values)
+                    bot.Update(elapsed);
 
                 if (m_updateOnPlayerDeadNextFrame)
                     OnPlayerDeathNextFrame();
@@ -6210,8 +6429,6 @@ namespace SFDScript.BotExtended
 
             private static void OnPlayerDamage(IPlayer player, float damage)
             {
-                Game.PlayEffect(ScriptHelper.EFFECT_TR_D, player.GetWorldPosition()); // TODO: remove
-
                 if (player == null) return;
 
                 switch (player.GetTeam())
@@ -6227,7 +6444,7 @@ namespace SFDScript.BotExtended
 
                 if (m_infectedPlayers.ContainsKey(player.CustomID)) return;
 
-                if (IsHitByZombieOrTheInfected(player))
+                if (IsHitByZombieOrTheInfected(player) && !GetInfo(GetBotType(player)).ImmuneToInfect)
                 {
                     // Normal players that are not extended bots dont have CustomID by default
                     if (string.IsNullOrEmpty(player.CustomID))
@@ -6420,7 +6637,7 @@ namespace SFDScript.BotExtended
                 return emptyPlayerSpawners;
             }
 
-            private static IPlayer SpawnPlayer(BotInfo botInfo = null, WeaponSet weaponSet = null, bool ignoreFullSpawner = false)
+            private static IPlayer SpawnPlayer(bool ignoreFullSpawner = false)
             {
                 List<PlayerSpawner> emptySpawners = null;
 
@@ -6447,19 +6664,6 @@ namespace SFDScript.BotExtended
                 // player.UniqueID is unique but seems like it can change value during
                 // the script lifetime. Use custom id + guid() to get the const unique id
                 player.CustomID = Guid.NewGuid().ToString("N");
-
-                if (weaponSet != null)
-                {
-                    player.GiveWeaponItem(weaponSet.Melee);
-                    player.GiveWeaponItem(weaponSet.Primary);
-                    player.GiveWeaponItem(weaponSet.Secondary);
-                    player.GiveWeaponItem(weaponSet.Throwable);
-                    player.GiveWeaponItem(weaponSet.Powerup);
-
-                    if (weaponSet.UseLazer)
-                        player.GiveWeaponItem(WeaponItem.LAZER);
-                }
-
                 rndSpawner.HasSpawned = true;
 
                 return player;
@@ -6476,16 +6680,19 @@ namespace SFDScript.BotExtended
                 var info = GetInfo(botType);
                 var weaponSet = WeaponSet.Empty;
 
-                if (equipWeapons)
-                {
-                    if (SharpHelper.RandomBetween(0f, 1f) < info.EquipWeaponChance)
-                        weaponSet = SharpHelper.GetRandomItem(GetWeapons(botType));
-                }
-
-                if (player == null) player = SpawnPlayer(info, weaponSet, ignoreFullSpawner);
+                if (player == null) player = SpawnPlayer(ignoreFullSpawner);
                 if (player == null) return null;
                 if (string.IsNullOrEmpty(player.CustomID))
                     player.CustomID = Guid.NewGuid().ToString("N");
+
+                if (equipWeapons)
+                {
+                    if (SharpHelper.RandomBetween(0f, 1f) < info.EquipWeaponChance)
+                    {
+                        weaponSet = SharpHelper.GetRandomItem(GetWeapons(botType));
+                    }
+                    if (!weaponSet.IsEmpty) weaponSet.Equip(player);
+                }
 
                 if (setProfile)
                 {
@@ -6502,11 +6709,8 @@ namespace SFDScript.BotExtended
                 if (info.StartInfected)
                     m_infectedPlayers.Add(player.CustomID, player);
 
-                var bot = new Bot(player, botType, info);
+                var bot = BotFactory.Create(player, botType, info);
                 m_bots.Add(player.CustomID, bot);
-
-                if (info.OnUpdate != null)
-                    m_updateBots.Add(bot);
 
                 return bot;
             }
