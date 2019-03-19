@@ -5737,11 +5737,6 @@ namespace SFDScript.BotExtended
 
                 Player.SetBotBehaviorSet(behavior);
                 Player.SetHitEffect(PlayerHitEffect.Metal);
-
-                // TODO: remove
-                var mod = Player.GetModifiers();
-                mod.CurrentHealth = 10;
-                Player.SetModifiers(mod);
             }
 
             private float m_electricElapsed = 0f;
