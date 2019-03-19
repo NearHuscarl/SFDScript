@@ -29,7 +29,7 @@ namespace SFDScript.BotExtended
 
                 player.SetModifiers(modifiers);
                 player.GiveWeaponItem(WeaponItem.KATANA);
-                player.GiveWeaponItem(WeaponItem.REVOLVER);
+                player.GiveWeaponItem(WeaponItem.MAGNUM);
                 player.GiveWeaponItem(WeaponItem.FLAMETHROWER);
                 player.GiveWeaponItem(WeaponItem.MOLOTOVS);
             }
@@ -141,7 +141,6 @@ namespace SFDScript.BotExtended
             // IGame.PlayEffect("CFTXT", Vector2 Position, string Text)
             public static readonly string CUSTOM_FLOAT_TEXT = "CFTXT";
             public static readonly string ELECTRIC = "Electric";
-            // IGame.PlayEffect("EXP", Vector2.Zero, float UNDOCUMENTED)
             public static readonly string EXPLOSION = "EXP";
             public static readonly string ITEM_GLEAM = "GLM";
             public static readonly string SPARKS = "S_P";
@@ -270,10 +269,7 @@ namespace SFDScript.BotExtended
 
             public static bool IsElapsed(float timeStarted, float timeToElapse)
             {
-                if (Game.TotalElapsedGameTime - timeStarted >= timeToElapse)
-                    return true;
-                else
-                    return false;
+                return Game.TotalElapsedGameTime - timeStarted >= timeToElapse;
             }
 
             public static bool SpawnPlayerHasPlayer(IObject spawnPlayer)
@@ -292,6 +288,20 @@ namespace SFDScript.BotExtended
                 }
 
                 return false;
+            }
+
+            public static void MakeInvisible(IPlayer player)
+            {
+                if (player != null && !player.IsDead)
+                {
+                    var mod = player.GetModifiers();
+                    mod.FireDamageTakenModifier = 0;
+                    mod.ImpactDamageTakenModifier = 0;
+                    mod.MeleeDamageTakenModifier = 0;
+                    mod.ExplosionDamageTakenModifier = 0;
+                    mod.ProjectileDamageTakenModifier = 0;
+                    player.SetModifiers(mod);
+                }
             }
         }
 
@@ -5509,6 +5519,24 @@ namespace SFDScript.BotExtended
                 UpdateInterval = 100;
             }
 
+            public void Decorate(IPlayer existingPlayer)
+            {
+                existingPlayer.SetProfile(Player.GetProfile());
+
+                existingPlayer.GiveWeaponItem(Player.CurrentMeleeWeapon.WeaponItem);
+                existingPlayer.GiveWeaponItem(Player.CurrentMeleeMakeshiftWeapon.WeaponItem);
+                existingPlayer.GiveWeaponItem(Player.CurrentPrimaryWeapon.WeaponItem);
+                existingPlayer.GiveWeaponItem(Player.CurrentSecondaryWeapon.WeaponItem);
+                existingPlayer.GiveWeaponItem(Player.CurrentThrownItem.WeaponItem);
+                existingPlayer.GiveWeaponItem(Player.CurrentPowerupItem.WeaponItem);
+
+                existingPlayer.SetBotBehavior(Player.GetBotBehavior());
+
+                existingPlayer.SetTeam(Player.GetTeam());
+                existingPlayer.SetModifiers(Player.GetModifiers());
+                existingPlayer.SetHitEffect(Player.GetHitEffect());
+            }
+
             public void SaySpawnLine()
             {
                 var spawnLine = Info.SpawnLine;
@@ -5695,7 +5723,7 @@ namespace SFDScript.BotExtended
         {
             public MechaBot() : base()
             {
-                UpdateInterval = 200;
+                UpdateInterval = 50;
             }
 
             public override void OnSpawn(List<Bot> others)
@@ -5709,34 +5737,107 @@ namespace SFDScript.BotExtended
 
                 Player.SetBotBehaviorSet(behavior);
                 Player.SetHitEffect(PlayerHitEffect.Metal);
+
+                // TODO: remove
+                var mod = Player.GetModifiers();
+                mod.CurrentHealth = 10;
+                Player.SetModifiers(mod);
             }
 
-            private float electricElapsed = 0f;
+            private float m_electricElapsed = 0f;
             protected override void OnUpdate(float elapsed)
             {
-                if (Player != null && Player.IsDead && !Player.IsRemoved)
-                {
-                    electricElapsed += elapsed;
+                if (Player == null || Player.IsRemoved) return;
 
-                    if (electricElapsed >= 800)
+                if (Player.IsDead)
+                {
+                    UpdateCorpse(elapsed);
+                }
+                else
+                {
+                    if (m_isDeathKneeling)
                     {
+                        UpdateDealthKneeling(elapsed);
+                    }
+                    else
+                    {
+                        var mod = Player.GetModifiers();
+                        var healthLeft = mod.CurrentHealth / mod.MaxHealth;
+
+                        if (healthLeft <= 0.4f)
+                            UpdateNearDeathEffects(elapsed, healthLeft);
+                    }
+                }
+            }
+
+            private void UpdateCorpse(float elapsed)
+            {
+                m_electricElapsed += elapsed;
+
+                if (m_electricElapsed >= 1000)
+                {
+                    if (SharpHelper.RandomBoolean())
+                    {
+                        var position = Player.GetWorldPosition();
+                        position.X += SharpHelper.RandomBetween(-10, 10);
+                        position.Y += SharpHelper.RandomBetween(-10, 10);
+
+                        Game.PlayEffect(Effect.ELECTRIC, position);
+
                         if (SharpHelper.RandomBoolean())
                         {
-                            var position = Player.GetWorldPosition();
-                            position.X += SharpHelper.RandomBetween(-10, 10);
-                            position.Y += SharpHelper.RandomBetween(-10, 10);
-
-                            Game.PlayEffect(Effect.ELECTRIC, position);
                             Game.PlayEffect(Effect.STEAM, position);
-                            // TODO: Customize spark effects
+                            Game.PlayEffect(Effect.STEAM, position);
+                            Game.PlayEffect(Effect.STEAM, position);
+                        }
+                        // TODO: Customize spark effects
+                        if (SharpHelper.RandomBoolean())
                             Game.PlayEffect(Effect.SPARKS, position);
-                            Game.PlaySound("ElectricSparks", position);
-                            electricElapsed = 0f;
-                        }
-                        else
+                        if (SharpHelper.RandomBoolean())
+                            Game.PlayEffect(Effect.FIRE, position);
+
+                        Game.PlaySound("ElectricSparks", position);
+                        m_electricElapsed = 0f;
+                    }
+                    else
+                    {
+                        m_electricElapsed -= SharpHelper.RandomBetween(0, m_electricElapsed);
+                    }
+                }
+            }
+            private void UpdateNearDeathEffects(float elapsed, float healthLeft)
+            {
+                m_electricElapsed += elapsed;
+
+                if (m_electricElapsed >= 700)
+                {
+                    if (SharpHelper.RandomBoolean())
+                    {
+                        var position = Player.GetWorldPosition();
+                        position.X += SharpHelper.RandomBetween(-10, 10);
+                        position.Y += SharpHelper.RandomBetween(-10, 10);
+
+                        if (healthLeft <= 0.2f)
                         {
-                            electricElapsed -= SharpHelper.RandomBetween(0, electricElapsed);
+                            Game.PlayEffect(Effect.FIRE, position);
+                            Game.PlaySound("Flamethrower", position);
                         }
+                        if (healthLeft <= 0.3f)
+                        {
+                            Game.PlayEffect(Effect.SPARKS, position);
+                        }
+                        if (healthLeft <= 0.4f)
+                        {
+                            Game.PlayEffect(Effect.STEAM, position);
+                            Game.PlayEffect(Effect.STEAM, position);
+                            Game.PlayEffect(Effect.ELECTRIC, position);
+                            Game.PlaySound("ElectricSparks", position);
+                        }
+                        m_electricElapsed = 0f;
+                    }
+                    else
+                    {
+                        m_electricElapsed -= SharpHelper.RandomBetween(0, m_electricElapsed);
                     }
                 }
             }
@@ -5744,8 +5845,106 @@ namespace SFDScript.BotExtended
             public override void OnDamage()
             {
                 var mod = Player.GetModifiers();
-                if (mod.CurrentHealth / mod.MaxHealth <= 0.25f)
-                    Game.PlayEffect(Effect.ELECTRIC, Player.GetWorldPosition());
+                var currentHealth = mod.CurrentHealth;
+                var maxHealth = mod.MaxHealth;
+
+                if (currentHealth / maxHealth <= 0.25f)
+                {
+                    var position = Player.GetWorldPosition();
+                    Game.PlayEffect(Effect.ELECTRIC, position);
+                    Game.PlaySound("ElectricSparks", position);
+                }
+            }
+
+            private bool m_hasDie = false;
+            public override void OnDeath()
+            {
+                // Player.Remove() will call the death event one more time, make sure OnDeath() is only called once
+                if (Player == null || m_hasDie) return;
+                m_hasDie = true;
+
+                var newPlayer = Game.CreatePlayer(Player.GetWorldPosition());
+
+                Decorate(newPlayer);
+                var newMod = newPlayer.GetModifiers();
+                newMod.CurrentHealth = newMod.MaxHealth;
+
+                newPlayer.SetModifiers(newMod);
+                newPlayer.SetValidBotEliminateTarget(false);
+                newPlayer.SetStatusBarsVisible(false);
+                newPlayer.SetNametagVisible(false);
+                newPlayer.SetFaceDirection(Player.GetFaceDirection());
+
+                Player.Remove();
+                Player = newPlayer;
+
+                ScriptHelper.MakeInvisible(Player);
+                StartDeathKneeling();
+            }
+
+            private bool m_isDeathKneeling = false;
+            private void StartDeathKneeling()
+            {
+                if (Player == null) return;
+
+                Player.ClearCommandQueue();
+                Player.SetBotBehaviorActive(false);
+                m_isDeathKneeling = true;
+                Player.AddCommand(new PlayerCommand(PlayerCommandType.DeathKneelInfinite));
+            }
+            private void StopKneeling()
+            {
+                Player.AddCommand(new PlayerCommand(PlayerCommandType.StopDeathKneel));
+                m_isDeathKneeling = false;
+                Player.SetBotBehaviorActive(true);
+            }
+
+            private float m_kneelingTime = 0f;
+            private bool m_hasShotGrenades = false;
+            private void UpdateDealthKneeling(float elapsed)
+            {
+                if (Player.IsDeathKneeling)
+                {
+                    m_kneelingTime += elapsed;
+
+                    if (m_kneelingTime >= 1000 && !m_hasShotGrenades)
+                    {
+                        m_grenadeDirection = new Vector2(Player.GetFaceDirection(), 1f);
+
+                        for (uint i = 1; i <= 3; i++)
+                        {
+                            Events.UpdateCallback.Start(ShootGrenades, 300 * i, 1);
+                        }
+                        m_hasShotGrenades = true;
+                    }
+
+                    if (m_kneelingTime >= 2500)
+                    {
+                        StopKneeling();
+                        Player.Kill();
+                    }
+                }
+                else
+                {
+                    if (!m_hasShotGrenades)
+                    {
+                        StartDeathKneeling();
+                        m_kneelingTime = 0f;
+                    }
+                    else
+                    {
+                        StopKneeling();
+                        Player.Kill();
+                    }
+                }
+            }
+
+            private Vector2 m_grenadeDirection;
+            private void ShootGrenades(float elapsed)
+            {
+                Game.PlaySound("GLauncher", Player.GetWorldPosition());
+                Game.SpawnProjectile(ProjectileItem.GRENADE_LAUNCHER, Player.GetWorldPosition() + new Vector2(-5, 20), m_grenadeDirection);
+                m_grenadeDirection.X *= 2f;
             }
         }
 
@@ -5809,7 +6008,6 @@ namespace SFDScript.BotExtended
         public static class BotExendedCommand
         {
             private static IScriptStorage m_storage = Game.LocalStorage;
-            //private static IScriptStorage m_storage = Game.GetSharedStorage("BOTEXTENDED");
 
             public static void OnUserMessage(UserMessageCallbackArgs args)
             {
