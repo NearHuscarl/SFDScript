@@ -46,16 +46,50 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DebugCommand.cs" />
+    <Compile Include="BotExtended\BotHelper.cs" />
+    <Compile Include="BotExtended\Bots\AssassinBot.cs" />
+    <Compile Include="BotExtended\Bots\BabybearBot.cs" />
+    <Compile Include="BotExtended\Bots\Bot.cs" />
+    <Compile Include="BotExtended\BotAI.cs" />
+    <Compile Include="BotExtended\BotBehaviors.cs" />
+    <Compile Include="BotExtended\Bots\BotFactory.cs" />
+    <Compile Include="BotExtended\Bots\CowboyBot.cs" />
+    <Compile Include="BotExtended\Bots\ZombieFatBot.cs" />
+    <Compile Include="BotExtended\Bots\ZombieFlamerBot.cs" />
+    <Compile Include="BotExtended\Bots\HackerBot.cs" />
+    <Compile Include="BotExtended\Bots\IncineratorBot.cs" />
+    <Compile Include="BotExtended\Bots\KingpinBot.cs" />
+    <Compile Include="BotExtended\Bots\KriegbärBot.cs" />
+    <Compile Include="BotExtended\Bots\MechaBot.cs" />
+    <Compile Include="BotExtended\Bots\TeddybearBot.cs" />
+    <Compile Include="BotExtended\Command.cs" />
+    <Compile Include="BotExtended\Group\BotGroup.cs" />
+    <Compile Include="BotExtended\BotGroupSet.cs" />
+    <Compile Include="BotExtended\BotInfo.cs" />
+    <Compile Include="BotExtended\BotInfos.cs" />
+    <Compile Include="BotExtended\BotProfiles.cs" />
+    <Compile Include="BotExtended\BotType.cs" />
+    <Compile Include="BotExtended\BotWeapons.cs" />
+    <Compile Include="BotExtended\Constants.cs" />
+    <Compile Include="BotExtended\Group\Group.cs" />
+    <Compile Include="BotExtended\Group\GroupSet.cs" />
+    <Compile Include="BotExtended\Group\SubGroup.cs" />
+    <Compile Include="BotExtended\PlayerSpawner.cs" />
+    <Compile Include="BotExtended\WeaponSet.cs" />
     <Compile Include="ColorPallete.cs" />
+    <Compile Include="Library\Effect.cs" />
     <Compile Include="GameScriptTemplate.cs" />
     <Compile Include="Converter.cs" />
     <Compile Include="DebugUtil.cs" />
+    <Compile Include="Library\Mocks\Game.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="BotExtended.cs" />
+    <Compile Include="BotExtended\BotExtended.cs" />
+    <Compile Include="Library\ScriptHelper.cs" />
+    <Compile Include="Library\SharpHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
