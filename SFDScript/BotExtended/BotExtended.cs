@@ -15,46 +15,37 @@ namespace SFDScript.BotExtended
 
         public void OnStartup()
         {
-            //System.Diagnostics.Debugger.Break();
-
-            if (Game.IsEditorTest)
-            {
-                var player = Game.GetPlayers()[0];
-                var modifiers = player.GetModifiers();
-
-                modifiers.MaxHealth = 5000;
-                modifiers.CurrentHealth = 5000;
-                modifiers.InfiniteAmmo = 1;
-                modifiers.MeleeStunImmunity = 1;
-
-                player.SetModifiers(modifiers);
-                player.GiveWeaponItem(WeaponItem.KATANA);
-                player.GiveWeaponItem(WeaponItem.MAGNUM);
-                player.GiveWeaponItem(WeaponItem.LAZER);
-                player.GiveWeaponItem(WeaponItem.FLAMETHROWER);
-                player.GiveWeaponItem(WeaponItem.MOLOTOVS);
-                player.GiveWeaponItem(WeaponItem.STRENGTHBOOST);
-            }
-
             try
             {
+                //System.Diagnostics.Debugger.Break();
+
+                if (Game.IsEditorTest)
+                {
+                    var player = Game.GetPlayers()[0];
+                    var modifiers = player.GetModifiers();
+
+                    modifiers.MaxHealth = 5000;
+                    modifiers.CurrentHealth = 5000;
+                    modifiers.InfiniteAmmo = 1;
+                    modifiers.MeleeStunImmunity = 1;
+
+                    player.SetModifiers(modifiers);
+                    player.GiveWeaponItem(WeaponItem.KATANA);
+                    player.GiveWeaponItem(WeaponItem.MAGNUM);
+                    player.GiveWeaponItem(WeaponItem.LAZER);
+                    player.GiveWeaponItem(WeaponItem.FLAMETHROWER);
+                    player.GiveWeaponItem(WeaponItem.MOLOTOVS);
+                    player.GiveWeaponItem(WeaponItem.STRENGTHBOOST);
+                }
+
                 BotHelper.Initialize();
             }
             catch (Exception e)
             {
-                var stackTrace = e.StackTrace;
-                var lines = stackTrace.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-                var thisNamespace = SharpHelper.GetNamespace<Bot>();
-
-                foreach (var line in lines)
-                {
-                    if (line.Contains(thisNamespace))
-                    {
-                        Game.RunCommand("/msg [BotExtended script]: " + line);
-                        Game.RunCommand("/msg [BotExtended script]: " + e.Message);
-                        break;
-                    }
-                }
+                Game.ShowChatMessage("[Botextended script]: Error");
+                Game.ShowChatMessage(e.Message);
+                Game.ShowChatMessage(e.StackTrace);
+                Game.ShowChatMessage(e.TargetSite.ToString());
             }
         }
 
@@ -137,7 +128,7 @@ namespace SFDScript.BotExtended
 // Add draw weapon first
 
 // fritzliebe
-// Kriegbär
+// Kriegbar
 // mecha
 
 // Commands:

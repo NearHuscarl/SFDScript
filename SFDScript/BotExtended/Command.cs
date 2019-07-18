@@ -16,109 +16,90 @@ namespace SFDScript.BotExtended
 
         public static void OnUserMessage(UserMessageCallbackArgs args)
         {
-            try
+            if (!args.User.IsHost || !args.IsCommand || (args.Command != "BOTEXTENDED" && args.Command != "BE"))
             {
-                if (!args.User.IsHost || !args.IsCommand || (args.Command != "BOTEXTENDED" && args.Command != "BE"))
-                {
-                    return;
-                }
-
-                var message = args.CommandArguments.ToLowerInvariant();
-                var words = message.Split(' ');
-                var command = words.FirstOrDefault();
-                var arguments = words.Skip(1);
-
-                switch (command)
-                {
-                    case "?":
-                    case "h":
-                    case "help":
-                        PrintHelp();
-                        break;
-
-                    case "v":
-                    case "version":
-                        PrintVersion();
-                        break;
-
-                    case "lg":
-                    case "listgroup":
-                        ListBotGroup();
-                        break;
-
-                    case "lb":
-                    case "listbot":
-                        ListBotType();
-                        break;
-
-                    case "/":
-                    case "f":
-                    case "find":
-                        FindGroup(arguments);
-                        break;
-
-                    case "s":
-                    case "setting":
-                        ShowCurrentSettings();
-                        break;
-
-                    case "bc":
-                    case "botcount":
-                        SetBotCount(arguments);
-                        break;
-
-                    case "sp":
-                    case "spawn":
-                        SpawnNewBot(arguments);
-                        break;
-
-                    case "r":
-                    case "random":
-                        SetRandomGroup(arguments);
-                        break;
-
-                    case "g":
-                    case "group":
-                        SelectGroup(arguments);
-                        break;
-
-                    case "st":
-                    case "stats":
-                        PrintStatistics();
-                        break;
-
-                    case "cst":
-                    case "clearstats":
-                        ClearStatistics();
-                        break;
-
-                    case "ka":
-                        KillAll(); // For debugging purpose only
-                        break;
-                    case "gm":
-                        ToggleGodMode();
-                        break;
-
-                    default:
-                        ScriptHelper.PrintMessage("Invalid command", ScriptHelper.ERROR_COLOR);
-                        break;
-                }
+                return;
             }
-            catch (Exception e)
-            {
-                var stackTrace = e.StackTrace;
-                var lines = stackTrace.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-                var thisNamespace = SharpHelper.GetNamespace<Bot>();
 
-                foreach (var line in lines)
-                {
-                    if (line.Contains(thisNamespace))
-                    {
-                        Game.RunCommand("/msg [BotExtended script]: " + line);
-                        Game.RunCommand("/msg [BotExtended script]: " + e.Message);
-                        break;
-                    }
-                }
+            var message = args.CommandArguments.ToLowerInvariant();
+            var words = message.Split(' ');
+            var command = words.FirstOrDefault();
+            var arguments = words.Skip(1);
+
+            switch (command)
+            {
+                case "?":
+                case "h":
+                case "help":
+                    PrintHelp();
+                    break;
+
+                case "v":
+                case "version":
+                    PrintVersion();
+                    break;
+
+                case "lg":
+                case "listgroup":
+                    ListBotGroup();
+                    break;
+
+                case "lb":
+                case "listbot":
+                    ListBotType();
+                    break;
+
+                case "/":
+                case "f":
+                case "find":
+                    FindGroup(arguments);
+                    break;
+
+                case "s":
+                case "setting":
+                    ShowCurrentSettings();
+                    break;
+
+                case "bc":
+                case "botcount":
+                    SetBotCount(arguments);
+                    break;
+
+                case "sp":
+                case "spawn":
+                    SpawnNewBot(arguments);
+                    break;
+
+                case "r":
+                case "random":
+                    SetRandomGroup(arguments);
+                    break;
+
+                case "g":
+                case "group":
+                    SelectGroup(arguments);
+                    break;
+
+                case "st":
+                case "stats":
+                    PrintStatistics();
+                    break;
+
+                case "cst":
+                case "clearstats":
+                    ClearStatistics();
+                    break;
+
+                case "ka":
+                    KillAll(); // For debugging purpose only
+                    break;
+                case "gm":
+                    ToggleGodMode();
+                    break;
+
+                default:
+                    ScriptHelper.PrintMessage("Invalid command", ScriptHelper.ERROR_COLOR);
+                    break;
             }
         }
 

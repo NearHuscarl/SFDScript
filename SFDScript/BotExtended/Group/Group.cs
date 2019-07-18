@@ -31,6 +31,8 @@ namespace SFDScript.BotExtended.Group
 
         public void Spawn(int groupCount)
         {
+            if (groupCount == 0) return;
+
             var subGroupCount = 0;
             var groupCountRemaining = groupCount;
             var mobCount = HasBoss ? groupCount - 1 : groupCount;
