@@ -16,7 +16,7 @@ namespace SFDScript.BotExtended
 
         public void Equip(IPlayer player)
         {
-            if (player == null) return;
+            if (player == null || IsEmpty) return;
 
             player.GiveWeaponItem(Melee);
             player.GiveWeaponItem(Primary);

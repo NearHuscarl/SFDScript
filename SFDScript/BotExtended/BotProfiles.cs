@@ -11,6 +11,7 @@ namespace SFDScript.BotExtended
 
             switch (botType)
             {
+                #region Agent
                 case BotType.Agent:
                 case BotType.Agent2:
                 {
@@ -44,6 +45,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Assassin
                 case BotType.AssassinMelee:
                 case BotType.AssassinRange:
                 {
@@ -133,6 +137,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Bandido
                 case BotType.Bandido:
                 {
                     profiles.Add(new IProfile()
@@ -235,6 +242,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Biker
                 case BotType.Biker:
                 case BotType.BikerHulk:
                 {
@@ -408,6 +418,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Bodyguard
                 case BotType.Bodyguard:
                 case BotType.Bodyguard2:
                 {
@@ -427,6 +440,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ClownBodyguard
                 case BotType.ClownBodyguard:
                 {
                     profiles.Add(new IProfile()
@@ -487,6 +503,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ClownBoxer
                 case BotType.ClownBoxer:
                 {
                     profiles.Add(new IProfile()
@@ -505,6 +524,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ClownCowboy
                 case BotType.ClownCowboy:
                 {
                     profiles.Add(new IProfile()
@@ -523,6 +545,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ClownGangster
                 case BotType.ClownGangster:
                 {
                     profiles.Add(new IProfile()
@@ -541,6 +566,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Cowboy
                 case BotType.Cowboy:
                 {
                     profiles.Add(new IProfile()
@@ -643,6 +671,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Demolitionist
                 case BotType.Demolitionist:
                 {
                     profiles.Add(new IProfile()
@@ -661,6 +692,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Elf
                 case BotType.Elf:
                 {
                     profiles.Add(new IProfile()
@@ -693,6 +727,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Fritzliebe
                 case BotType.Fritzliebe:
                 {
                     profiles.Add(new IProfile()
@@ -711,6 +748,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Funnyman
                 case BotType.Funnyman:
                 {
                     profiles.Add(new IProfile()
@@ -729,6 +769,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Jo
                 case BotType.Jo:
                 {
                     profiles.Add(new IProfile()
@@ -747,6 +790,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Hacker
                 case BotType.Hacker:
                 {
                     profiles.Add(new IProfile()
@@ -779,6 +825,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Gangster
                 case BotType.Gangster:
                 {
                     profiles.Add(new IProfile()
@@ -951,6 +1000,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region GangsterHulk
                 case BotType.GangsterHulk:
                 {
                     profiles.Add(new IProfile()
@@ -997,6 +1049,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Incinerator
                 case BotType.Incinerator:
                 {
                     profiles.Add(new IProfile()
@@ -1015,6 +1070,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Kingpin
                 case BotType.Kingpin:
                 {
                     profiles.Add(new IProfile()
@@ -1033,6 +1091,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Kriegbär
                 case BotType.Kriegbär:
                 {
                     profiles.Add(new IProfile()
@@ -1051,6 +1112,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region MarauderBiker
                 case BotType.MarauderBiker:
                 {
                     profiles.Add(new IProfile()
@@ -1069,6 +1133,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region MarauderCrazy
                 case BotType.MarauderCrazy:
                 {
                     profiles.Add(new IProfile()
@@ -1087,6 +1154,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region MarauderNaked
                 case BotType.MarauderNaked:
                 {
                     profiles.Add(new IProfile()
@@ -1105,6 +1175,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region MarauderRifleman
                 case BotType.MarauderRifleman:
                 {
                     profiles.Add(new IProfile()
@@ -1123,6 +1196,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region MarauderRobber
                 case BotType.MarauderRobber:
                 {
                     profiles.Add(new IProfile()
@@ -1141,6 +1217,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region MarauderTough
                 case BotType.MarauderTough:
                 {
                     profiles.Add(new IProfile()
@@ -1159,6 +1238,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Meatgrinder
                 case BotType.Meatgrinder:
                 {
                     profiles.Add(new IProfile()
@@ -1177,6 +1259,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Mecha
                 case BotType.Mecha:
                 {
                     profiles.Add(new IProfile()
@@ -1195,6 +1280,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region MetroCop
                 case BotType.MetroCop:
                 {
                     profiles.Add(new IProfile()
@@ -1241,6 +1329,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region MetroCop2
                 case BotType.MetroCop2:
                 {
                     profiles.Add(new IProfile()
@@ -1287,6 +1378,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Mutant
                 case BotType.Mutant:
                 {
                     profiles.Add(new IProfile()
@@ -1403,6 +1497,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region NaziLabAssistant
                 case BotType.NaziLabAssistant:
                 {
                     profiles.Add(new IProfile()
@@ -1421,6 +1518,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region NaziMuscleSoldier
                 case BotType.NaziMuscleSoldier:
                 {
                     profiles.Add(new IProfile()
@@ -1439,6 +1539,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region NaziScientist
                 case BotType.NaziScientist:
                 {
                     profiles.Add(new IProfile()
@@ -1471,6 +1574,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region NaziSoldier
                 case BotType.NaziSoldier:
                 {
                     profiles.Add(new IProfile()
@@ -1531,6 +1637,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region SSOfficer
                 case BotType.SSOfficer:
                 {
                     profiles.Add(new IProfile()
@@ -1549,6 +1658,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Ninja
                 case BotType.Ninja:
                 {
                     profiles.Add(new IProfile()
@@ -1609,6 +1721,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Police
                 case BotType.Police:
                 {
                     profiles.Add(new IProfile()
@@ -1711,6 +1826,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region PoliceSWAT
                 case BotType.PoliceSWAT:
                 {
                     profiles.Add(new IProfile()
@@ -1743,6 +1861,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Santa
                 case BotType.Santa:
                 {
                     profiles.Add(new IProfile()
@@ -1761,6 +1882,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Sniper
                 case BotType.Sniper:
                 {
                     profiles.Add(new IProfile()
@@ -1793,6 +1917,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Soldier
                 case BotType.Soldier:
                 case BotType.Soldier2:
                 {
@@ -1910,6 +2037,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Bear
                 case BotType.Teddybear:
                 case BotType.Babybear:
                 {
@@ -1929,6 +2059,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Thug
                 case BotType.Thug:
                 {
                     profiles.Add(new IProfile()
@@ -2185,6 +2318,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ThugHulk
                 case BotType.ThugHulk:
                 {
                     profiles.Add(new IProfile()
@@ -2231,6 +2367,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Zombie
                 case BotType.Zombie:
                 {
                     profiles.Add(new IProfile()
@@ -2263,6 +2402,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieAgent
                 case BotType.ZombieAgent:
                 {
                     profiles.Add(new IProfile()
@@ -2281,6 +2423,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieBruiser
                 case BotType.ZombieBruiser:
                 {
                     profiles.Add(new IProfile()
@@ -2299,6 +2444,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieChild
                 case BotType.ZombieChild:
                 {
                     profiles.Add(new IProfile()
@@ -2331,6 +2479,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieFat
                 case BotType.ZombieFat:
                 {
                     profiles.Add(new IProfile()
@@ -2349,6 +2500,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieFighter
                 case BotType.ZombieFighter:
                 {
                     profiles.Add(new IProfile()
@@ -2437,6 +2591,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieFlamer
                 case BotType.ZombieFlamer:
                 {
                     profiles.Add(new IProfile()
@@ -2455,6 +2612,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieGangster
                 case BotType.ZombieGangster:
                 {
                     profiles.Add(new IProfile()
@@ -2529,6 +2689,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieNinja
                 case BotType.ZombieNinja:
                 {
                     profiles.Add(new IProfile()
@@ -2547,6 +2710,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombiePolice
                 case BotType.ZombiePolice:
                 {
                     profiles.Add(new IProfile()
@@ -2579,6 +2745,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombiePrussian
                 case BotType.ZombiePrussian:
                 {
                     profiles.Add(new IProfile()
@@ -2611,6 +2780,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region BaronVonHauptstein
                 case BotType.BaronVonHauptstein:
                 {
                     profiles.Add(new IProfile()
@@ -2629,6 +2801,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieSoldier
                 case BotType.ZombieSoldier:
                 {
                     profiles.Add(new IProfile()
@@ -2661,6 +2836,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieThug
                 case BotType.ZombieThug:
                 {
                     profiles.Add(new IProfile()
@@ -2693,6 +2871,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieWorker
                 case BotType.ZombieWorker:
                 {
                     profiles.Add(new IProfile()
@@ -2711,6 +2892,7 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
             }
 
             return profiles;

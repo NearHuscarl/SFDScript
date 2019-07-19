@@ -6,7 +6,6 @@ namespace SFDScript.BotExtended
 {
     public partial class GameScript : GameScriptInterface
     {
-
         private static List<BotType> CommonZombieTypes = new List<BotType>()
         {
             BotType.Zombie,
@@ -33,6 +32,7 @@ namespace SFDScript.BotExtended
 
             switch (botGroup)
             {
+                #region Assassin
                 case BotGroup.Assassin:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -45,6 +45,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Agent
                 case BotGroup.Agent:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -53,6 +56,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Bandido
                 case BotGroup.Bandido:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -61,6 +67,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Biker
                 case BotGroup.Biker:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -79,6 +88,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Clown
                 case BotGroup.Clown:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -99,6 +111,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Cowboy
                 case BotGroup.Cowboy:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -107,6 +122,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Gangster
                 case BotGroup.Gangster:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -121,6 +139,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Marauder
                 case BotGroup.Marauder:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -137,6 +158,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region MetroCop
                 case BotGroup.MetroCop:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -155,6 +179,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Police
                 case BotGroup.Police:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -173,6 +200,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region PoliceSWAT
                 case BotGroup.PoliceSWAT:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -181,6 +211,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Sniper
                 case BotGroup.Sniper:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -189,6 +222,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Soldier
                 case BotGroup.Soldier:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -207,6 +243,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Thug
                 case BotGroup.Thug:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -225,6 +264,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Zombie
                 case BotGroup.Zombie:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -274,6 +316,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieHard
                 case BotGroup.ZombieHard:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -297,7 +342,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
 
+                #region Boss_Demolitionist
                 case BotGroup.Boss_Demolitionist:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -306,6 +353,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Boss_Funnyman
                 case BotGroup.Boss_Funnyman:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -325,6 +375,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Boss_Jo
                 case BotGroup.Boss_Jo:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -335,6 +388,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Boss_Hacker
                 case BotGroup.Boss_Hacker:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -344,6 +400,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Boss_Incinerator
                 case BotGroup.Boss_Incinerator:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -352,6 +411,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Boss_Kingpin
                 case BotGroup.Boss_Kingpin:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -367,6 +429,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Boss_MadScientist
                 case BotGroup.Boss_MadScientist:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -376,6 +441,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Boss_Meatgrinder
                 case BotGroup.Boss_Meatgrinder:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -384,6 +452,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Boss_Mecha
                 case BotGroup.Boss_Mecha:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -392,6 +463,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Boss_MetroCop
                 case BotGroup.Boss_MetroCop:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -407,6 +481,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Boss_Ninja
                 case BotGroup.Boss_Ninja:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -415,6 +492,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Boss_Santa
                 case BotGroup.Boss_Santa:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -424,6 +504,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Boss_Teddybear
                 case BotGroup.Boss_Teddybear:
                 {
                     // TODO: uncomment
@@ -439,6 +522,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Boss_Zombie
                 case BotGroup.Boss_Zombie:
                 {
                     groupSet.AddGroup(new List<SubGroup>()
@@ -454,6 +540,7 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
             }
 
             return groupSet;

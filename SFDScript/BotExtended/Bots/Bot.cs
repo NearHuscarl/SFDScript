@@ -7,7 +7,10 @@ namespace SFDScript.BotExtended.Bots
 {
     public class Bot
     {
-        private static Color dialogueColor = new Color(128, 32, 32);
+        public static Color DialogueColor
+        {
+            get { return new Color(128, 32, 32); }
+        }
         public IPlayer Player { get; set; }
         public BotType Type { get; set; }
         public BotInfo Info { get; set; }
@@ -47,7 +50,7 @@ namespace SFDScript.BotExtended.Bots
             var spawnLineChance = Info.SpawnLineChance;
 
             if (!string.IsNullOrWhiteSpace(spawnLine) && SharpHelper.RandomBetween(0f, 1f) < spawnLineChance)
-                GameScriptInterface.Game.CreateDialogue(spawnLine, dialogueColor, Player, duration: 3000f);
+                GameScriptInterface.Game.CreateDialogue(spawnLine, DialogueColor, Player, duration: 3000f);
         }
 
         public void SayDeathLine()
@@ -58,7 +61,7 @@ namespace SFDScript.BotExtended.Bots
             var deathLineChance = Info.DeathLineChance;
 
             if (!string.IsNullOrWhiteSpace(deathLine) && SharpHelper.RandomBetween(0f, 1f) < deathLineChance)
-                Game.CreateDialogue(deathLine, dialogueColor, Player, duration: 3000f);
+                Game.CreateDialogue(deathLine, DialogueColor, Player, duration: 3000f);
         }
 
         private int lastUpdateElapsed;

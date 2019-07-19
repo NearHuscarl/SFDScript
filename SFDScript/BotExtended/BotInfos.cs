@@ -10,7 +10,7 @@ namespace SFDScript.BotExtended
 
             switch (botType)
             {
-                // Agent
+                #region Agent, Soldier
                 case BotType.Agent:
                 case BotType.Soldier:
                 {
@@ -29,8 +29,9 @@ namespace SFDScript.BotExtended
                     };
                     break;
                 }
+                #endregion
 
-                // Assassin
+                #region Assassin
                 case BotType.AssassinMelee:
                 {
                     botInfo.AIType = BotAI.MeleeHard;
@@ -61,8 +62,9 @@ namespace SFDScript.BotExtended
                     };
                     break;
                 }
+                #endregion
 
-                // Boxer
+                #region Boxer
                 case BotType.ClownBoxer:
                 {
                     botInfo.AIType = BotAI.Hulk;
@@ -77,8 +79,9 @@ namespace SFDScript.BotExtended
                     };
                     break;
                 }
+                #endregion
 
-                // Cowboy (faster grunt)
+                #region Cowboy (faster grunt)
                 case BotType.ClownCowboy:
                 case BotType.Cowboy:
                 {
@@ -100,8 +103,9 @@ namespace SFDScript.BotExtended
                     botInfo.DeathLineChance = 0.05f;
                     break;
                 }
+                #endregion
 
-                // Hulk
+                #region Hulk
                 case BotType.BikerHulk:
                 case BotType.GangsterHulk:
                 case BotType.ThugHulk:
@@ -120,8 +124,9 @@ namespace SFDScript.BotExtended
                     };
                     break;
                 }
+                #endregion
 
-                // Grunt
+                #region Grunt
                 case BotType.Biker:
                 case BotType.NaziScientist:
                 case BotType.Thug:
@@ -138,8 +143,9 @@ namespace SFDScript.BotExtended
                     };
                     break;
                 }
+                #endregion
 
-                // Grunt with weapon
+                #region Grunt with weapon
                 case BotType.Agent2:
                 case BotType.Bandido:
                 case BotType.Bodyguard:
@@ -164,8 +170,9 @@ namespace SFDScript.BotExtended
                     };
                     break;
                 }
+                #endregion
 
-                // Marauder
+                #region Marauder
                 case BotType.MarauderBiker:
                 case BotType.MarauderCrazy:
                 case BotType.MarauderNaked:
@@ -186,8 +193,9 @@ namespace SFDScript.BotExtended
                     botInfo.StartInfected = true;
                     break;
                 }
+                #endregion
 
-                // Sniper
+                #region Sniper
                 case BotType.Sniper:
                 {
                     botInfo.AIType = BotAI.Sniper;
@@ -204,8 +212,9 @@ namespace SFDScript.BotExtended
                     };
                     break;
                 }
+                #endregion
 
-                // Zombie
+                #region Zombie
                 case BotType.Zombie:
                 case BotType.ZombieAgent:
                 case BotType.ZombieGangster:
@@ -229,8 +238,9 @@ namespace SFDScript.BotExtended
                     botInfo.SpawnLineChance = 0.1f;
                     break;
                 }
+                #endregion
 
-                // Zombie fast
+                #region Zombie fast
                 case BotType.ZombieChild:
                 {
                     botInfo.AIType = BotAI.ZombieFast;
@@ -247,8 +257,9 @@ namespace SFDScript.BotExtended
                     botInfo.SpawnLineChance = 0.1f;
                     break;
                 }
+                #endregion
 
-                // Zombie fat
+                #region Zombie fat
                 case BotType.ZombieFat:
                 {
                     botInfo.AIType = BotAI.ZombieSlow;
@@ -263,8 +274,9 @@ namespace SFDScript.BotExtended
                     };
                     break;
                 }
+                #endregion
 
-                // Zombie flamer
+                #region Zombie flamer
                 case BotType.ZombieFlamer:
                 {
                     botInfo.AIType = BotAI.ZombieFast;
@@ -280,8 +292,9 @@ namespace SFDScript.BotExtended
                     };
                     break;
                 }
+                #endregion
 
-                // Zombie hulk
+                #region Zombie hulk
                 case BotType.ZombieBruiser:
                 {
                     botInfo.AIType = BotAI.ZombieHulk;
@@ -299,8 +312,9 @@ namespace SFDScript.BotExtended
                     botInfo.SpawnLineChance = 0.1f;
                     break;
                 }
+                #endregion
 
-                // --Bosses--
+                #region Bosses Demolitionist
                 case BotType.Demolitionist:
                 {
                     botInfo.AIType = BotAI.RangeHard;
@@ -320,6 +334,9 @@ namespace SFDScript.BotExtended
                     botInfo.IsBoss = true;
                     break;
                 }
+                #endregion
+
+                #region Bosses Fritzliebe
                 case BotType.Fritzliebe:
                 {
                     botInfo.AIType = BotAI.Expert;
@@ -332,6 +349,9 @@ namespace SFDScript.BotExtended
                     botInfo.IsBoss = true;
                     break;
                 }
+                #endregion
+
+                #region Bosses Funnyman
                 case BotType.Funnyman:
                 {
                     botInfo.AIType = BotAI.Expert;
@@ -344,6 +364,9 @@ namespace SFDScript.BotExtended
                     botInfo.IsBoss = true;
                     break;
                 }
+                #endregion
+
+                #region Bosses Hacker
                 case BotType.Hacker:
                 {
                     botInfo.AIType = BotAI.Hacker;
@@ -358,6 +381,9 @@ namespace SFDScript.BotExtended
                     botInfo.IsBoss = true;
                     break;
                 }
+                #endregion
+
+                #region Bosses Incinerator
                 case BotType.Incinerator:
                 {
                     botInfo.AIType = BotAI.Hard;
@@ -371,6 +397,9 @@ namespace SFDScript.BotExtended
                     botInfo.IsBoss = true;
                     break;
                 }
+                #endregion
+
+                #region Bosses Jo
                 case BotType.Jo:
                 {
                     botInfo.AIType = BotAI.MeleeExpert;
@@ -384,6 +413,9 @@ namespace SFDScript.BotExtended
                     botInfo.IsBoss = true;
                     break;
                 }
+                #endregion
+
+                #region Bosses Kingpin
                 case BotType.Kingpin:
                 {
                     botInfo.AIType = BotAI.Hard;
@@ -396,6 +428,9 @@ namespace SFDScript.BotExtended
                     botInfo.IsBoss = true;
                     break;
                 }
+                #endregion
+
+                #region Bosses Kriegbär
                 case BotType.Kriegbär:
                 {
                     botInfo.AIType = BotAI.Expert;
@@ -415,6 +450,9 @@ namespace SFDScript.BotExtended
                     botInfo.SpawnLine = "HNNNARRRRRRRHHH!";
                     break;
                 }
+                #endregion
+
+                #region Bosses Meatgrinder
                 case BotType.Meatgrinder:
                 {
                     botInfo.AIType = BotAI.Meatgrinder;
@@ -435,6 +473,9 @@ namespace SFDScript.BotExtended
                     botInfo.IsBoss = true;
                     break;
                 }
+                #endregion
+
+                #region Bosses Mecha
                 case BotType.Mecha:
                 {
                     botInfo.AIType = BotAI.Hulk;
@@ -456,6 +497,9 @@ namespace SFDScript.BotExtended
                     botInfo.ImmuneToInfect = true;
                     break;
                 }
+                #endregion
+
+                #region Bosses MetroCop2
                 case BotType.MetroCop2:
                 {
                     botInfo.AIType = BotAI.Expert;
@@ -470,6 +514,9 @@ namespace SFDScript.BotExtended
                     botInfo.IsBoss = true;
                     break;
                 }
+                #endregion
+
+                #region Bosses Ninja
                 case BotType.Ninja:
                 {
                     botInfo.AIType = BotAI.Ninja;
@@ -490,6 +537,9 @@ namespace SFDScript.BotExtended
                     botInfo.DeathLine = "H-h-haji...";
                     break;
                 }
+                #endregion
+
+                #region Bosses Teddybear
                 case BotType.Teddybear:
                 {
                     botInfo.AIType = BotAI.Hulk;
@@ -508,6 +558,9 @@ namespace SFDScript.BotExtended
                     botInfo.IsBoss = true;
                     break;
                 }
+                #endregion
+
+                #region Bosses Babybear
                 case BotType.Babybear:
                 {
                     botInfo.AIType = BotAI.Easy;
@@ -522,6 +575,9 @@ namespace SFDScript.BotExtended
                     botInfo.IsBoss = true; // set IsBoss to spawn once
                     break;
                 }
+                #endregion
+
+                #region Bosses Santa
                 case BotType.Santa:
                 {
                     botInfo.AIType = BotAI.Hard; // ChallengeA
@@ -539,6 +595,9 @@ namespace SFDScript.BotExtended
                     botInfo.DeathLine = "Ho ohhhh...";
                     break;
                 }
+                #endregion
+
+                #region Bosses ZombieFighter
                 case BotType.ZombieFighter:
                 {
                     botInfo.AIType = BotAI.ZombieFighter;
@@ -554,6 +613,7 @@ namespace SFDScript.BotExtended
                     botInfo.IsBoss = true;
                     break;
                 }
+                #endregion
             }
 
             return botInfo;

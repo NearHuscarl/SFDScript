@@ -1,4 +1,4 @@
-﻿using SFDGameScriptInterface;
+using SFDGameScriptInterface;
 using SFDScript.BotExtended.Bots;
 using SFDScript.BotExtended.Group;
 using SFDScript.Library;
@@ -476,7 +476,7 @@ namespace SFDScript.BotExtended
                 {
                     weaponSet = SharpHelper.GetRandomItem(GetWeapons(botType));
                 }
-                if (!weaponSet.IsEmpty) weaponSet.Equip(player);
+                weaponSet.Equip(player);
             }
 
             if (setProfile)

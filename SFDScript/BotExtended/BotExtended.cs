@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using SFDGameScriptInterface;
-using SFDScript.Library;
-using SFDScript.BotExtended.Bots;
 
 namespace SFDScript.BotExtended
 {
@@ -30,7 +28,7 @@ namespace SFDScript.BotExtended
                     modifiers.MeleeStunImmunity = 1;
 
                     player.SetModifiers(modifiers);
-                    player.GiveWeaponItem(WeaponItem.KATANA);
+                    player.GiveWeaponItem(WeaponItem.KNIFE);
                     player.GiveWeaponItem(WeaponItem.MAGNUM);
                     player.GiveWeaponItem(WeaponItem.LAZER);
                     player.GiveWeaponItem(WeaponItem.FLAMETHROWER);

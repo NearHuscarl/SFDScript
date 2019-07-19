@@ -18,6 +18,7 @@ namespace SFDScript.BotExtended
 
             switch (botAI)
             {
+                #region Debug
                 case BotAI.Debug:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotD);
@@ -27,26 +28,41 @@ namespace SFDScript.BotExtended
                     botBehaviorSet.RangedWeaponBurstPauseMax = 0;
                     break;
                 }
+                #endregion
+
+                #region Easy
                 case BotAI.Easy:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotD);
                     break;
                 }
+                #endregion
+
+                #region Normal
                 case BotAI.Normal:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotC);
                     break;
                 }
+                #endregion
+
+                #region Hard
                 case BotAI.Hard:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotB);
                     break;
                 }
+                #endregion
+
+                #region Expert
                 case BotAI.Expert:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.BotA);
                     break;
                 }
+                #endregion
+
+                #region Hacker
                 case BotAI.Hacker:
                 {
                     botBehaviorSet.NavigationMode = BotBehaviorNavigationMode.PathFinding;
@@ -88,6 +104,9 @@ namespace SFDScript.BotExtended
                     botBehaviorSet.RangedWeaponPrecisionBurstPauseMax = 200f;
                     break;
                 }
+                #endregion
+
+                #region MeleeExpert
                 case BotAI.MeleeExpert:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.MeleeB);
@@ -99,6 +118,9 @@ namespace SFDScript.BotExtended
                     botBehaviorSet.MeleeWeaponUseFullRange = true;
                     break;
                 }
+                #endregion
+
+                #region MeleeHard
                 case BotAI.MeleeHard:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.MeleeB);
@@ -110,7 +132,10 @@ namespace SFDScript.BotExtended
                     botBehaviorSet.MeleeWeaponUseFullRange = false;
                     break;
                 }
-                case BotAI.Ninja: // == BotAI.MeleeExpert + more offensive melee tactic
+                #endregion
+
+                #region Ninja == BotAI.MeleeExpert + more offensive melee tactic
+                case BotAI.Ninja:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.MeleeB);
                     botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0.9f;
@@ -131,6 +156,9 @@ namespace SFDScript.BotExtended
                     botBehaviorSet.OffensiveDiveLevel = 0.1f; // 0.7f
                     break;
                 }
+                #endregion
+
+                #region RangeExpert
                 case BotAI.RangeExpert:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.RangedA);
@@ -140,6 +168,9 @@ namespace SFDScript.BotExtended
                     botBehaviorSet.RangedWeaponPrecisionAccuracy = 0.95f;
                     break;
                 }
+                #endregion
+
+                #region RangeHard
                 case BotAI.RangeHard:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.RangedA);
@@ -149,7 +180,10 @@ namespace SFDScript.BotExtended
                     botBehaviorSet.RangedWeaponPrecisionAccuracy = 0.9f;
                     break;
                 }
-                case BotAI.Sniper: // == BotAI.RangeExpert + more defensive melee tactic
+                #endregion
+
+                #region Sniper == BotAI.RangeExpert + more defensive melee tactic
+                case BotAI.Sniper:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.RangedA);
                     botBehaviorSet.RangedWeaponMode = BotBehaviorRangedWeaponMode.ManualAim;
@@ -168,6 +202,9 @@ namespace SFDScript.BotExtended
                     botBehaviorSet.TeamLineUp = false;
                     break;
                 }
+                #endregion
+
+                #region Grunt
                 case BotAI.Grunt:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Grunt);
@@ -183,26 +220,41 @@ namespace SFDScript.BotExtended
                     botBehaviorSet.RangedWeaponBurstPauseMax = 800f;
                     break;
                 }
+                #endregion
+
+                #region Hulk
                 case BotAI.Hulk:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Hulk);
                     break;
                 }
+                #endregion
+
+                #region Meatgrinder
                 case BotAI.Meatgrinder:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Meatgrinder);
                     break;
                 }
+                #endregion
+
+                #region ZombieSlow
                 case BotAI.ZombieSlow:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.ZombieA);
                     break;
                 }
+                #endregion
+
+                #region ZombieFast
                 case BotAI.ZombieFast:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.ZombieB);
                     break;
                 }
+                #endregion
+
+                #region ZombieHulk
                 case BotAI.ZombieHulk:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Hulk);
@@ -218,6 +270,9 @@ namespace SFDScript.BotExtended
                     botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0f;
                     break;
                 }
+                #endregion
+
+                #region ZombieFighter
                 case BotAI.ZombieFighter:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.MeleeB);
@@ -233,6 +288,9 @@ namespace SFDScript.BotExtended
                     botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0f;
                     break;
                 }
+                #endregion
+
+                #region default
                 default:
                 {
                     botBehaviorSet.NavigationMode = BotBehaviorNavigationMode.None;
@@ -241,6 +299,7 @@ namespace SFDScript.BotExtended
                     botBehaviorSet.SearchForItems = false;
                     break;
                 }
+                #endregion
             }
 
             botBehaviorSet.SearchForItems = true;

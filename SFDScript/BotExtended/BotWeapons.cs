@@ -11,6 +11,7 @@ namespace SFDScript.BotExtended
 
             switch (botType)
             {
+                #region Agent
                 case BotType.Agent:
                 {
                     weapons.Add(new WeaponSet()
@@ -24,6 +25,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Agent2
                 case BotType.Agent2:
                 {
                     weapons.Add(new WeaponSet()
@@ -57,6 +61,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region AssassinMelee
                 case BotType.AssassinMelee:
                 {
                     weapons.Add(new WeaponSet()
@@ -65,6 +72,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region AssassinRange
                 case BotType.AssassinRange:
                 {
                     weapons.Add(new WeaponSet()
@@ -73,6 +83,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Bandido
                 case BotType.Bandido:
                 {
                     weapons.Add(new WeaponSet()
@@ -94,6 +107,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Biker
                 case BotType.Biker:
                 {
                     weapons.Add(new WeaponSet()
@@ -110,11 +126,17 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region BikerHulk
                 case BotType.BikerHulk:
                 {
                     weapons.Add(WeaponSet.Empty);
                     break;
                 }
+                #endregion
+
+                #region Bodyguard
                 case BotType.Bodyguard:
                 {
                     weapons.Add(new WeaponSet()
@@ -123,6 +145,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Bodyguard2
                 case BotType.Bodyguard2:
                 {
                     weapons.Add(new WeaponSet()
@@ -131,6 +156,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ClownBodyguard
                 case BotType.ClownBodyguard:
                 {
                     weapons.Add(new WeaponSet()
@@ -151,11 +179,17 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ClownBoxer
                 case BotType.ClownBoxer:
                 {
                     weapons.Add(WeaponSet.Empty);
                     break;
                 }
+                #endregion
+
+                #region ClownCowboy
                 case BotType.ClownCowboy:
                 {
                     weapons.Add(new WeaponSet()
@@ -164,6 +198,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ClownGangster
                 case BotType.ClownGangster:
                 {
                     weapons.Add(new WeaponSet()
@@ -172,6 +209,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Cowboy
                 case BotType.Cowboy:
                 {
                     weapons.Add(new WeaponSet()
@@ -192,6 +232,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Demolitionist
                 case BotType.Demolitionist:
                 {
                     weapons.Add(new WeaponSet()
@@ -204,6 +247,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Elf
                 case BotType.Elf:
                 {
                     weapons.Add(new WeaponSet()
@@ -236,11 +282,17 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Fritzliebe
                 case BotType.Fritzliebe:
                 {
                     weapons.Add(WeaponSet.Empty);
                     break;
                 }
+                #endregion
+
+                #region Funnyman
                 case BotType.Funnyman:
                 {
                     weapons.Add(WeaponSet.Empty);
@@ -250,6 +302,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Jo
                 case BotType.Jo:
                 {
                     weapons.Add(new WeaponSet()
@@ -259,11 +314,17 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Hacker
                 case BotType.Hacker:
                 {
                     weapons.Add(WeaponSet.Empty);
                     break;
                 }
+                #endregion
+
+                #region Gangster
                 case BotType.Gangster:
                 {
                     weapons.Add(new WeaponSet()
@@ -300,11 +361,17 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region GangsterHulk
                 case BotType.GangsterHulk:
                 {
                     weapons.Add(WeaponSet.Empty);
                     break;
                 }
+                #endregion
+
+                #region Incinerator
                 case BotType.Incinerator:
                 {
                     weapons.Add(new WeaponSet()
@@ -317,6 +384,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Kingpin
                 case BotType.Kingpin:
                 {
                     weapons.Add(new WeaponSet()
@@ -329,6 +399,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Kriegbär
                 case BotType.Kriegbär:
                 {
                     weapons.Add(new WeaponSet()
@@ -337,6 +410,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region MarauderBiker
                 case BotType.MarauderBiker:
                 {
                     weapons.Add(new WeaponSet()
@@ -345,6 +421,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region MarauderCrazy
                 case BotType.MarauderCrazy:
                 {
                     weapons.Add(new WeaponSet()
@@ -353,6 +432,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region MarauderNaked
                 case BotType.MarauderNaked:
                 {
                     weapons.Add(new WeaponSet()
@@ -361,6 +443,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region MarauderRifleman
                 case BotType.MarauderRifleman:
                 {
                     weapons.Add(new WeaponSet()
@@ -369,6 +454,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region MarauderRobber
                 case BotType.MarauderRobber:
                 {
                     weapons.Add(new WeaponSet()
@@ -377,6 +465,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region MarauderTough
                 case BotType.MarauderTough:
                 {
                     weapons.Add(new WeaponSet()
@@ -385,6 +476,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Meatgrinder
                 case BotType.Meatgrinder:
                 {
                     weapons.Add(new WeaponSet()
@@ -395,11 +489,17 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Mecha
                 case BotType.Mecha:
                 {
                     weapons.Add(WeaponSet.Empty);
                     break;
                 }
+                #endregion
+
+                #region MetroCop
                 case BotType.MetroCop:
                 {
                     weapons.Add(new WeaponSet()
@@ -436,6 +536,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region MetroCop2
                 case BotType.MetroCop2:
                 {
                     weapons.Add(new WeaponSet()
@@ -446,11 +549,17 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Mutant
                 case BotType.Mutant:
                 {
                     weapons.Add(WeaponSet.Empty);
                     break;
                 }
+                #endregion
+
+                #region NaziLabAssistant
                 case BotType.NaziLabAssistant:
                 {
                     weapons.Add(new WeaponSet()
@@ -459,6 +568,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region NaziMuscleSoldier
                 case BotType.NaziMuscleSoldier:
                 {
                     weapons.Add(new WeaponSet()
@@ -467,6 +579,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region NaziScientist
                 case BotType.NaziScientist:
                 {
                     weapons.Add(new WeaponSet()
@@ -483,6 +598,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region NaziSoldier
                 case BotType.NaziSoldier:
                 {
                     weapons.Add(new WeaponSet()
@@ -525,6 +643,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region SSOfficer
                 case BotType.SSOfficer:
                 {
                     weapons.Add(new WeaponSet()
@@ -534,6 +655,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Ninja
                 case BotType.Ninja:
                 {
                     weapons.Add(new WeaponSet()
@@ -543,6 +667,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Police
                 case BotType.Police:
                 {
                     weapons.Add(new WeaponSet()
@@ -566,6 +693,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region PoliceSWAT
                 case BotType.PoliceSWAT:
                 {
                     weapons.Add(new WeaponSet()
@@ -592,6 +722,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Santa
                 case BotType.Santa:
                 {
                     weapons.Add(new WeaponSet()
@@ -602,6 +735,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Sniper
                 case BotType.Sniper:
                 {
                     weapons.Add(new WeaponSet()
@@ -616,6 +752,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Soldier
                 case BotType.Soldier:
                 {
                     weapons.Add(new WeaponSet()
@@ -635,6 +774,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Soldier2
                 case BotType.Soldier2:
                 {
                     weapons.Add(new WeaponSet()
@@ -644,6 +786,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Teddybear
                 case BotType.Teddybear:
                 {
                     weapons.Add(new WeaponSet()
@@ -653,11 +798,17 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Babybear
                 case BotType.Babybear:
                 {
                     weapons.Add(WeaponSet.Empty);
                     break;
                 }
+                #endregion
+
+                #region Thug
                 case BotType.Thug:
                 {
                     weapons.Add(new WeaponSet()
@@ -682,6 +833,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ThugHulk
                 case BotType.ThugHulk:
                 {
                     weapons.Add(WeaponSet.Empty);
@@ -695,11 +849,21 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region Zombies
                 case BotType.Zombie:
+                case BotType.ZombieBruiser:
+                case BotType.ZombieChild:
+                case BotType.ZombieFat:
+                case BotType.ZombieFlamer:
                 {
                     weapons.Add(WeaponSet.Empty);
                     break;
                 }
+                #endregion
+
+                #region ZombieAgent
                 case BotType.ZombieAgent:
                 {
                     weapons.Add(new WeaponSet()
@@ -716,14 +880,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
-                case BotType.ZombieBruiser:
-                case BotType.ZombieChild:
-                case BotType.ZombieFat:
-                case BotType.ZombieFlamer:
-                {
-                    weapons.Add(WeaponSet.Empty);
-                    break;
-                }
+                #endregion
+
+                #region ZombieFighter
                 case BotType.ZombieFighter:
                 {
                     weapons.Add(new WeaponSet()
@@ -732,6 +891,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieGangster
                 case BotType.ZombieGangster:
                 {
                     weapons.Add(new WeaponSet()
@@ -752,6 +914,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieNinja
                 case BotType.ZombieNinja:
                 {
                     weapons.Add(new WeaponSet()
@@ -760,6 +925,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombiePolice
                 case BotType.ZombiePolice:
                 {
                     weapons.Add(new WeaponSet()
@@ -772,6 +940,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombiePrussian
                 case BotType.ZombiePrussian:
                 {
                     weapons.Add(new WeaponSet()
@@ -789,6 +960,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region BaronVonHauptstein
                 case BotType.BaronVonHauptstein:
                 {
                     weapons.Add(new WeaponSet()
@@ -799,6 +973,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieSoldier
                 case BotType.ZombieSoldier:
                 {
                     weapons.Add(new WeaponSet()
@@ -823,6 +1000,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieThug
                 case BotType.ZombieThug:
                 {
                     weapons.Add(new WeaponSet()
@@ -843,6 +1023,9 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
+
+                #region ZombieWorker
                 case BotType.ZombieWorker:
                 {
                     weapons.Add(new WeaponSet()
@@ -863,6 +1046,7 @@ namespace SFDScript.BotExtended
                     });
                     break;
                 }
+                #endregion
             }
 
             return weapons;
