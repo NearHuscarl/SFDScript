@@ -1,4 +1,4 @@
-using SFDGameScriptInterface;
+﻿using SFDGameScriptInterface;
 using SFDScript.BotExtended.Bots;
 using SFDScript.BotExtended.Group;
 using SFDScript.Library;
@@ -26,7 +26,8 @@ namespace SFDScript.BotExtended
                 var zombieBody = zombie.Player;
 
                 var modifiers = Body.GetModifiers();
-                if (IsTheInfected(GetBotType(Body))) // Marauder has fake MaxHealth to have blood effect on the face
+                // Marauder has fake MaxHealth to have blood effect on the face
+                if (GetExtendedBot(Body).Info.ZombieStatus == ZombieStatus.Infected)
                     modifiers.CurrentHealth = modifiers.MaxHealth = 75;
                 else
                     modifiers.CurrentHealth = modifiers.MaxHealth * 0.75f;
@@ -74,7 +75,7 @@ namespace SFDScript.BotExtended
             }
         }
 
-        public static readonly string CURRENT_VERSION = "0.0";
+        public static readonly string CURRENT_VERSION = "0.1";
         public static readonly string BOT_GROUPS = "BOT_EXTENDED_NH_BOT_GROUPS";
         public static readonly string RANDOM_GROUP = "BOT_EXTENDED_NH_RANDOM_GROUP";
         public static readonly string BOT_COUNT = "BOT_EXTENDED_NH_BOT_COUNT";
@@ -97,6 +98,11 @@ namespace SFDScript.BotExtended
 
         // Player corpses waiting to be transformed into zombies
         private static List<PlayerCorpse> m_infectedCorpses = new List<PlayerCorpse>();
+        // Infected players (the infected SFs by zombies) can infect other players by
+        // punching them. When the infected SFs die. They turn into zombies
+        // Note: Zombie cannot turn into zombie again when they die though
+        // m_infectedPlayers is needed to keep track of the infected including vanilla SF
+        // and botextended version
         private static Dictionary<string, IPlayer> m_infectedPlayers = new Dictionary<string, IPlayer>();
         private static List<PlayerSpawner> m_playerSpawners;
         private static Dictionary<string, Bot> m_bots = new Dictionary<string, Bot>();
@@ -152,8 +158,9 @@ namespace SFDScript.BotExtended
             }
             else
             {
+                //SpawnRandomGroup(botSpawnCount, botGroups);
                 //IPlayer player = null;
-                SpawnGroup(BotGroup.Boss_Teddybear, botSpawnCount, 1);
+                SpawnGroup(BotGroup.Zombie, botSpawnCount, 1);
                 //SpawnBot(BotType.Bandido);
             }
         }
@@ -236,14 +243,26 @@ namespace SFDScript.BotExtended
                     break;
             }
 
-            if (m_infectedPlayers.ContainsKey(player.CustomID)) return;
-
-            if (IsHitByZombieOrTheInfected(player) && !GetInfo(GetBotType(player)).ImmuneToInfect)
+            if (!CanInfectFrom(player))
             {
-                // Normal players that are not extended bots dont have CustomID by default
-                if (string.IsNullOrEmpty(player.CustomID))
-                    player.CustomID = Guid.NewGuid().ToString("N");
-                m_infectedPlayers.Add(player.CustomID, player);
+                var extendedBot = GetExtendedBot(player);
+                var isExtendedBot = extendedBot.Type != BotType.None;
+
+                if (IsHitByZombieOrTheInfected(player) && (!isExtendedBot || !extendedBot.Info.ImmuneToInfect))
+                {
+                    // Normal players that are not extended bots dont have CustomID by default
+                    if (!isExtendedBot && string.IsNullOrEmpty(player.CustomID))
+                    {
+                        player.CustomID = Guid.NewGuid().ToString("N");
+                    }
+                    if (isExtendedBot)
+                    {
+                        extendedBot.Info.ZombieStatus = ZombieStatus.Infected;
+                    }
+
+                    player.SetBotName(player.Name + " I");
+                    m_infectedPlayers.Add(player.CustomID, player);
+                }
             }
         }
 
@@ -287,9 +306,9 @@ namespace SFDScript.BotExtended
             }
         }
 
-        public static BotType GetBotType(IPlayer player)
+        public static Bot GetExtendedBot(IPlayer player)
         {
-            return m_bots.ContainsKey(player.CustomID) ? m_bots[player.CustomID].Type : BotType.None;
+            return m_bots.ContainsKey(player.CustomID) ? m_bots[player.CustomID] : new Bot(player);
         }
 
         private static BotType GetZombieType(IPlayer player)
@@ -298,7 +317,7 @@ namespace SFDScript.BotExtended
             {
                 throw new Exception("Player cannot be null");
             }
-            var botType = GetBotType(player);
+            var botType = GetExtendedBot(player).Type;
 
             if (botType == BotType.None)
             {
@@ -372,34 +391,30 @@ namespace SFDScript.BotExtended
 
         private static bool IsHitByZombieOrTheInfected(IPlayer target)
         {
-            foreach (var bot in m_bots.Values)
+            foreach (var player in Game.GetPlayers())
             {
-                if (!IsZombie(bot.Type) && !IsTheInfected(bot.Type))
-                    continue;
-                if (IsTheInfected(bot.Type) && bot.Player.CurrentMeleeWeapon.WeaponItem != WeaponItem.NONE)
-                    continue;
+                if (CanInfectFrom(player))
+                {
+                    // The infected can only infect the non-infected via punching
+                    // TODO: need to know if IPlayer is punching instead of not equipping melee weapon
+                    //if (bot.Player.CurrentMeleeWeapon.WeaponItem != WeaponItem.NONE)
+                        //continue;
 
-                var zombie = bot.Player;
-
-                if (ScriptHelper.IsHiting(zombie, target))
-                    return true;
+                    if (ScriptHelper.IsHiting(player, target))
+                    {
+                        Game.ShowChatMessage(player.Name + " infected player " + target.Name);
+                        return true;
+                    }
+                }
             }
+
             return false;
         }
 
-        private static bool IsZombie(BotType type)
+        private static bool CanInfectFrom(IPlayer player)
         {
-            var typeStr = Enum.GetName(typeof(BotType), type);
-
-            return typeStr.StartsWith("Zombie")
-                || typeStr == "BaronVonHauptstein";
-        }
-
-        private static bool IsTheInfected(BotType type)
-        {
-            var typeStr = Enum.GetName(typeof(BotType), type);
-
-            return typeStr.StartsWith("Marauder");
+            return m_infectedPlayers.ContainsKey(player.CustomID)
+                    || GetExtendedBot(player).Info.ZombieStatus != ZombieStatus.Human;
         }
 
         private static List<PlayerSpawner> GetEmptyPlayerSpawners()
@@ -491,7 +506,7 @@ namespace SFDScript.BotExtended
             player.SetBotBehaviorActive(true);
             player.SetTeam(team);
 
-            if (info.StartInfected)
+            if (info.ZombieStatus == ZombieStatus.Infected)
                 m_infectedPlayers.Add(player.CustomID, player);
 
             var bot = BotFactory.Create(player, botType, info);

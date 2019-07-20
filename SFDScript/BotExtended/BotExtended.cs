@@ -61,7 +61,7 @@ namespace SFDScript.BotExtended
 
             foreach (var player in players)
             {
-                var botType = BotHelper.GetBotType(player);
+                var botType = BotHelper.GetExtendedBot(player).Type;
                 if (botType == BotType.None || updatedBotTypes.Contains(botType)) continue;
                 var botTypeKeyPrefix = BotHelper.GET_BOTTYPE_STORAGE_KEY(botType);
 

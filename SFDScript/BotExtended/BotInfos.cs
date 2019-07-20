@@ -190,7 +190,7 @@ namespace SFDScript.BotExtended
                         MeleeDamageDealtModifier = 0.95f,
                         SizeModifier = 0.95f,
                     };
-                    botInfo.StartInfected = true;
+                    botInfo.ZombieStatus = ZombieStatus.Infected;
                     break;
                 }
                 #endregion
@@ -236,6 +236,7 @@ namespace SFDScript.BotExtended
                     };
                     botInfo.SpawnLine = "Brainzz";
                     botInfo.SpawnLineChance = 0.1f;
+                    botInfo.ZombieStatus = ZombieStatus.Zombie;
                     break;
                 }
                 #endregion
@@ -255,6 +256,7 @@ namespace SFDScript.BotExtended
                     };
                     botInfo.SpawnLine = "Brainzz";
                     botInfo.SpawnLineChance = 0.1f;
+                    botInfo.ZombieStatus = ZombieStatus.Zombie;
                     break;
                 }
                 #endregion
@@ -272,6 +274,7 @@ namespace SFDScript.BotExtended
                         SprintSpeedModifier = 0.5f,
                         SizeModifier = 1.25f,
                     };
+                    botInfo.ZombieStatus = ZombieStatus.Zombie;
                     break;
                 }
                 #endregion
@@ -290,6 +293,7 @@ namespace SFDScript.BotExtended
                         SprintSpeedModifier = 1.15f,
                         SizeModifier = 0.95f,
                     };
+                    botInfo.ZombieStatus = ZombieStatus.Zombie;
                     break;
                 }
                 #endregion
@@ -310,6 +314,7 @@ namespace SFDScript.BotExtended
                     };
                     botInfo.SpawnLine = "Brainzz";
                     botInfo.SpawnLineChance = 0.1f;
+                    botInfo.ZombieStatus = ZombieStatus.Zombie;
                     break;
                 }
                 #endregion
@@ -611,6 +616,7 @@ namespace SFDScript.BotExtended
                         SizeModifier = 1.1f,
                     };
                     botInfo.IsBoss = true;
+                    botInfo.ZombieStatus = ZombieStatus.Zombie;
                     break;
                 }
                 #endregion

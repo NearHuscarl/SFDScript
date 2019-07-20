@@ -20,8 +20,14 @@ namespace SFDScript.BotExtended.Bots
         {
             Player = null;
             Type = BotType.None;
-            Info = null;
+            Info = new BotInfo();
             UpdateInterval = 100;
+        }
+        public Bot(IPlayer player)
+        {
+            Player = player;
+            Type = BotType.None;
+            Info = new BotInfo(player);
         }
 
         public void Decorate(IPlayer existingPlayer)
@@ -64,15 +70,17 @@ namespace SFDScript.BotExtended.Bots
                 Game.CreateDialogue(deathLine, DialogueColor, Player, duration: 3000f);
         }
 
-        private int lastUpdateElapsed;
+        private int m_lastUpdateElapsed;
         public void Update(float elapsed)
         {
-            lastUpdateElapsed += (int)elapsed;
+            if (Type == BotType.None) return;
 
-            if (lastUpdateElapsed >= UpdateInterval)
+            m_lastUpdateElapsed += (int)elapsed;
+
+            if (m_lastUpdateElapsed >= UpdateInterval)
             {
-                OnUpdate(lastUpdateElapsed + elapsed);
-                lastUpdateElapsed = 0;
+                OnUpdate(m_lastUpdateElapsed + elapsed);
+                m_lastUpdateElapsed = 0;
             }
         }
 

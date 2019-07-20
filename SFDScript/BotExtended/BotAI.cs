@@ -3,6 +3,7 @@
     public enum BotAI
     {
         Debug,
+        None, // Normal SF (not extended bot)
 
         Hacker,
         Expert,

@@ -143,7 +143,7 @@ namespace SFDScript.BotExtended.Bots
         private bool m_hasDie = false;
         public override void OnDeath()
         {
-            // Player.Remove() will call the death event one more time, make sure OnDeath() is only called once
+            // Player.Remove() below will call the death event one more time, make sure OnDeath() is only called once
             if (Player == null || m_hasDie) return;
             m_hasDie = true;
 

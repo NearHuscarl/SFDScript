@@ -15,7 +15,22 @@ namespace SFDScript.BotExtended
             SpawnLineChance = 1f;
             DeathLine = "";
             DeathLineChance = 1f;
-            StartInfected = false;
+            ZombieStatus = ZombieStatus.Human;
+            ImmuneToInfect = false;
+        }
+
+        public BotInfo(IPlayer player)
+        {
+            EquipWeaponChance = 0f;
+            AIType = BotAI.None;
+            SearchItems = player.GetBotBehaviorSet().SearchItems;
+            Modifiers = player.GetModifiers();
+            IsBoss = false;
+            SpawnLine = "";
+            SpawnLineChance = 0f;
+            DeathLine = "";
+            DeathLineChance = 0f;
+            ZombieStatus = ZombieStatus.Human;
             ImmuneToInfect = false;
         }
 
@@ -35,18 +50,28 @@ namespace SFDScript.BotExtended
         public string DeathLine { get; set; }
         public float DeathLineChance { get; set; }
 
-        private bool startInfected;
-        public bool StartInfected
+        private ZombieStatus zombieStatus;
+        public ZombieStatus ZombieStatus
         {
-            get { return startInfected; }
+            get { return zombieStatus; }
             set
             {
-                if (ImmuneToInfect && value == true)
-                    throw new Exception("StartInfected and ImmuneToInfected cannot be set to true");
-                startInfected = value;
+                if (ImmuneToInfect && value != ZombieStatus.Human)
+                    throw new Exception("if ImmuneToInfect == true, ZombieStatus must be Human");
+                zombieStatus = value;
             }
-        } // Starting as infected by zombie
+        }
 
-        public bool ImmuneToInfect { get; set; }
+        private bool immuneToInfect;
+        public bool ImmuneToInfect
+        {
+            get { return immuneToInfect; }
+            set
+            {
+                if (value == true && ZombieStatus != ZombieStatus.Human)
+                    throw new Exception("if ImmuneToInfect == true, ZombieStatus must be Human");
+                immuneToInfect = value;
+            }
+        }
     }
 }
