@@ -160,7 +160,7 @@ namespace SFDScript.BotExtended
             {
                 //SpawnRandomGroup(botSpawnCount, botGroups);
                 //IPlayer player = null;
-                SpawnGroup(BotGroup.Zombie, botSpawnCount, 1);
+                SpawnGroup(BotGroup.Marauder, botSpawnCount, 1);
                 //SpawnBot(BotType.Bandido);
             }
         }
@@ -396,9 +396,8 @@ namespace SFDScript.BotExtended
                 if (CanInfectFrom(player))
                 {
                     // The infected can only infect the non-infected via punching
-                    // TODO: need to know if IPlayer is punching instead of not equipping melee weapon
-                    //if (bot.Player.CurrentMeleeWeapon.WeaponItem != WeaponItem.NONE)
-                        //continue;
+                    if (player.CurrentWeaponDrawn != WeaponItemType.NONE)
+                        continue;
 
                     if (ScriptHelper.IsHiting(player, target))
                     {
