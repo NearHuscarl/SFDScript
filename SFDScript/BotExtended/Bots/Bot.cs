@@ -7,6 +7,12 @@ namespace SFDScript.BotExtended.Bots
 {
     public class Bot
     {
+        private static readonly Bot none = new Bot();
+        public static Bot None
+        {
+            get { return none;  }
+        }
+
         public static Color DialogueColor
         {
             get { return new Color(128, 32, 32); }
@@ -73,8 +79,6 @@ namespace SFDScript.BotExtended.Bots
         private int m_lastUpdateElapsed;
         public void Update(float elapsed)
         {
-            if (Type == BotType.None) return;
-
             m_lastUpdateElapsed += (int)elapsed;
 
             if (m_lastUpdateElapsed >= UpdateInterval)
@@ -84,7 +88,21 @@ namespace SFDScript.BotExtended.Bots
             }
         }
 
-        protected virtual void OnUpdate(float elapsed) { }
+        private float m_bloodEffectElapsed = 0;
+        protected virtual void OnUpdate(float elapsed)
+        {
+            if (Info.ZombieStatus == ZombieStatus.Infected)
+            {
+                m_bloodEffectElapsed += elapsed;
+
+                if (m_bloodEffectElapsed > 300)
+                {
+                    var position = Player.GetWorldPosition();
+                    Game.PlayEffect(Effect.BLOOD_TRAIL, position);
+                    m_bloodEffectElapsed = 0;
+                }
+            }
+        }
         public virtual void OnSpawn(List<Bot> bots) { }
         public virtual void OnDamage() { }
         public virtual void OnDeath() { }

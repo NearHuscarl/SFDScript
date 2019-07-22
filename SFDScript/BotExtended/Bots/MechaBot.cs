@@ -30,6 +30,8 @@ namespace SFDScript.BotExtended.Bots
         {
             if (Player == null || Player.IsRemoved) return;
 
+            base.OnUpdate(elapsed);
+
             if (Player.IsDead)
             {
                 UpdateCorpse(elapsed);

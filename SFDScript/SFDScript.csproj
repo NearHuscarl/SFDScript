@@ -76,6 +76,7 @@
     <Compile Include="BotExtended\Group\SubGroup.cs" />
     <Compile Include="BotExtended\PlayerSpawner.cs" />
     <Compile Include="BotExtended\WeaponSet.cs" />
+    <Compile Include="BotExtended\ZombieStatus.cs" />
     <Compile Include="ColorPallete.cs" />
     <Compile Include="Library\Effect.cs" />
     <Compile Include="GameScriptTemplate.cs" />

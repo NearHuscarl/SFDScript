@@ -11,6 +11,8 @@
         {
             if (Player.IsRemoved) return;
 
+            base.OnUpdate(elapsed);
+
             var profile = Player.GetProfile();
             var currentColor = profile.Head.Color2;
             var newColor = "";

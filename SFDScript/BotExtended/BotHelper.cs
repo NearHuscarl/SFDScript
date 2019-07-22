@@ -27,7 +27,7 @@ namespace SFDScript.BotExtended
 
                 var modifiers = Body.GetModifiers();
                 // Marauder has fake MaxHealth to have blood effect on the face
-                if (GetExtendedBot(Body).Info.ZombieStatus == ZombieStatus.Infected)
+                if (Enum.GetName(typeof(BotType), GetExtendedBot(Body).Type).StartsWith("Marauder"))
                     modifiers.CurrentHealth = modifiers.MaxHealth = 75;
                 else
                     modifiers.CurrentHealth = modifiers.MaxHealth * 0.75f;
@@ -75,7 +75,7 @@ namespace SFDScript.BotExtended
             }
         }
 
-        public static readonly string CURRENT_VERSION = "0.1";
+        public static readonly string CURRENT_VERSION = "0.2";
         public static readonly string BOT_GROUPS = "BOT_EXTENDED_NH_BOT_GROUPS";
         public static readonly string RANDOM_GROUP = "BOT_EXTENDED_NH_RANDOM_GROUP";
         public static readonly string BOT_COUNT = "BOT_EXTENDED_NH_BOT_COUNT";
@@ -98,12 +98,6 @@ namespace SFDScript.BotExtended
 
         // Player corpses waiting to be transformed into zombies
         private static List<PlayerCorpse> m_infectedCorpses = new List<PlayerCorpse>();
-        // Infected players (the infected SFs by zombies) can infect other players by
-        // punching them. When the infected SFs die. They turn into zombies
-        // Note: Zombie cannot turn into zombie again when they die though
-        // m_infectedPlayers is needed to keep track of the infected including vanilla SF
-        // and botextended version
-        private static Dictionary<string, IPlayer> m_infectedPlayers = new Dictionary<string, IPlayer>();
         private static List<PlayerSpawner> m_playerSpawners;
         private static Dictionary<string, Bot> m_bots = new Dictionary<string, Bot>();
 
@@ -160,7 +154,7 @@ namespace SFDScript.BotExtended
             {
                 //SpawnRandomGroup(botSpawnCount, botGroups);
                 //IPlayer player = null;
-                SpawnGroup(BotGroup.Marauder, botSpawnCount, 1);
+                SpawnGroup(BotGroup.Boss_Ninja, botSpawnCount, 1);
                 //SpawnBot(BotType.Bandido);
             }
         }
@@ -245,23 +239,27 @@ namespace SFDScript.BotExtended
 
             if (!CanInfectFrom(player))
             {
-                var extendedBot = GetExtendedBot(player);
-                var isExtendedBot = extendedBot.Type != BotType.None;
+                IPlayer theInfected;
 
-                if (IsHitByZombieOrTheInfected(player) && (!isExtendedBot || !extendedBot.Info.ImmuneToInfect))
+                if (IsHitByZombieOrTheInfected(player, out theInfected))
                 {
-                    // Normal players that are not extended bots dont have CustomID by default
-                    if (!isExtendedBot && string.IsNullOrEmpty(player.CustomID))
+                    var extendedBot = GetExtendedBot(player);
+
+                    // Normal players that are not extended bots
+                    if (extendedBot == Bot.None)
                     {
-                        player.CustomID = Guid.NewGuid().ToString("N");
+                        extendedBot = Wrap(player);
                     }
-                    if (isExtendedBot)
+
+                    // TODO: Fix bot count double when transform to zombie from infected
+                    //Game.ShowChatMessage(m_bots.Values.Count.ToString());
+
+                    if (!extendedBot.Info.ImmuneToInfect)
                     {
+                        Game.PlayEffect(Effect.CUSTOM_FLOAT_TEXT, player.GetWorldPosition(), "infected");
+                        Game.ShowChatMessage(theInfected.Name + " infected player " + player.Name);
                         extendedBot.Info.ZombieStatus = ZombieStatus.Infected;
                     }
-
-                    player.SetBotName(player.Name + " I");
-                    m_infectedPlayers.Add(player.CustomID, player);
                 }
             }
         }
@@ -298,17 +296,17 @@ namespace SFDScript.BotExtended
                     break;
             }
 
-            if (m_infectedPlayers.ContainsKey(player.CustomID))
+            var bot = GetExtendedBot(player);
+
+            if (bot != Bot.None && bot.Info.ZombieStatus == ZombieStatus.Infected)
             {
-                var infectedPlayer = m_infectedPlayers[player.CustomID];
-                m_infectedCorpses.Add(new PlayerCorpse(infectedPlayer));
-                m_infectedPlayers.Remove(player.CustomID);
+                m_infectedCorpses.Add(new PlayerCorpse(player));
             }
         }
 
         public static Bot GetExtendedBot(IPlayer player)
         {
-            return m_bots.ContainsKey(player.CustomID) ? m_bots[player.CustomID] : new Bot(player);
+            return m_bots.ContainsKey(player.CustomID) ? m_bots[player.CustomID] : Bot.None;
         }
 
         private static BotType GetZombieType(IPlayer player)
@@ -389,10 +387,15 @@ namespace SFDScript.BotExtended
             return profile;
         }
 
-        private static bool IsHitByZombieOrTheInfected(IPlayer target)
+        private static bool IsHitByZombieOrTheInfected(IPlayer target, out IPlayer theInfected)
         {
+            theInfected = null;
+
             foreach (var player in Game.GetPlayers())
             {
+                if (player.UniqueID == target.UniqueID)
+                    continue;
+
                 if (CanInfectFrom(player))
                 {
                     // The infected can only infect the non-infected via punching
@@ -401,7 +404,7 @@ namespace SFDScript.BotExtended
 
                     if (ScriptHelper.IsHiting(player, target))
                     {
-                        Game.ShowChatMessage(player.Name + " infected player " + target.Name);
+                        theInfected = player;
                         return true;
                     }
                 }
@@ -412,8 +415,10 @@ namespace SFDScript.BotExtended
 
         private static bool CanInfectFrom(IPlayer player)
         {
-            return m_infectedPlayers.ContainsKey(player.CustomID)
-                    || GetExtendedBot(player).Info.ZombieStatus != ZombieStatus.Human;
+            var extendedBot = GetExtendedBot(player);
+
+            return extendedBot != Bot.None
+                    && extendedBot.Info.ZombieStatus != ZombieStatus.Human;
         }
 
         private static List<PlayerSpawner> GetEmptyPlayerSpawners()
@@ -460,12 +465,22 @@ namespace SFDScript.BotExtended
             var rndSpawner = SharpHelper.GetRandomItem(emptySpawners);
             var player = Game.CreatePlayer(rndSpawner.Position);
 
-            // player.UniqueID is unique but seems like it can change value during
-            // the script lifetime. Use custom id + guid() to get the const unique id
-            player.CustomID = Guid.NewGuid().ToString("N");
             rndSpawner.HasSpawned = true;
 
             return player;
+        }
+
+        private static Bot Wrap(IPlayer player)
+        {
+            var bot = new Bot(player);
+
+            if (string.IsNullOrEmpty(player.CustomID))
+            {
+                player.CustomID = Guid.NewGuid().ToString("N");
+            }
+
+            m_bots.Add(player.CustomID, bot);
+            return bot;
         }
 
         public static Bot SpawnBot(
@@ -481,8 +496,12 @@ namespace SFDScript.BotExtended
 
             if (player == null) player = SpawnPlayer(ignoreFullSpawner);
             if (player == null) return null;
+            // player.UniqueID is unique but seems like it can change value during
+            // the script lifetime. Use custom id + guid() to get the const unique id
             if (string.IsNullOrEmpty(player.CustomID))
+            {
                 player.CustomID = Guid.NewGuid().ToString("N");
+            }
 
             if (equipWeapons)
             {
@@ -504,9 +523,6 @@ namespace SFDScript.BotExtended
             player.SetBotBehaviorSet(GetBehaviorSet(info.AIType, info.SearchItems));
             player.SetBotBehaviorActive(true);
             player.SetTeam(team);
-
-            if (info.ZombieStatus == ZombieStatus.Infected)
-                m_infectedPlayers.Add(player.CustomID, player);
 
             var bot = BotFactory.Create(player, botType, info);
             m_bots.Add(player.CustomID, bot);

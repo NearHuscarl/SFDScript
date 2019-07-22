@@ -63,13 +63,15 @@ namespace SFDScript.Library
             var inMeleeRange = (
                 Math.Abs(player.GetWorldPosition().X - target.GetWorldPosition().X) <= 25 &&
                 Math.Abs(player.GetWorldPosition().Y - target.GetWorldPosition().Y) <= 25);
+            var isMeleeing = (
+                player.IsMeleeAttacking ||
+                player.IsJumpAttacking ||
+                player.IsJumpKicking ||
+                player.IsKicking);
 
-            if (player.IsMeleeAttacking || player.IsJumpAttacking || player.IsJumpKicking || player.IsKicking)
+            if (!target.IsRemoved && IsDifferentTeam(player, target) && isMeleeing && inMeleeRange)
             {
-                if (!target.IsRemoved && IsDifferentTeam(player, target) && inMeleeRange)
-                {
-                    return true;
-                }
+                return true;
             }
 
             return false;

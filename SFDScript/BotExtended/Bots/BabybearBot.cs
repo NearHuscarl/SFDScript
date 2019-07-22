@@ -1,4 +1,5 @@
-﻿using SFDScript.Library;
+﻿using SFDGameScriptInterface;
+using SFDScript.Library;
 using System.Collections.Generic;
 using static SFDScript.Library.Mocks.MockObjects;
 
@@ -34,6 +35,7 @@ namespace SFDScript.BotExtended.Bots
             Player.SetBotBehaviorSet(behavior);
 
             Player.SetGuardTarget(m_mommy.Player);
+            m_previousHealth = Player.GetHealth();
         }
 
         private readonly float DamageRequiredForMomToHunt = 20f;
@@ -41,12 +43,24 @@ namespace SFDScript.BotExtended.Bots
         private float m_damageTaken = 0f;
         protected override void OnUpdate(float elapsed)
         {
+            base.OnUpdate(elapsed);
+
             m_damageTaken += (m_previousHealth - Player.GetHealth());
 
             if (m_damageTaken >= DamageRequiredForMomToHunt)
             {
                 m_damageTaken = 0f;
-                m_mommy.Help(Player);
+
+                IPlayer culprit = null;
+                foreach (var player in Game.GetPlayers())
+                {
+                    if (ScriptHelper.IsHiting(player, Player))
+                    {
+                        culprit = player;
+                        break;
+                    }
+                }
+                m_mommy.Enrage(culprit, 10000);
             }
 
             m_previousHealth = Player.GetHealth();
@@ -67,6 +81,17 @@ namespace SFDScript.BotExtended.Bots
         {
             if (SharpHelper.RandomBetween(0, 1) <= 0.75f)
                 Game.PlaySound("CartoonScream", Player.GetWorldPosition());
+
+            IPlayer culprit = null;
+            foreach (var player in Game.GetPlayers())
+            {
+                if (ScriptHelper.IsHiting(player, Player))
+                {
+                    culprit = player;
+                    break;
+                }
+            }
+            m_mommy.Enrage(culprit, 20000);
         }
     }
 }

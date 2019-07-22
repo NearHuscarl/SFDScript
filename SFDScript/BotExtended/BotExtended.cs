@@ -28,10 +28,10 @@ namespace SFDScript.BotExtended
                     modifiers.MeleeStunImmunity = 1;
 
                     player.SetModifiers(modifiers);
-                    player.GiveWeaponItem(WeaponItem.KNIFE);
+                    player.GiveWeaponItem(WeaponItem.WHIP);
                     player.GiveWeaponItem(WeaponItem.MAGNUM);
-                    player.GiveWeaponItem(WeaponItem.LAZER);
-                    player.GiveWeaponItem(WeaponItem.FLAMETHROWER);
+                    player.GiveWeaponItem(WeaponItem.FLAREGUN);
+                    player.GiveWeaponItem(WeaponItem.BAZOOKA);
                     player.GiveWeaponItem(WeaponItem.MOLOTOVS);
                     player.GiveWeaponItem(WeaponItem.STRENGTHBOOST);
                 }
