@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -80,17 +80,16 @@
     <Compile Include="ColorPallete.cs" />
     <Compile Include="Library\Effect.cs" />
     <Compile Include="GameScriptTemplate.cs" />
-    <Compile Include="Converter.cs" />
     <Compile Include="DebugUtil.cs" />
     <Compile Include="Library\Mocks\Game.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BotExtended\BotExtended.cs" />
     <Compile Include="Library\ScriptHelper.cs" />
     <Compile Include="Library\SharpHelper.cs" />
+    <Compile Include="SharpConverter\SharpConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

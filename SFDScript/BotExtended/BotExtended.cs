@@ -121,24 +121,3 @@ namespace SFDScript.BotExtended
         }
     }
 }
-
-// TODO:
-// Add draw weapon first
-
-// fritzliebe
-// Kriegbar
-// mecha
-
-// Commands:
-// botextended groupInterval
-
-// Fix a bug where the group is registered as win if you exit the server instead of continue map
-
-// Group
-// Add bulletproof and meleeproof superfighters
-// Multiple spawn|dead lines?
-
-    // commit
-    // add soldier group
-    // reduce cowboy aim delay
-    // misc bug fixes and refactor
