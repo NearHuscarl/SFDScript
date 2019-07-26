@@ -75,19 +75,19 @@ namespace SFDScript.BotExtended
             }
         }
 
-        public static readonly string CURRENT_VERSION = "0.2";
-        public static readonly string BOT_GROUPS = "BOT_EXTENDED_NH_BOT_GROUPS";
-        public static readonly string RANDOM_GROUP = "BOT_EXTENDED_NH_RANDOM_GROUP";
-        public static readonly string BOT_COUNT = "BOT_EXTENDED_NH_BOT_COUNT";
-        public static readonly string VERSION = "BOT_EXTENDED_NH_VERSION";
-        public static Func<BotType, string> GET_BOTTYPE_STORAGE_KEY = (botType) => "BOT_EXTENDED_NH_"
-            + SharpHelper.EnumToString(botType).ToUpperInvariant();
-        public static Func<BotGroup, int, string> GET_GROUP_STORAGE_KEY = (botGroup, groupIndex) => "BOT_EXTENDED_NH_"
-            + SharpHelper.EnumToString(botGroup).ToUpperInvariant()
-            + "_" + groupIndex;
+        internal static string StorageKey(string key)
+        {
+            return Constants.STORAGE_KEY_PREFIX + key;
+        }
+        internal static string StorageKey(BotType botType)
+        {
+            return Constants.STORAGE_KEY_PREFIX + SharpHelper.EnumToString(botType).ToUpperInvariant();
+        }
+        internal static string StorageKey(BotGroup botGroup, int groupIndex)
+        {
+            return Constants.STORAGE_KEY_PREFIX + SharpHelper.EnumToString(botGroup).ToUpperInvariant() + "_" + groupIndex;
+        }
 
-        public static readonly bool RANDOM_GROUP_DEFAULT_VALUE = true;
-        public static readonly int MAX_BOT_COUNT_DEFAULT_VALUE = 5;
         public static BotGroup CurrentBotGroup { get; private set; }
         public static int CurrentGroupSetIndex { get; private set; }
 
@@ -110,15 +110,15 @@ namespace SFDScript.BotExtended
             m_userMessageEvent = Events.UserMessageCallback.Start(Command.OnUserMessage);
 
             bool randomGroup;
-            if (!Game.LocalStorage.TryGetItemBool(RANDOM_GROUP, out randomGroup))
+            if (!Storage.Get(StorageKey("RANDOM_GROUP"), out randomGroup))
             {
-                randomGroup = RANDOM_GROUP_DEFAULT_VALUE;
+                randomGroup = Constants.RANDOM_GROUP_DEFAULT_VALUE;
             }
 
             int botCount;
-            if (!Game.LocalStorage.TryGetItemInt(BOT_COUNT, out botCount))
+            if (!Storage.Get(StorageKey("BOT_COUNT"), out botCount))
             {
-                botCount = MAX_BOT_COUNT_DEFAULT_VALUE;
+                botCount = Constants.MAX_BOT_COUNT_DEFAULT_VALUE;
             }
 
             botCount = (int)MathHelper.Clamp(botCount, 1, 10);
@@ -132,7 +132,7 @@ namespace SFDScript.BotExtended
             else // Random selected bot groups from user settings
             {
                 string[] selectedGroups = null;
-                if (!Game.LocalStorage.TryGetItemStringArr(BOT_GROUPS, out selectedGroups))
+                if (!Storage.Get(StorageKey("BOT_GROUPS"), out selectedGroups))
                 {
                     ScriptHelper.PrintMessage(
                         "Error when retrieving bot groups to spawn. Default to randomize all available bot groups",
@@ -528,6 +528,73 @@ namespace SFDScript.BotExtended
             m_bots.Add(player.CustomID, bot);
 
             return bot;
+        }
+
+        public static void StoreStatistics()
+        {
+            var players = Game.GetPlayers();
+            var groupDead = true;
+            var updatedBotTypes = new List<BotType>();
+
+            foreach (var player in players)
+            {
+                var botType = GetExtendedBot(player).Type;
+                if (botType == BotType.None || updatedBotTypes.Contains(botType)) continue;
+                var botTypeKeyPrefix = StorageKey(botType);
+
+                var botWinCountKey = botTypeKeyPrefix + "_WIN_COUNT";
+                int botOldWinCount;
+                var getBotWinCountAttempt = Storage.Get(botWinCountKey, out botOldWinCount);
+
+                var botTotalMatchKey = botTypeKeyPrefix + "_TOTAL_MATCH";
+                int botOldTotalMatch;
+                var getBotTotalMatchAttempt = Storage.Get(botTotalMatchKey, out botOldTotalMatch);
+
+                if (getBotWinCountAttempt && getBotTotalMatchAttempt)
+                {
+                    if (!player.IsDead)
+                        Storage.Set(botWinCountKey, botOldWinCount + 1);
+                    Storage.Set(botTotalMatchKey, botOldTotalMatch + 1);
+                }
+                else
+                {
+                    if (!player.IsDead)
+                        Storage.Set(botWinCountKey, 1);
+                    else
+                        Storage.Set(botWinCountKey, 0);
+                    Storage.Set(botTotalMatchKey, 1);
+                }
+
+                updatedBotTypes.Add(botType);
+                if (!player.IsDead) groupDead = false;
+            }
+
+            var currentBotGroup = CurrentBotGroup;
+            var currentGroupSetIndex = CurrentGroupSetIndex;
+            var botGroupKeyPrefix = StorageKey(CurrentBotGroup, CurrentGroupSetIndex);
+
+            var groupWinCountKey = botGroupKeyPrefix + "_WIN_COUNT";
+            int groupOldWinCount;
+            var getGroupWinCountAttempt = Storage.Get(groupWinCountKey, out groupOldWinCount);
+
+            var groupTotalMatchKey = botGroupKeyPrefix + "_TOTAL_MATCH";
+            int groupOldTotalMatch;
+            var getGroupTotalMatchAttempt = Storage.Get(groupTotalMatchKey, out groupOldTotalMatch);
+
+            if (getGroupWinCountAttempt && getGroupTotalMatchAttempt)
+            {
+                if (!groupDead)
+                    Storage.Set(groupWinCountKey, groupOldWinCount + 1);
+                Storage.Set(groupTotalMatchKey, groupOldTotalMatch + 1);
+            }
+            else
+            {
+                if (!groupDead)
+                    Storage.Set(groupWinCountKey, 1);
+                else
+                    Storage.Set(groupWinCountKey, 0);
+                Storage.Set(groupTotalMatchKey, 1);
+            }
         }
     }
 }

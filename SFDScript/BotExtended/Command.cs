@@ -12,8 +12,6 @@ namespace SFDScript.BotExtended
 {
     public static class Command
     {
-        private static IScriptStorage m_storage = Game.LocalStorage;
-
         public static void OnUserMessage(UserMessageCallbackArgs args)
         {
             if (!args.User.IsHost || !args.IsCommand || (args.Command != "BOTEXTENDED" && args.Command != "BE"))
@@ -126,7 +124,7 @@ namespace SFDScript.BotExtended
         private static void PrintVersion()
         {
             ScriptHelper.PrintMessage("--Botextended version--", ScriptHelper.ERROR_COLOR);
-            ScriptHelper.PrintMessage("v" + BotHelper.CURRENT_VERSION);
+            ScriptHelper.PrintMessage("v" + Constants.CURRENT_VERSION);
         }
 
         private static IEnumerable<string> GetGroupNames()
@@ -179,7 +177,7 @@ namespace SFDScript.BotExtended
             ScriptHelper.PrintMessage("--Botextended settings--", ScriptHelper.ERROR_COLOR);
 
             string[] groups = null;
-            if (m_storage.TryGetItemStringArr(BotHelper.BOT_GROUPS, out groups))
+            if (Storage.Get(BotHelper.StorageKey("BOT_GROUPS"), out groups))
             {
                 ScriptHelper.PrintMessage("-Current groups", ScriptHelper.WARNING_COLOR);
                 for (var i = 0; i < groups.Length; i++)
@@ -191,16 +189,16 @@ namespace SFDScript.BotExtended
             }
 
             bool randomGroup;
-            if (!m_storage.TryGetItemBool(BotHelper.RANDOM_GROUP, out randomGroup))
+            if (!Storage.Get(BotHelper.StorageKey("RANDOM_GROUP"), out randomGroup))
             {
-                randomGroup = BotHelper.RANDOM_GROUP_DEFAULT_VALUE;
+                randomGroup = Constants.RANDOM_GROUP_DEFAULT_VALUE;
             }
             ScriptHelper.PrintMessage("-Random groups: " + randomGroup, ScriptHelper.WARNING_COLOR);
 
             int botCount;
-            if (!m_storage.TryGetItemInt(BotHelper.BOT_COUNT, out botCount))
+            if (!Storage.Get(BotHelper.StorageKey("BOT_COUNT"), out botCount))
             {
-                botCount = BotHelper.MAX_BOT_COUNT_DEFAULT_VALUE;
+                botCount = Constants.MAX_BOT_COUNT_DEFAULT_VALUE;
             }
             ScriptHelper.PrintMessage("-Max bot count: " + botCount, ScriptHelper.WARNING_COLOR);
         }
@@ -259,7 +257,7 @@ namespace SFDScript.BotExtended
 
             if (int.TryParse(firstArg, out value))
             {
-                m_storage.SetItem(BotHelper.BOT_COUNT, value);
+                Storage.Set(BotHelper.StorageKey("BOT_COUNT"), value);
                 ScriptHelper.PrintMessage("[Botextended] Update successfully");
             }
             else
@@ -282,9 +280,9 @@ namespace SFDScript.BotExtended
             if (int.TryParse(firstArg, out value))
             {
                 if (value == 1)
-                    m_storage.SetItem(BotHelper.RANDOM_GROUP, true);
+                    Storage.Set(BotHelper.StorageKey("RANDOM_GROUP"), true);
                 if (value == 0)
-                    m_storage.SetItem(BotHelper.RANDOM_GROUP, false);
+                    Storage.Set(BotHelper.StorageKey("RANDOM_GROUP"), false);
                 ScriptHelper.PrintMessage("[Botextended] Update successfully");
             }
             else
@@ -311,7 +309,7 @@ namespace SFDScript.BotExtended
             }
 
             botGroups.Sort();
-            m_storage.SetItem(BotHelper.BOT_GROUPS, botGroups.Distinct().ToArray());
+            Storage.Set(BotHelper.StorageKey("BOT_GROUPS"), botGroups.Distinct().ToArray());
             ScriptHelper.PrintMessage("[Botextended] Update successfully");
         }
 
@@ -323,11 +321,11 @@ namespace SFDScript.BotExtended
             ScriptHelper.PrintMessage("-[BotType]: [WinCount] [TotalMatch] [SurvivalRate]", ScriptHelper.WARNING_COLOR);
             foreach (var botType in botTypes)
             {
-                var botTypeKeyPrefix = BotHelper.GET_BOTTYPE_STORAGE_KEY(botType);
+                var botTypeKeyPrefix = BotHelper.StorageKey(botType);
                 int winCount;
-                var getWinCountAttempt = m_storage.TryGetItemInt(botTypeKeyPrefix + "_WIN_COUNT", out winCount);
+                var getWinCountAttempt = Storage.Get(botTypeKeyPrefix + "_WIN_COUNT", out winCount);
                 int totalMatch;
-                var getTotalMatchAttempt = m_storage.TryGetItemInt(botTypeKeyPrefix + "_TOTAL_MATCH", out totalMatch);
+                var getTotalMatchAttempt = Storage.Get(botTypeKeyPrefix + "_TOTAL_MATCH", out totalMatch);
 
                 if (getWinCountAttempt && getTotalMatchAttempt)
                 {
@@ -346,11 +344,11 @@ namespace SFDScript.BotExtended
                 var groupSet = GetGroupSet(botGroup);
                 for (var i = 0; i < groupSet.Groups.Count; i++)
                 {
-                    var groupKeyPrefix = BotHelper.GET_GROUP_STORAGE_KEY(botGroup, i);
+                    var groupKeyPrefix = BotHelper.StorageKey(botGroup, i);
                     int winCount;
-                    var getWinCountAttempt = m_storage.TryGetItemInt(groupKeyPrefix + "_WIN_COUNT", out winCount);
+                    var getWinCountAttempt = Storage.Get(groupKeyPrefix + "_WIN_COUNT", out winCount);
                     int totalMatch;
-                    var getTotalMatchAttempt = m_storage.TryGetItemInt(groupKeyPrefix + "_TOTAL_MATCH", out totalMatch);
+                    var getTotalMatchAttempt = Storage.Get(groupKeyPrefix + "_TOTAL_MATCH", out totalMatch);
 
                     if (getWinCountAttempt && getTotalMatchAttempt)
                     {
@@ -366,14 +364,13 @@ namespace SFDScript.BotExtended
 
         private static void ClearStatistics()
         {
-            ScriptHelper.PrintMessage("--Botextended clear statistics--", ScriptHelper.ERROR_COLOR);
             var botTypes = SharpHelper.EnumToList<BotType>();
             foreach (var botType in botTypes)
             {
-                var botTypeKeyPrefix = BotHelper.GET_BOTTYPE_STORAGE_KEY(botType);
+                var botTypeKeyPrefix = BotHelper.StorageKey(botType);
 
-                m_storage.RemoveItem(botTypeKeyPrefix + "_WIN_COUNT");
-                m_storage.RemoveItem(botTypeKeyPrefix + "_TOTAL_MATCH");
+                Storage.Remove(botTypeKeyPrefix + "_WIN_COUNT");
+                Storage.Remove(botTypeKeyPrefix + "_TOTAL_MATCH");
             }
 
             var botGroups = SharpHelper.EnumToList<BotGroup>();
@@ -382,9 +379,9 @@ namespace SFDScript.BotExtended
                 var groupSet = GetGroupSet(botGroup);
                 for (var i = 0; i < groupSet.Groups.Count; i++)
                 {
-                    var groupKeyPrefix = BotHelper.GET_GROUP_STORAGE_KEY(botGroup, i);
-                    m_storage.RemoveItem(groupKeyPrefix + "_WIN_COUNT");
-                    m_storage.RemoveItem(groupKeyPrefix + "_TOTAL_MATCH");
+                    var groupKeyPrefix = BotHelper.StorageKey(botGroup, i);
+                    Storage.Remove(groupKeyPrefix + "_WIN_COUNT");
+                    Storage.Remove(groupKeyPrefix + "_TOTAL_MATCH");
                 }
             }
 

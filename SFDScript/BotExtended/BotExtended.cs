@@ -13,6 +13,15 @@ namespace SFDScript.BotExtended
 
         public void OnStartup()
         {
+            // How to create a bot
+            // 1. Define bot type in BotType.cs
+            // 2. Define bot profile in BotProfiles.cs
+            // 3. Define bot weapon in BotWeapons.cs
+            // 4. Define bot behavior in BotBehaviors.cs (optional)
+            // 5. Define bot info in BotInfos.cs
+            // 6. Define bot class in Bots/ and add it to BotFactory.cs for additional behaviors (optional)
+            // 7. Define bot group and sub-group in BotGroupSets.cs
+
             try
             {
                 //System.Diagnostics.Debugger.Break();
@@ -49,75 +58,7 @@ namespace SFDScript.BotExtended
 
         public void OnShutdown()
         {
-            StoreStatistics();
-        }
-
-        private void StoreStatistics()
-        {
-            var storage = Game.LocalStorage;
-            var players = Game.GetPlayers();
-            var groupDead = true;
-            var updatedBotTypes = new List<BotType>();
-
-            foreach (var player in players)
-            {
-                var botType = BotHelper.GetExtendedBot(player).Type;
-                if (botType == BotType.None || updatedBotTypes.Contains(botType)) continue;
-                var botTypeKeyPrefix = BotHelper.GET_BOTTYPE_STORAGE_KEY(botType);
-
-                var botWinCountKey = botTypeKeyPrefix + "_WIN_COUNT";
-                int botOldWinCount;
-                var getBotWinCountAttempt = storage.TryGetItemInt(botWinCountKey, out botOldWinCount);
-
-                var botTotalMatchKey = botTypeKeyPrefix + "_TOTAL_MATCH";
-                int botOldTotalMatch;
-                var getBotTotalMatchAttempt = storage.TryGetItemInt(botTotalMatchKey, out botOldTotalMatch);
-
-                if (getBotWinCountAttempt && getBotTotalMatchAttempt)
-                {
-                    if (!player.IsDead)
-                        storage.SetItem(botWinCountKey, botOldWinCount + 1);
-                    storage.SetItem(botTotalMatchKey, botOldTotalMatch + 1);
-                }
-                else
-                {
-                    if (!player.IsDead)
-                        storage.SetItem(botWinCountKey, 1);
-                    else
-                        storage.SetItem(botWinCountKey, 0);
-                    storage.SetItem(botTotalMatchKey, 1);
-                }
-
-                updatedBotTypes.Add(botType);
-                if (!player.IsDead) groupDead = false;
-            }
-
-            var currentBotGroup = BotHelper.CurrentBotGroup;
-            var currentGroupSetIndex = BotHelper.CurrentGroupSetIndex;
-            var botGroupKeyPrefix = BotHelper.GET_GROUP_STORAGE_KEY(BotHelper.CurrentBotGroup, BotHelper.CurrentGroupSetIndex);
-
-            var groupWinCountKey = botGroupKeyPrefix + "_WIN_COUNT";
-            int groupOldWinCount;
-            var getGroupWinCountAttempt = storage.TryGetItemInt(groupWinCountKey, out groupOldWinCount);
-
-            var groupTotalMatchKey = botGroupKeyPrefix + "_TOTAL_MATCH";
-            int groupOldTotalMatch;
-            var getGroupTotalMatchAttempt = storage.TryGetItemInt(groupTotalMatchKey, out groupOldTotalMatch);
-
-            if (getGroupWinCountAttempt && getGroupTotalMatchAttempt)
-            {
-                if (!groupDead)
-                    storage.SetItem(groupWinCountKey, groupOldWinCount + 1);
-                storage.SetItem(groupTotalMatchKey, groupOldTotalMatch + 1);
-            }
-            else
-            {
-                if (!groupDead)
-                    storage.SetItem(groupWinCountKey, 1);
-                else
-                    storage.SetItem(groupWinCountKey, 0);
-                storage.SetItem(groupTotalMatchKey, 1);
-            }
+            BotHelper.StoreStatistics();
         }
     }
 }

@@ -7,22 +7,24 @@ namespace SFDScript.BotExtended.Group
 {
     public class SubGroup
     {
-        public SubGroup() { }
         public SubGroup(List<BotType> types, float weight)
         {
             Types = types;
             Weight = weight;
         }
+
         public SubGroup(BotType type, float weight)
         {
             Types = new List<BotType>() { type };
             Weight = weight;
         }
+
         public SubGroup(BotType type)
         {
             Types = new List<BotType>() { type };
             Weight = 0f;
         }
+
         private List<BotType> types;
         public List<BotType> Types
         {
