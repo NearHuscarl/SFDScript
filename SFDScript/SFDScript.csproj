@@ -82,6 +82,7 @@
     <Compile Include="GameScriptTemplate.cs" />
     <Compile Include="DebugUtil.cs" />
     <Compile Include="Library\Mocks\Game.cs" />
+    <Compile Include="Library\Rnd.cs" />
     <Compile Include="Library\Storage.cs" />
     <Compile Include="Library\StorageType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

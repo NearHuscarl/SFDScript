@@ -61,7 +61,7 @@ namespace SFDScript.BotExtended.Bots
             var spawnLine = Info.SpawnLine;
             var spawnLineChance = Info.SpawnLineChance;
 
-            if (!string.IsNullOrWhiteSpace(spawnLine) && SharpHelper.RandomBetween(0f, 1f) < spawnLineChance)
+            if (!string.IsNullOrWhiteSpace(spawnLine) && RandomHelper.Between(0f, 1f) < spawnLineChance)
                 GameScriptInterface.Game.CreateDialogue(spawnLine, DialogueColor, Player, duration: 3000f);
         }
 
@@ -72,7 +72,7 @@ namespace SFDScript.BotExtended.Bots
             var deathLine = Info.DeathLine;
             var deathLineChance = Info.DeathLineChance;
 
-            if (!string.IsNullOrWhiteSpace(deathLine) && SharpHelper.RandomBetween(0f, 1f) < deathLineChance)
+            if (!string.IsNullOrWhiteSpace(deathLine) && RandomHelper.Between(0f, 1f) < deathLineChance)
                 Game.CreateDialogue(deathLine, DialogueColor, Player, duration: 3000f);
         }
 

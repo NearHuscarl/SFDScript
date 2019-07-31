@@ -39,7 +39,7 @@ namespace SFDScript.BotExtended.Group
         public bool HasBoss { get; private set; }
         public BotType GetRandomType()
         {
-            return SharpHelper.GetRandomItem(Types);
+            return RandomHelper.GetItem(Types);
         }
     }
 }

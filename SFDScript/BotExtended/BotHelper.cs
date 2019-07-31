@@ -109,6 +109,8 @@ namespace SFDScript.BotExtended
             m_updateEvent = Events.UpdateCallback.Start(OnUpdate);
             m_userMessageEvent = Events.UserMessageCallback.Start(Command.OnUserMessage);
 
+            InitRandomSeed();
+
             bool randomGroup;
             if (!Storage.Get(StorageKey("RANDOM_GROUP"), out randomGroup))
             {
@@ -159,6 +161,26 @@ namespace SFDScript.BotExtended
             }
         }
 
+        private static void InitRandomSeed()
+        {
+            int[] botGroupSeed;
+            int inext;
+            int inextp;
+
+            var getBotGroupSeedAttempt = Storage.Get(StorageKey("BOT_GROUP_SEED"), out botGroupSeed);
+            var getBotGroupInextAttempt = Storage.Get(StorageKey("BOT_GROUP_INEXT"), out inext);
+            var getBotGroupInextpAttempt = Storage.Get(StorageKey("BOT_GROUP_INEXTP"), out inextp);
+
+            if (getBotGroupSeedAttempt && getBotGroupInextAttempt && getBotGroupInextpAttempt)
+            {
+                RandomHelper.AddRandomGenerator("BOT_GROUP_SEED", new Rnd(botGroupSeed, inext, inextp));
+            }
+            else
+            {
+                RandomHelper.AddRandomGenerator("BOT_GROUP_SEED", new Rnd());
+            }
+        }
+
         private static void SpawnRandomGroup(int botCount, List<BotGroup> botGroups)
         {
             List<BotGroup> filteredBotGroups = null;
@@ -171,9 +193,9 @@ namespace SFDScript.BotExtended
             else
                 filteredBotGroups = botGroups;
 
-            var rndBotGroup = SharpHelper.GetRandomItem(filteredBotGroups);
+            var rndBotGroup = RandomHelper.GetItem(filteredBotGroups, "BOT_GROUP_SEED");
             var groupSet = GetGroupSet(rndBotGroup);
-            var rndGroupIndex = SharpHelper.Rnd.Next(groupSet.Groups.Count);
+            var rndGroupIndex = RandomHelper.Rnd.Next(groupSet.Groups.Count);
             var group = groupSet.Groups[rndGroupIndex];
 
             group.Spawn(botCount);
@@ -462,7 +484,7 @@ namespace SFDScript.BotExtended
                 return null;
             }
 
-            var rndSpawner = SharpHelper.GetRandomItem(emptySpawners);
+            var rndSpawner = RandomHelper.GetItem(emptySpawners);
             var player = Game.CreatePlayer(rndSpawner.Position);
 
             rndSpawner.HasSpawned = true;
@@ -505,16 +527,16 @@ namespace SFDScript.BotExtended
 
             if (equipWeapons)
             {
-                if (SharpHelper.RandomBetween(0f, 1f) < info.EquipWeaponChance)
+                if (RandomHelper.Between(0f, 1f) < info.EquipWeaponChance)
                 {
-                    weaponSet = SharpHelper.GetRandomItem(GetWeapons(botType));
+                    weaponSet = RandomHelper.GetItem(GetWeapons(botType));
                 }
                 weaponSet.Equip(player);
             }
 
             if (setProfile)
             {
-                var profile = SharpHelper.GetRandomItem(GetProfiles(botType));
+                var profile = RandomHelper.GetItem(GetProfiles(botType));
                 player.SetProfile(profile);
                 player.SetBotName(profile.Name);
             }
@@ -595,6 +617,19 @@ namespace SFDScript.BotExtended
                     Storage.Set(groupWinCountKey, 0);
                 Storage.Set(groupTotalMatchKey, 1);
             }
+
+            StoreRandomSeed();
+        }
+
+        private static void StoreRandomSeed()
+        {
+            var botGroupSeed = RandomHelper.GetRandomGenerator("BOT_GROUP_SEED").SeedArray;
+            var inext = RandomHelper.GetRandomGenerator("BOT_GROUP_SEED").inext;
+            var inextp = RandomHelper.GetRandomGenerator("BOT_GROUP_SEED").inextp;
+
+            Storage.Set(StorageKey("BOT_GROUP_SEED"), botGroupSeed);
+            Storage.Set(StorageKey("BOT_GROUP_INEXT"), inext);
+            Storage.Set(StorageKey("BOT_GROUP_INEXTP"), inextp);
         }
     }
 }

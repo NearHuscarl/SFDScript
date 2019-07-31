@@ -59,24 +59,24 @@ namespace SFDScript.BotExtended.Bots
 
             if (m_electricElapsed >= 1000)
             {
-                if (SharpHelper.RandomBoolean())
+                if (RandomHelper.Boolean())
                 {
                     var position = Player.GetWorldPosition();
-                    position.X += SharpHelper.RandomBetween(-10, 10);
-                    position.Y += SharpHelper.RandomBetween(-10, 10);
+                    position.X += RandomHelper.Between(-10, 10);
+                    position.Y += RandomHelper.Between(-10, 10);
 
                     Game.PlayEffect(Effect.ELECTRIC, position);
 
-                    if (SharpHelper.RandomBoolean())
+                    if (RandomHelper.Boolean())
                     {
                         Game.PlayEffect(Effect.STEAM, position);
                         Game.PlayEffect(Effect.STEAM, position);
                         Game.PlayEffect(Effect.STEAM, position);
                     }
                     // TODO: Customize spark effects
-                    if (SharpHelper.RandomBoolean())
+                    if (RandomHelper.Boolean())
                         Game.PlayEffect(Effect.SPARKS, position);
-                    if (SharpHelper.RandomBoolean())
+                    if (RandomHelper.Boolean())
                         Game.PlayEffect(Effect.FIRE, position);
 
                     Game.PlaySound("ElectricSparks", position);
@@ -84,7 +84,7 @@ namespace SFDScript.BotExtended.Bots
                 }
                 else
                 {
-                    m_electricElapsed -= SharpHelper.RandomBetween(0, m_electricElapsed);
+                    m_electricElapsed -= RandomHelper.Between(0, m_electricElapsed);
                 }
             }
         }
@@ -94,11 +94,11 @@ namespace SFDScript.BotExtended.Bots
 
             if (m_electricElapsed >= 700)
             {
-                if (SharpHelper.RandomBoolean())
+                if (RandomHelper.Boolean())
                 {
                     var position = Player.GetWorldPosition();
-                    position.X += SharpHelper.RandomBetween(-10, 10);
-                    position.Y += SharpHelper.RandomBetween(-10, 10);
+                    position.X += RandomHelper.Between(-10, 10);
+                    position.Y += RandomHelper.Between(-10, 10);
 
                     if (healthLeft <= 0.2f)
                     {
@@ -111,7 +111,7 @@ namespace SFDScript.BotExtended.Bots
                     }
                     if (healthLeft <= 0.4f)
                     {
-                        if (SharpHelper.RandomBoolean())
+                        if (RandomHelper.Boolean())
                         {
                             Game.PlayEffect(Effect.STEAM, position);
                             Game.PlayEffect(Effect.STEAM, position);
@@ -123,7 +123,7 @@ namespace SFDScript.BotExtended.Bots
                 }
                 else
                 {
-                    m_electricElapsed -= SharpHelper.RandomBetween(0, m_electricElapsed);
+                    m_electricElapsed -= RandomHelper.Between(0, m_electricElapsed);
                 }
             }
         }

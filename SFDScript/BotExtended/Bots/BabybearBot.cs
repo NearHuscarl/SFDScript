@@ -79,7 +79,7 @@ namespace SFDScript.BotExtended.Bots
 
         public override void OnDeath()
         {
-            if (SharpHelper.RandomBetween(0, 1) <= 0.75f)
+            if (RandomHelper.Between(0, 1) <= 0.75f)
                 Game.PlaySound("CartoonScream", Player.GetWorldPosition());
 
             IPlayer culprit = null;

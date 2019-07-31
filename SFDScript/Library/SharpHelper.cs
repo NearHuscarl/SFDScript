@@ -6,8 +6,6 @@ namespace SFDScript.Library
 {
     public static class SharpHelper
     {
-        public static Random Rnd = new Random();
-
         public static T StringToEnum<T>(string str)
         {
             return (T)Enum.Parse(typeof(T), str);
@@ -61,27 +59,6 @@ namespace SFDScript.Library
             }
 
             return true;
-        }
-
-        public static bool RandomBoolean()
-        {
-            return Rnd.NextDouble() >= 0.5;
-        }
-        public static float RandomBetween(float min, float max)
-        {
-            return (float)Rnd.NextDouble() * (max - min) + min;
-        }
-
-        public static T GetRandomItem<T>(List<T> list)
-        {
-            var rndIndex = Rnd.Next(list.Count);
-            return list[rndIndex];
-        }
-
-        public static T GetRandomEnumValue<T>()
-        {
-            var enumValues = Enum.GetValues(typeof(T));
-            return (T)enumValues.GetValue(Rnd.Next(enumValues.Length));
         }
 
         public static string GetNamespace<T>()
