@@ -3,7 +3,7 @@
     public static class Constants
     {
         internal const int BOSS_GROUP_START_INDEX = 200;
-        internal const string CURRENT_VERSION = "0.2";
+        internal const string CURRENT_VERSION = "0.3";
         internal const string STORAGE_KEY_PREFIX = "BE_";
 
         internal const bool RANDOM_GROUP_DEFAULT_VALUE = true;

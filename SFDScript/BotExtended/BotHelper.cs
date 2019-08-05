@@ -14,10 +14,14 @@ namespace SFDScript.BotExtended
     {
         private class PlayerCorpse
         {
+            public static int TimeToTurnIntoZombie = 5000;
             public IPlayer Body { get; set; }
-            public float DeathTime { get; set; }
+            public float DeathTime { get; private set; }
             public bool IsTurningIntoZombie { get; private set; }
-            public bool TurnIntoZombie()
+            public bool CanTurnIntoZombie { get; private set; }
+            public bool IsZombie { get; private set; }
+
+            private bool TurnIntoZombie()
             {
                 if (Body.IsRemoved || Body.IsBurnedCorpse) return false;
 
@@ -44,19 +48,34 @@ namespace SFDScript.BotExtended
                 IsTurningIntoZombie = true;
                 return true;
             }
-            public bool IsZombie { get; private set; }
 
             public PlayerCorpse(IPlayer player)
             {
                 Body = player;
                 IsTurningIntoZombie = false;
                 IsZombie = false;
+                CanTurnIntoZombie = true;
                 DeathTime = Game.TotalElapsedGameTime;
+            }
+
+            public void Update()
+            {
+                if (ScriptHelper.IsElapsed(DeathTime, TimeToTurnIntoZombie))
+                {
+                    if (!IsTurningIntoZombie)
+                    {
+                        CanTurnIntoZombie = TurnIntoZombie();
+                    }
+                    if (!IsZombie)
+                    {
+                        UpdateTurningIntoZombieAnimation();
+                    }
+                }
             }
 
             private bool isKneeling;
             private float kneelingTime;
-            public void UpdateTurningIntoZombieAnimation()
+            private void UpdateTurningIntoZombieAnimation()
             {
                 if (!isKneeling)
                 {
@@ -95,6 +114,7 @@ namespace SFDScript.BotExtended
         private static Events.PlayerDeathCallback m_playerDeathEvent = null;
         private static Events.UpdateCallback m_updateEvent = null;
         private static Events.UserMessageCallback m_userMessageEvent = null;
+        private static Events.PlayerMeleeActionCallback m_playerMeleeEvent = null;
 
         // Player corpses waiting to be transformed into zombies
         private static List<PlayerCorpse> m_infectedCorpses = new List<PlayerCorpse>();
@@ -104,6 +124,7 @@ namespace SFDScript.BotExtended
         public static void Initialize()
         {
             m_playerSpawners = GetEmptyPlayerSpawners();
+            m_playerMeleeEvent = Events.PlayerMeleeActionCallback.Start(OnPlayerMeleeAction);
             m_playerDamageEvent = Events.PlayerDamageCallback.Start(OnPlayerDamage);
             m_playerDeathEvent = Events.PlayerDeathCallback.Start(OnPlayerDeath);
             m_updateEvent = Events.UpdateCallback.Start(OnUpdate);
@@ -173,11 +194,11 @@ namespace SFDScript.BotExtended
 
             if (getBotGroupSeedAttempt && getBotGroupInextAttempt && getBotGroupInextpAttempt)
             {
-                RandomHelper.AddRandomGenerator("BOT_GROUP_SEED", new Rnd(botGroupSeed, inext, inextp));
+                RandomHelper.AddRandomGenerator("BOT_GROUP", new Rnd(botGroupSeed, inext, inextp));
             }
             else
             {
-                RandomHelper.AddRandomGenerator("BOT_GROUP_SEED", new Rnd());
+                RandomHelper.AddRandomGenerator("BOT_GROUP", new Rnd());
             }
         }
 
@@ -193,7 +214,7 @@ namespace SFDScript.BotExtended
             else
                 filteredBotGroups = botGroups;
 
-            var rndBotGroup = RandomHelper.GetItem(filteredBotGroups, "BOT_GROUP_SEED");
+            var rndBotGroup = RandomHelper.GetItem(filteredBotGroups, "BOT_GROUP");
             var groupSet = GetGroupSet(rndBotGroup);
             var rndGroupIndex = RandomHelper.Rnd.Next(groupSet.Groups.Count);
             var group = groupSet.Groups[rndGroupIndex];
@@ -211,42 +232,53 @@ namespace SFDScript.BotExtended
 
         public static void OnUpdate(float elapsed)
         {
-            UpdateCorpses();
-
-            foreach (var bot in m_bots.Values)
-                bot.Update(elapsed);
-
-            if (m_updateOnPlayerDeadNextFrame)
-                OnPlayerDeathNextFrame();
-        }
-
-        // Turning corpses killed by zombie into another one after some time
-        private static void UpdateCorpses()
-        {
-            // loop the copied list since the original one can be modified when OnPlayerDeath() is called
+            // Turning corpses killed by zombie into another one after some time
             foreach (var corpse in m_infectedCorpses.ToList())
             {
-                if (ScriptHelper.IsElapsed(corpse.DeathTime, 5000))
+                corpse.Update();
+
+                if (corpse.IsZombie || !corpse.CanTurnIntoZombie)
                 {
-                    if (!corpse.IsTurningIntoZombie)
-                    {
-                        if (!corpse.TurnIntoZombie())
-                            m_infectedCorpses.Remove(corpse);
-                    }
-                    else
-                    {
-                        if (!corpse.IsZombie)
-                            corpse.UpdateTurningIntoZombieAnimation();
-                        else
-                            m_infectedCorpses.Remove(corpse);
-                    }
+                    m_infectedCorpses.Remove(corpse);
+                }
+            }
+
+            foreach (var bot in m_bots.Values)
+            {
+                bot.Update(elapsed);
+            }
+        }
+
+        private static void OnPlayerMeleeAction(IPlayer attacker, PlayerMeleeHitArg[] args)
+        {
+            if (attacker == null) return;
+
+            foreach (var arg in args)
+            {
+                if (!arg.IsPlayer) continue;
+
+                Bot enemy;
+                if (m_bots.TryGetValue(arg.HitObject.CustomID, out enemy))
+                {
+                    enemy.OnMeleeDamage(attacker, arg);
                 }
             }
         }
 
-        private static void OnPlayerDamage(IPlayer player, float damage)
+        private static void OnPlayerDamage(IPlayer player, PlayerDamageArgs args)
         {
             if (player == null) return;
+
+            IPlayer attacker = null;
+            if (args.DamageType == PlayerDamageEventType.Melee)
+            {
+                attacker = Game.GetPlayer(args.SourceID);
+            }
+            if (args.DamageType == PlayerDamageEventType.Projectile)
+            {
+                var projectile = Game.GetProjectile(args.SourceID);
+                attacker = Game.GetPlayer(projectile.OwnerPlayerID);
+            }
 
             switch (player.GetTeam())
             {
@@ -254,16 +286,23 @@ namespace SFDScript.BotExtended
                     Bot enemy;
                     if (m_bots.TryGetValue(player.CustomID, out enemy))
                     {
-                        enemy.OnDamage();
+                        enemy.OnDamage(attacker, args);
                     }
                     break;
             }
 
-            if (!CanInfectFrom(player))
-            {
-                IPlayer theInfected;
+            UpdateInfectedStatus(player, attacker, args);
+        }
 
-                if (IsHitByZombieOrTheInfected(player, out theInfected))
+        private static void UpdateInfectedStatus(IPlayer player, IPlayer attacker, PlayerDamageArgs args)
+        {
+            if (!CanInfectFrom(player) && attacker != null)
+            {
+                var attackerPunching = args.DamageType == PlayerDamageEventType.Melee
+                    && attacker.CurrentWeaponDrawn == WeaponItemType.NONE
+                    && !attacker.IsKicking && !attacker.IsJumpKicking;
+
+                if (CanInfectFrom(attacker) && attackerPunching)
                 {
                     var extendedBot = GetExtendedBot(player);
 
@@ -279,29 +318,14 @@ namespace SFDScript.BotExtended
                     if (!extendedBot.Info.ImmuneToInfect)
                     {
                         Game.PlayEffect(Effect.CUSTOM_FLOAT_TEXT, player.GetWorldPosition(), "infected");
-                        Game.ShowChatMessage(theInfected.Name + " infected player " + player.Name);
+                        Game.ShowChatMessage(attacker.Name + " infected player " + player.Name);
                         extendedBot.Info.ZombieStatus = ZombieStatus.Infected;
                     }
                 }
             }
         }
 
-        private static bool m_updateOnPlayerDeadNextFrame = false;
-        private static Bot m_deadBot = null;
-        private static void OnPlayerDeathNextFrame()
-        {
-            // Have to wait until next frame after OnPlayerDeath event to confirm if IPlayer.IsRemoved
-            // is true (player instance is removed from the map by either gibbed or exploded into pieces)
-            if (!m_deadBot.Player.IsRemoved)
-            {
-                m_deadBot.SayDeathLine();
-            }
-
-            m_updateOnPlayerDeadNextFrame = false;
-            m_deadBot = null;
-        }
-
-        private static void OnPlayerDeath(IPlayer player)
+        private static void OnPlayerDeath(IPlayer player, PlayerDeathArgs args)
         {
             if (player == null) return;
 
@@ -311,9 +335,11 @@ namespace SFDScript.BotExtended
                     Bot enemy;
                     if (m_bots.TryGetValue(player.CustomID, out enemy))
                     {
-                        m_deadBot = enemy;
-                        m_updateOnPlayerDeadNextFrame = true;
-                        enemy.OnDeath();
+                        if (!args.Removed)
+                        {
+                            enemy.SayDeathLine();
+                        }
+                        enemy.OnDeath(args);
                     }
                     break;
             }
@@ -409,33 +435,7 @@ namespace SFDScript.BotExtended
             return profile;
         }
 
-        private static bool IsHitByZombieOrTheInfected(IPlayer target, out IPlayer theInfected)
-        {
-            theInfected = null;
-
-            foreach (var player in Game.GetPlayers())
-            {
-                if (player.UniqueID == target.UniqueID)
-                    continue;
-
-                if (CanInfectFrom(player))
-                {
-                    // The infected can only infect the non-infected via punching
-                    if (player.CurrentWeaponDrawn != WeaponItemType.NONE)
-                        continue;
-
-                    if (ScriptHelper.IsHiting(player, target))
-                    {
-                        theInfected = player;
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        private static bool CanInfectFrom(IPlayer player)
+        public static bool CanInfectFrom(IPlayer player)
         {
             var extendedBot = GetExtendedBot(player);
 
@@ -554,45 +554,14 @@ namespace SFDScript.BotExtended
 
         public static void StoreStatistics()
         {
-            var players = Game.GetPlayers();
             var groupDead = true;
-            var updatedBotTypes = new List<BotType>();
 
-            foreach (var player in players)
+            foreach (var player in Game.GetPlayers())
             {
-                var botType = GetExtendedBot(player).Type;
-                if (botType == BotType.None || updatedBotTypes.Contains(botType)) continue;
-                var botTypeKeyPrefix = StorageKey(botType);
-
-                var botWinCountKey = botTypeKeyPrefix + "_WIN_COUNT";
-                int botOldWinCount;
-                var getBotWinCountAttempt = Storage.Get(botWinCountKey, out botOldWinCount);
-
-                var botTotalMatchKey = botTypeKeyPrefix + "_TOTAL_MATCH";
-                int botOldTotalMatch;
-                var getBotTotalMatchAttempt = Storage.Get(botTotalMatchKey, out botOldTotalMatch);
-
-                if (getBotWinCountAttempt && getBotTotalMatchAttempt)
-                {
-                    if (!player.IsDead)
-                        Storage.Set(botWinCountKey, botOldWinCount + 1);
-                    Storage.Set(botTotalMatchKey, botOldTotalMatch + 1);
-                }
-                else
-                {
-                    if (!player.IsDead)
-                        Storage.Set(botWinCountKey, 1);
-                    else
-                        Storage.Set(botWinCountKey, 0);
-                    Storage.Set(botTotalMatchKey, 1);
-                }
-
-                updatedBotTypes.Add(botType);
-                if (!player.IsDead) groupDead = false;
+                if (!player.IsDead)
+                    groupDead = false;
             }
 
-            var currentBotGroup = CurrentBotGroup;
-            var currentGroupSetIndex = CurrentGroupSetIndex;
             var botGroupKeyPrefix = StorageKey(CurrentBotGroup, CurrentGroupSetIndex);
 
             var groupWinCountKey = botGroupKeyPrefix + "_WIN_COUNT";
@@ -623,13 +592,11 @@ namespace SFDScript.BotExtended
 
         private static void StoreRandomSeed()
         {
-            var botGroupSeed = RandomHelper.GetRandomGenerator("BOT_GROUP_SEED").SeedArray;
-            var inext = RandomHelper.GetRandomGenerator("BOT_GROUP_SEED").inext;
-            var inextp = RandomHelper.GetRandomGenerator("BOT_GROUP_SEED").inextp;
+            var rnd = RandomHelper.GetRandomGenerator("BOT_GROUP");
 
-            Storage.Set(StorageKey("BOT_GROUP_SEED"), botGroupSeed);
-            Storage.Set(StorageKey("BOT_GROUP_INEXT"), inext);
-            Storage.Set(StorageKey("BOT_GROUP_INEXTP"), inextp);
+            Storage.Set(StorageKey("BOT_GROUP_SEED"), rnd.SeedArray);
+            Storage.Set(StorageKey("BOT_GROUP_INEXT"), rnd.inext);
+            Storage.Set(StorageKey("BOT_GROUP_INEXTP"), rnd.inextp);
         }
     }
 }

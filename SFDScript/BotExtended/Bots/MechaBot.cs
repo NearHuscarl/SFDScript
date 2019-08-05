@@ -128,7 +128,7 @@ namespace SFDScript.BotExtended.Bots
             }
         }
 
-        public override void OnDamage()
+        public override void OnDamage(IPlayer attacker, PlayerDamageArgs args)
         {
             var mod = Player.GetModifiers();
             var currentHealth = mod.CurrentHealth;
@@ -142,12 +142,12 @@ namespace SFDScript.BotExtended.Bots
             }
         }
 
-        private bool m_hasDie = false;
-        public override void OnDeath()
+        private bool m_hasDied = false;
+        public override void OnDeath(PlayerDeathArgs args)
         {
             // Player.Remove() below will call the death event one more time, make sure OnDeath() is only called once
-            if (Player == null || m_hasDie) return;
-            m_hasDie = true;
+            if (Player == null || m_hasDied) return;
+            m_hasDied = true;
 
             var newPlayer = Game.CreatePlayer(Player.GetWorldPosition());
 

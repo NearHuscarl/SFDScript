@@ -9,6 +9,9 @@ namespace SFDScript.BotExtended.Bots
     {
         private TeddybearBot m_mommy = null;
         private static Queue<string> Names = new Queue<string>(new[] { "Timmy", "Jimmy" });
+        private IPlayer m_offender;
+        private static readonly float DamageRequiredForMomToEnrage = 20f;
+
         public override void OnSpawn(List<Bot> others)
         {
             UpdateInterval = 0;
@@ -35,63 +38,39 @@ namespace SFDScript.BotExtended.Bots
             Player.SetBotBehaviorSet(behavior);
 
             Player.SetGuardTarget(m_mommy.Player);
-            m_previousHealth = Player.GetHealth();
         }
 
-        private readonly float DamageRequiredForMomToHunt = 20f;
-        private float m_previousHealth = 0f;
         private float m_damageTaken = 0f;
-        protected override void OnUpdate(float elapsed)
+        public override void OnDamage(IPlayer attacker, PlayerDamageArgs args)
         {
-            base.OnUpdate(elapsed);
+            m_offender = attacker;
 
-            m_damageTaken += (m_previousHealth - Player.GetHealth());
+            if (args.DamageType == PlayerDamageEventType.Melee)
+            {
+                Game.CreateDialogue("Is melee'ed by " + attacker.Name, Player, "Debugging");
+            }
+            if (args.DamageType == PlayerDamageEventType.Projectile)
+            {
+                Game.CreateDialogue("Is shot by " + attacker.Name, Player, "Debugging");
+            }
 
-            if (m_damageTaken >= DamageRequiredForMomToHunt)
+            m_damageTaken += args.Damage;
+
+            if (m_damageTaken >= DamageRequiredForMomToEnrage)
             {
                 m_damageTaken = 0f;
-
-                IPlayer culprit = null;
-                foreach (var player in Game.GetPlayers())
-                {
-                    if (ScriptHelper.IsHiting(player, Player))
-                    {
-                        culprit = player;
-                        break;
-                    }
-                }
-                m_mommy.Enrage(culprit, 10000);
-            }
-
-            m_previousHealth = Player.GetHealth();
-        }
-
-        public override void OnDamage()
-        {
-            var players = Game.GetPlayers();
-
-            foreach (var player in players)
-            {
-                if (ScriptHelper.IsAiming(player, Player))
-                    Game.CreateDialogue("Is aimed by " + player.Name, Player, "Debugging");
+                m_mommy.Enrage(attacker, 10000);
             }
         }
 
-        public override void OnDeath()
+        public override void OnDeath(PlayerDeathArgs args)
         {
+            if (args.Removed) return;
+
             if (RandomHelper.Between(0, 1) <= 0.75f)
                 Game.PlaySound("CartoonScream", Player.GetWorldPosition());
 
-            IPlayer culprit = null;
-            foreach (var player in Game.GetPlayers())
-            {
-                if (ScriptHelper.IsHiting(player, Player))
-                {
-                    culprit = player;
-                    break;
-                }
-            }
-            m_mommy.Enrage(culprit, 20000);
+            m_mommy.Enrage(m_offender, 20000);
         }
     }
 }

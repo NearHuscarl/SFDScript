@@ -14,7 +14,7 @@ namespace SFDScript.BotExtended.Bots
             Player.SetBotBehaviorSet(behavior);
         }
 
-        public override void OnDeath()
+        public override void OnDeath(PlayerDeathArgs args)
         {
             var playerPosition = Player.GetWorldPosition();
 

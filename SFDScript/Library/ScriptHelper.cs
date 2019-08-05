@@ -58,31 +58,6 @@ namespace SFDScript.Library
             return player1.GetTeam() != player2.GetTeam() || player1.GetTeam() == PlayerTeam.Independent;
         }
 
-        public static bool IsHiting(IPlayer player, IPlayer target)
-        {
-            var inMeleeRange = (
-                Math.Abs(player.GetWorldPosition().X - target.GetWorldPosition().X) <= 25 &&
-                Math.Abs(player.GetWorldPosition().Y - target.GetWorldPosition().Y) <= 25);
-            var isMeleeing = (
-                player.IsMeleeAttacking ||
-                player.IsJumpAttacking ||
-                player.IsJumpKicking ||
-                player.IsKicking);
-
-            if (!target.IsRemoved && IsDifferentTeam(player, target) && isMeleeing && inMeleeRange)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        public static bool IsAiming(IPlayer player, IPlayer target)
-        {
-            // TODO
-            return false;
-        }
-
         // take into account PlayerModifiers.SizeModifier. Not 100% accurate
         public static Area GetAABB(IPlayer player)
         {
