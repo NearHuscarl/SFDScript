@@ -12,7 +12,7 @@ namespace SFDScript.BotExtended
 {
     public static class BotHelper
     {
-        private class PlayerCorpse
+        private class InfectedCorpse
         {
             public static int TimeToTurnIntoZombie = 5000;
             public IPlayer Body { get; set; }
@@ -49,7 +49,7 @@ namespace SFDScript.BotExtended
                 return true;
             }
 
-            public PlayerCorpse(IPlayer player)
+            public InfectedCorpse(IPlayer player)
             {
                 Body = player;
                 IsTurningIntoZombie = false;
@@ -109,6 +109,7 @@ namespace SFDScript.BotExtended
 
         public static BotGroup CurrentBotGroup { get; private set; }
         public static int CurrentGroupSetIndex { get; private set; }
+        public static PlayerTeam BotTeam { get; private set; }
 
         private static Events.PlayerDamageCallback m_playerDamageEvent = null;
         private static Events.PlayerDeathCallback m_playerDeathEvent = null;
@@ -117,7 +118,7 @@ namespace SFDScript.BotExtended
         private static Events.PlayerMeleeActionCallback m_playerMeleeEvent = null;
 
         // Player corpses waiting to be transformed into zombies
-        private static List<PlayerCorpse> m_infectedCorpses = new List<PlayerCorpse>();
+        private static List<InfectedCorpse> m_infectedCorpses = new List<InfectedCorpse>();
         private static List<PlayerSpawner> m_playerSpawners;
         private static Dictionary<string, Bot> m_bots = new Dictionary<string, Bot>();
 
@@ -129,6 +130,7 @@ namespace SFDScript.BotExtended
             m_playerDeathEvent = Events.PlayerDeathCallback.Start(OnPlayerDeath);
             m_updateEvent = Events.UpdateCallback.Start(OnUpdate);
             m_userMessageEvent = Events.UserMessageCallback.Start(Command.OnUserMessage);
+            BotTeam = PlayerTeam.Team4;
 
             InitRandomSeed();
 
@@ -177,7 +179,7 @@ namespace SFDScript.BotExtended
             {
                 //SpawnRandomGroup(botSpawnCount, botGroups);
                 //IPlayer player = null;
-                SpawnGroup(BotGroup.Boss_Ninja, botSpawnCount, 1);
+                SpawnGroup(BotGroup.Zombie, botSpawnCount, 1);
                 //SpawnBot(BotType.Bandido);
             }
         }
@@ -280,15 +282,13 @@ namespace SFDScript.BotExtended
                 attacker = Game.GetPlayer(projectile.OwnerPlayerID);
             }
 
-            switch (player.GetTeam())
+            if (player.GetTeam() == BotTeam)
             {
-                case PlayerTeam.Team4:
-                    Bot enemy;
-                    if (m_bots.TryGetValue(player.CustomID, out enemy))
-                    {
-                        enemy.OnDamage(attacker, args);
-                    }
-                    break;
+                Bot enemy;
+                if (m_bots.TryGetValue(player.CustomID, out enemy))
+                {
+                    enemy.OnDamage(attacker, args);
+                }
             }
 
             UpdateInfectedStatus(player, attacker, args);
@@ -312,9 +312,6 @@ namespace SFDScript.BotExtended
                         extendedBot = Wrap(player);
                     }
 
-                    // TODO: Fix bot count double when transform to zombie from infected
-                    //Game.ShowChatMessage(m_bots.Values.Count.ToString());
-
                     if (!extendedBot.Info.ImmuneToInfect)
                     {
                         Game.PlayEffect(Effect.CUSTOM_FLOAT_TEXT, player.GetWorldPosition(), "infected");
@@ -329,27 +326,27 @@ namespace SFDScript.BotExtended
         {
             if (player == null) return;
 
-            switch (player.GetTeam())
+            if (player.GetTeam() == BotTeam)
             {
-                case PlayerTeam.Team4:
-                    Bot enemy;
-                    if (m_bots.TryGetValue(player.CustomID, out enemy))
+                Bot enemy;
+                if (m_bots.TryGetValue(player.CustomID, out enemy))
+                {
+                    if (!args.Removed)
                     {
-                        if (!args.Removed)
-                        {
-                            enemy.SayDeathLine();
-                        }
-                        enemy.OnDeath(args);
+                        enemy.SayDeathLine();
                     }
-                    break;
+                    enemy.OnDeath(args);
+                }
             }
 
             var bot = GetExtendedBot(player);
 
             if (bot != Bot.None && bot.Info.ZombieStatus == ZombieStatus.Infected)
             {
-                m_infectedCorpses.Add(new PlayerCorpse(player));
+                m_infectedCorpses.Add(new InfectedCorpse(player));
             }
+
+            m_bots.Remove(player.CustomID);
         }
 
         public static Bot GetExtendedBot(IPlayer player)
