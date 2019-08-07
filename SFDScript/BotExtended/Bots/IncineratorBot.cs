@@ -16,6 +16,8 @@ namespace SFDScript.BotExtended.Bots
 
         public override void OnDeath(PlayerDeathArgs args)
         {
+            base.OnDeath(args);
+
             var playerPosition = Player.GetWorldPosition();
 
             if (Player.CurrentPrimaryWeapon.WeaponItem == WeaponItem.FLAMETHROWER)

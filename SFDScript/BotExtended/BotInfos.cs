@@ -441,10 +441,10 @@ namespace SFDScript.BotExtended
                     botInfo.AIType = BotAI.Expert;
                     botInfo.Modifiers = new PlayerModifiers()
                     {
-                        MaxHealth = 400,
-                        CurrentHealth = 400,
-                        MaxEnergy = 400,
-                        CurrentEnergy = 400,
+                        MaxHealth = 350,
+                        CurrentHealth = 350,
+                        MaxEnergy = 350,
+                        CurrentEnergy = 350,
                         FireDamageTakenModifier = 1.5f,
                         MeleeForceModifier = 1.75f,
                         RunSpeedModifier = 1.1f,
@@ -550,10 +550,10 @@ namespace SFDScript.BotExtended
                     botInfo.AIType = BotAI.Hulk;
                     botInfo.Modifiers = new PlayerModifiers()
                     {
-                        MaxHealth = 500,
-                        CurrentHealth = 500,
-                        MaxEnergy = 500,
-                        CurrentEnergy = 500,
+                        MaxHealth = 400,
+                        CurrentHealth = 400,
+                        MaxEnergy = 400,
+                        CurrentEnergy = 400,
                         MeleeDamageDealtModifier = 1.25f,
                         MeleeForceModifier = 2.0f,
                         RunSpeedModifier = 0.9f,

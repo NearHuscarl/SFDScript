@@ -33,12 +33,12 @@ namespace SFDScript.BotExtended
                     modifiers.MaxHealth = 5000;
                     modifiers.CurrentHealth = 5000;
                     modifiers.InfiniteAmmo = 1;
-                    modifiers.MeleeStunImmunity = 1;
+                    //modifiers.MeleeStunImmunity = 1;
 
                     player.SetModifiers(modifiers);
                     player.GiveWeaponItem(WeaponItem.WHIP);
-                    player.GiveWeaponItem(WeaponItem.MAGNUM);
                     player.GiveWeaponItem(WeaponItem.FLAREGUN);
+                    player.GiveWeaponItem(WeaponItem.MACHINE_PISTOL);
                     player.GiveWeaponItem(WeaponItem.BAZOOKA);
                     player.GiveWeaponItem(WeaponItem.MOLOTOVS);
                     player.GiveWeaponItem(WeaponItem.STRENGTHBOOST);

@@ -91,7 +91,7 @@ namespace SFDScript.BotExtended.Bots
         private float m_bloodEffectElapsed = 0;
         protected virtual void OnUpdate(float elapsed)
         {
-            if (Info.ZombieStatus == ZombieStatus.Infected)
+            if (Info.ZombieStatus == ZombieStatus.Infected && !Player.IsRemoved && !Player.IsBurnedCorpse)
             {
                 m_bloodEffectElapsed += elapsed;
 

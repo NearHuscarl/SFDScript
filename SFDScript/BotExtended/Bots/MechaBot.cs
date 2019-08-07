@@ -145,9 +145,13 @@ namespace SFDScript.BotExtended.Bots
         private bool m_hasDied = false;
         public override void OnDeath(PlayerDeathArgs args)
         {
+            base.OnDeath(args);
+
             // Player.Remove() below will call the death event one more time, make sure OnDeath() is only called once
             if (Player == null || m_hasDied) return;
             m_hasDied = true;
+
+            if (args.Removed) return;
 
             var newPlayer = Game.CreatePlayer(Player.GetWorldPosition());
 

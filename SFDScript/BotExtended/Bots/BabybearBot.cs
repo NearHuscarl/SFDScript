@@ -10,7 +10,8 @@ namespace SFDScript.BotExtended.Bots
         private TeddybearBot m_mommy = null;
         private static Queue<string> Names = new Queue<string>(new[] { "Timmy", "Jimmy" });
         private IPlayer m_offender;
-        private static readonly float DamageRequiredForMomToEnrage = 20f;
+        public static int EnrageTime = 30; // seconds
+        public int m_enrageCount = 0;
 
         public override void OnSpawn(List<Bot> others)
         {
@@ -40,37 +41,32 @@ namespace SFDScript.BotExtended.Bots
             Player.SetGuardTarget(m_mommy.Player);
         }
 
-        private float m_damageTaken = 0f;
         public override void OnDamage(IPlayer attacker, PlayerDamageArgs args)
         {
             m_offender = attacker;
-
-            if (args.DamageType == PlayerDamageEventType.Melee)
-            {
-                Game.CreateDialogue("Is melee'ed by " + attacker.Name, Player, "Debugging");
-            }
-            if (args.DamageType == PlayerDamageEventType.Projectile)
-            {
-                Game.CreateDialogue("Is shot by " + attacker.Name, Player, "Debugging");
-            }
-
-            m_damageTaken += args.Damage;
-
-            if (m_damageTaken >= DamageRequiredForMomToEnrage)
-            {
-                m_damageTaken = 0f;
-                m_mommy.Enrage(attacker, 10000);
-            }
         }
 
         public override void OnDeath(PlayerDeathArgs args)
         {
-            if (args.Removed) return;
+            base.OnDeath(args);
 
-            if (RandomHelper.Between(0, 1) <= 0.75f)
-                Game.PlaySound("CartoonScream", Player.GetWorldPosition());
+            if (!args.Removed)
+            {
+                if (RandomHelper.Between(0, 1) <= 0.75f)
+                {
+                    Game.PlaySound("CartoonScream", Player.GetWorldPosition());
+                }
+            }
 
-            m_mommy.Enrage(m_offender, 20000);
+            if (m_offender == null)
+            {
+                var killedPosition = Player.GetWorldPosition();
+
+                m_offender = TeddybearBot.FindClosestTarget(killedPosition);
+            }
+
+            m_enrageCount++;
+            m_mommy.Enrage(m_offender, EnrageTime * m_enrageCount * 1000);
         }
     }
 }

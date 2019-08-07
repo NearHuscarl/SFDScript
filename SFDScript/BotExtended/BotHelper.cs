@@ -109,7 +109,7 @@ namespace SFDScript.BotExtended
 
         public static BotGroup CurrentBotGroup { get; private set; }
         public static int CurrentGroupSetIndex { get; private set; }
-        public static PlayerTeam BotTeam { get; private set; }
+        public const PlayerTeam BotTeam = PlayerTeam.Team4;
 
         private static Events.PlayerDamageCallback m_playerDamageEvent = null;
         private static Events.PlayerDeathCallback m_playerDeathEvent = null;
@@ -130,7 +130,6 @@ namespace SFDScript.BotExtended
             m_playerDeathEvent = Events.PlayerDeathCallback.Start(OnPlayerDeath);
             m_updateEvent = Events.UpdateCallback.Start(OnUpdate);
             m_userMessageEvent = Events.UserMessageCallback.Start(Command.OnUserMessage);
-            BotTeam = PlayerTeam.Team4;
 
             InitRandomSeed();
 
@@ -179,7 +178,8 @@ namespace SFDScript.BotExtended
             {
                 //SpawnRandomGroup(botSpawnCount, botGroups);
                 //IPlayer player = null;
-                SpawnGroup(BotGroup.Zombie, botSpawnCount, 1);
+                SpawnGroup(BotGroup.Boss_Teddybear, botSpawnCount, 1);
+                //m_bots.First().Value.Player.Gib();
                 //SpawnBot(BotType.Bandido);
             }
         }
@@ -282,13 +282,10 @@ namespace SFDScript.BotExtended
                 attacker = Game.GetPlayer(projectile.OwnerPlayerID);
             }
 
-            if (player.GetTeam() == BotTeam)
+            Bot enemy;
+            if (m_bots.TryGetValue(player.CustomID, out enemy))
             {
-                Bot enemy;
-                if (m_bots.TryGetValue(player.CustomID, out enemy))
-                {
-                    enemy.OnDamage(attacker, args);
-                }
+                enemy.OnDamage(attacker, args);
             }
 
             UpdateInfectedStatus(player, attacker, args);
@@ -296,7 +293,7 @@ namespace SFDScript.BotExtended
 
         private static void UpdateInfectedStatus(IPlayer player, IPlayer attacker, PlayerDamageArgs args)
         {
-            if (!CanInfectFrom(player) && attacker != null)
+            if (!CanInfectFrom(player) && !player.IsBurnedCorpse && attacker != null)
             {
                 var attackerPunching = args.DamageType == PlayerDamageEventType.Melee
                     && attacker.CurrentWeaponDrawn == WeaponItemType.NONE
@@ -317,6 +314,11 @@ namespace SFDScript.BotExtended
                         Game.PlayEffect(Effect.CUSTOM_FLOAT_TEXT, player.GetWorldPosition(), "infected");
                         Game.ShowChatMessage(attacker.Name + " infected player " + player.Name);
                         extendedBot.Info.ZombieStatus = ZombieStatus.Infected;
+
+                        if (player.IsDead)
+                        {
+                            m_infectedCorpses.Add(new InfectedCorpse(player));
+                        }
                     }
                 }
             }
@@ -326,17 +328,14 @@ namespace SFDScript.BotExtended
         {
             if (player == null) return;
 
-            if (player.GetTeam() == BotTeam)
+            Bot enemy;
+            if (m_bots.TryGetValue(player.CustomID, out enemy))
             {
-                Bot enemy;
-                if (m_bots.TryGetValue(player.CustomID, out enemy))
+                if (!args.Removed)
                 {
-                    if (!args.Removed)
-                    {
-                        enemy.SayDeathLine();
-                    }
-                    enemy.OnDeath(args);
+                    enemy.SayDeathLine();
                 }
+                enemy.OnDeath(args);
             }
 
             var bot = GetExtendedBot(player);
@@ -345,8 +344,6 @@ namespace SFDScript.BotExtended
             {
                 m_infectedCorpses.Add(new InfectedCorpse(player));
             }
-
-            m_bots.Remove(player.CustomID);
         }
 
         public static Bot GetExtendedBot(IPlayer player)
@@ -507,7 +504,7 @@ namespace SFDScript.BotExtended
             IPlayer player = null,
             bool equipWeapons = true,
             bool setProfile = true,
-            PlayerTeam team = PlayerTeam.Team4,
+            PlayerTeam team = BotTeam,
             bool ignoreFullSpawner = false)
         {
             var info = GetInfo(botType);

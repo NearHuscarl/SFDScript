@@ -4,7 +4,7 @@ namespace SFDScript.BotExtended
 {
     public partial class GameScript : GameScriptInterface
     {
-        public static BotBehaviorSet GetBehaviorSet(BotAI botAI, SearchItems searchItems)
+        public static BotBehaviorSet GetBehaviorSet(BotAI botAI, SearchItems searchItems = SearchItems.None)
         {
             var botBehaviorSet = new BotBehaviorSet()
             {
@@ -26,6 +26,25 @@ namespace SFDScript.BotExtended
                     botBehaviorSet.RangedWeaponBurstTimeMax = 5000;
                     botBehaviorSet.RangedWeaponBurstPauseMin = 0;
                     botBehaviorSet.RangedWeaponBurstPauseMax = 0;
+                    break;
+                }
+                #endregion
+
+                #region OffensiveMelee
+                case BotAI.OffensiveMelee:
+                {
+                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.MeleeB);
+                    botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0.9f;
+                    botBehaviorSet.MeleeWaitTimeLimitMin = 600f;
+                    botBehaviorSet.MeleeWaitTimeLimitMax = 800f;
+
+                    botBehaviorSet.OffensiveEnrageLevel = 0.5f;
+                    botBehaviorSet.NavigationRandomPausesLevel = 0.1f;
+                    botBehaviorSet.DefensiveRollFireLevel = 0.95f;
+                    botBehaviorSet.DefensiveAvoidProjectilesLevel = 0.9f;
+                    botBehaviorSet.OffensiveClimbingLevel = 0.9f;
+                    botBehaviorSet.OffensiveSprintLevel = 0.9f;
+                    botBehaviorSet.OffensiveDiveLevel = 0.1f; // 0.7f
                     break;
                 }
                 #endregion
@@ -137,23 +156,14 @@ namespace SFDScript.BotExtended
                 #region Ninja == BotAI.MeleeExpert + more offensive melee tactic
                 case BotAI.Ninja:
                 {
-                    botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.MeleeB);
-                    botBehaviorSet.CounterOutOfRangeMeleeAttacksLevel = 0.9f;
-                    botBehaviorSet.MeleeWaitTimeLimitMin = 600f;
-                    botBehaviorSet.MeleeWaitTimeLimitMax = 800f;
+                    botBehaviorSet = GetBehaviorSet(BotAI.OffensiveMelee);
+
                     botBehaviorSet.MeleeUsage = true;
                     botBehaviorSet.MeleeWeaponUsage = true;
                     botBehaviorSet.MeleeWeaponUseFullRange = true;
 
                     botBehaviorSet.SearchForItems = true;
                     botBehaviorSet.SearchItems = SearchItems.Melee;
-                    botBehaviorSet.OffensiveEnrageLevel = 0.5f;
-                    botBehaviorSet.NavigationRandomPausesLevel = 0.1f;
-                    botBehaviorSet.DefensiveRollFireLevel = 0.95f;
-                    botBehaviorSet.DefensiveAvoidProjectilesLevel = 0.9f;
-                    botBehaviorSet.OffensiveClimbingLevel = 0.9f;
-                    botBehaviorSet.OffensiveSprintLevel = 0.9f;
-                    botBehaviorSet.OffensiveDiveLevel = 0.1f; // 0.7f
                     break;
                 }
                 #endregion
@@ -226,6 +236,34 @@ namespace SFDScript.BotExtended
                 case BotAI.Hulk:
                 {
                     botBehaviorSet = BotBehaviorSet.GetBotBehaviorPredefinedSet(PredefinedAIType.Hulk);
+                    botBehaviorSet.SetMeleeActionsAll(new BotMeleeActions()
+                    {
+                        Attack = (ushort)10,
+                        AttackCombo = (ushort)20,
+                        Block = (ushort)1,
+                        Kick = (ushort)1,
+                        Jump = (ushort)1,
+                        Wait = (ushort)20, // Hulk's original is 50
+                        Grab = (ushort)6
+                    });
+                    break;
+                }
+                #endregion
+
+                #region RagingHulk
+                case BotAI.RagingHulk:
+                {
+                    botBehaviorSet = GetBehaviorSet(BotAI.OffensiveMelee);
+                    botBehaviorSet.SetMeleeActionsAll(new BotMeleeActions()
+                    {
+                        Attack = (ushort)4,
+                        AttackCombo = (ushort)20,
+                        Block = (ushort)1,
+                        Kick = (ushort)4,
+                        Jump = (ushort)1,
+                        Wait = (ushort)10,
+                        Grab = (ushort)8
+                    });
                     break;
                 }
                 #endregion

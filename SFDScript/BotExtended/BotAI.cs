@@ -5,6 +5,9 @@
         Debug,
         None, // Normal SF (not extended bot)
 
+        // base
+        OffensiveMelee,
+
         Hacker,
         Expert,
         Hard,
@@ -18,6 +21,7 @@
 
         Grunt,
         Hulk,
+        RagingHulk,
 
         Meatgrinder,
         Ninja,

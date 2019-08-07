@@ -58,6 +58,39 @@ namespace SFDScript.Library
             return player1.GetTeam() != player2.GetTeam() || player1.GetTeam() == PlayerTeam.Independent;
         }
 
+        public static Skin GetSkin(IPlayer player)
+        {
+            var skinName = player.GetProfile().Skin.Name;
+
+            switch(skinName)
+            {
+                case "Normal":
+                    return Skin.NormalMale;
+                case "Normal_fem":
+                    return Skin.NormalFemale;
+                case "Tattoos":
+                    return Skin.TatoosMale;
+                case "Tattoos_fem":
+                    return Skin.TatoosFemale;
+                case "BearSkin":
+                    return Skin.Bear;
+                case "FrankenbearSkin":
+                    return Skin.Frankenbear;
+                case "MechSkin":
+                    return Skin.Mech;
+                case "Warpaint":
+                    return Skin.WarpaintMale;
+                case "Warpaint_fem":
+                    return Skin.WarpaintFemale;
+                case "Zombie":
+                    return Skin.ZombieMale;
+                case "Zombie_fem":
+                    return Skin.ZombieFemale;
+                default:
+                    return Skin.None;
+            }
+        }
+
         // take into account PlayerModifiers.SizeModifier. Not 100% accurate
         public static Area GetAABB(IPlayer player)
         {
