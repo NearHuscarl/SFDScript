@@ -65,19 +65,19 @@ namespace SFDScript.BotExtended.Bots
                     position.X += RandomHelper.Between(-10, 10);
                     position.Y += RandomHelper.Between(-10, 10);
 
-                    Game.PlayEffect(Effect.ELECTRIC, position);
+                    Game.PlayEffect(EffectName.Electric, position);
 
                     if (RandomHelper.Boolean())
                     {
-                        Game.PlayEffect(Effect.STEAM, position);
-                        Game.PlayEffect(Effect.STEAM, position);
-                        Game.PlayEffect(Effect.STEAM, position);
+                        Game.PlayEffect(EffectName.Steam, position);
+                        Game.PlayEffect(EffectName.Steam, position);
+                        Game.PlayEffect(EffectName.Steam, position);
                     }
                     // TODO: Customize spark effects
                     if (RandomHelper.Boolean())
-                        Game.PlayEffect(Effect.SPARKS, position);
+                        Game.PlayEffect(EffectName.Sparks, position);
                     if (RandomHelper.Boolean())
-                        Game.PlayEffect(Effect.FIRE, position);
+                        Game.PlayEffect(EffectName.Fire, position);
 
                     Game.PlaySound("ElectricSparks", position);
                     m_electricElapsed = 0f;
@@ -102,21 +102,21 @@ namespace SFDScript.BotExtended.Bots
 
                     if (healthLeft <= 0.2f)
                     {
-                        Game.PlayEffect(Effect.FIRE, position);
+                        Game.PlayEffect(EffectName.Fire, position);
                         Game.PlaySound("Flamethrower", position);
                     }
                     if (healthLeft <= 0.3f)
                     {
-                        Game.PlayEffect(Effect.SPARKS, position);
+                        Game.PlayEffect(EffectName.Sparks, position);
                     }
                     if (healthLeft <= 0.4f)
                     {
                         if (RandomHelper.Boolean())
                         {
-                            Game.PlayEffect(Effect.STEAM, position);
-                            Game.PlayEffect(Effect.STEAM, position);
+                            Game.PlayEffect(EffectName.Steam, position);
+                            Game.PlayEffect(EffectName.Steam, position);
                         }
-                        Game.PlayEffect(Effect.ELECTRIC, position);
+                        Game.PlayEffect(EffectName.Electric, position);
                         Game.PlaySound("ElectricSparks", position);
                     }
                     m_electricElapsed = 0f;
@@ -137,7 +137,7 @@ namespace SFDScript.BotExtended.Bots
             if (currentHealth / maxHealth <= 0.25f)
             {
                 var position = Player.GetWorldPosition();
-                Game.PlayEffect(Effect.ELECTRIC, position);
+                Game.PlayEffect(EffectName.Electric, position);
                 Game.PlaySound("ElectricSparks", position);
             }
         }

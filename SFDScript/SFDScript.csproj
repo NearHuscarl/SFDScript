@@ -78,7 +78,6 @@
     <Compile Include="BotExtended\WeaponSet.cs" />
     <Compile Include="BotExtended\ZombieStatus.cs" />
     <Compile Include="ColorPallete.cs" />
-    <Compile Include="Library\Effect.cs" />
     <Compile Include="GameScriptTemplate.cs" />
     <Compile Include="Library\Mocks\Game.cs" />
     <Compile Include="Library\RandomHelper.cs" />

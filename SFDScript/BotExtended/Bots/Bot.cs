@@ -98,7 +98,7 @@ namespace SFDScript.BotExtended.Bots
                 if (m_bloodEffectElapsed > 300)
                 {
                     var position = Player.GetWorldPosition();
-                    Game.PlayEffect(Effect.BLOOD_TRAIL, position);
+                    Game.PlayEffect(EffectName.BloodTrail, position);
                     m_bloodEffectElapsed = 0;
                 }
             }

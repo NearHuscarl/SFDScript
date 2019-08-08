@@ -311,7 +311,7 @@ namespace SFDScript.BotExtended
 
                     if (!extendedBot.Info.ImmuneToInfect)
                     {
-                        Game.PlayEffect(Effect.CUSTOM_FLOAT_TEXT, player.GetWorldPosition(), "infected");
+                        Game.PlayEffect(EffectName.CustomFloatText, player.GetWorldPosition(), "infected");
                         Game.ShowChatMessage(attacker.Name + " infected player " + player.Name);
                         extendedBot.Info.ZombieStatus = ZombieStatus.Infected;
 

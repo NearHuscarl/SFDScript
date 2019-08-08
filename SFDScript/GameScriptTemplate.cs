@@ -30,7 +30,6 @@ namespace SFDScript
         {
             // The game will always call the following method "public void OnShutdown()" before a map restart (or script deactivates). 
             // Perform some cleanup here or store some final information to Game.Data if needed.
-
         }
     }
 }
