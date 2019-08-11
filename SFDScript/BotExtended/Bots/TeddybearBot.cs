@@ -33,44 +33,42 @@ namespace SFDScript.BotExtended.Bots
         }
 
         private float m_startEnrageTime = 0f;
-        private bool m_moveorattack = false;
         protected override void OnUpdate(float elapsed)
         {
             base.OnUpdate(elapsed);
 
             if (IsEnraged)
             {
+                if (!ChaseOffender())
+                {
+                    m_offender = FindClosestTarget();
+                }
+
                 if (ScriptHelper.IsElapsed(m_startEnrageTime, m_enrageTime))
                 {
                     StopEnraging();
                 }
-
-                // This is a workaround to make a bot target specific IPlayer
-                // Need to set
-                // behavior.GuardRange = 1f;
-                // behavior.ChaseRange = 1f;
-                // TODO: need more testing
-                if (Vector2.Distance(Player.GetWorldPosition(), m_offender.GetWorldPosition()) < 75)
-                {
-                    if (!m_moveorattack && Game.IsEditorTest)
-                        Game.CreateDialogue("Attack", Player);
-                    Player.SetGuardTarget(null);
-                    m_moveorattack = true;
-                }
-                else
-                {
-                    if (m_moveorattack && Game.IsEditorTest)
-                        Game.CreateDialogue("Move", Player);
-                    Player.SetGuardTarget(m_offender);
-                    m_moveorattack = false;
-                }
-
-                if (m_offender.IsDead)
-                {
-                    m_offender = FindClosestTarget(Player.GetWorldPosition());
-                    Game.CreateDialogue("Oh fuck", m_offender); // TODO: remove
-                }
             }
+        }
+
+        private bool ChaseOffender()
+        {
+            if (m_offender == null || m_offender.IsDead) return false;
+
+            // This is a workaround to make a bot target specific IPlayer
+            // Need those 2 lines for it to work
+            // behavior.GuardRange = 1f;
+            // behavior.ChaseRange = 1f;
+            if (Vector2.Distance(Player.GetWorldPosition(), m_offender.GetWorldPosition()) < 75)
+            {
+                Player.SetGuardTarget(null);
+            }
+            else
+            {
+                Player.SetGuardTarget(m_offender);
+            }
+
+            return true;
         }
 
         private PlayerModifiers m_normalModifiers;
@@ -80,23 +78,25 @@ namespace SFDScript.BotExtended.Bots
         public void Enrage(IPlayer offender, int enrageTime)
         {
             if (Player.IsRemoved || Player == null) return;
-            if (IsEnraged)
-                Game.CreateDialogue("MOTHERFUCKER HOW DARE YOU", DialogueColor, Player);
+            bool isAlreadyEnraged = IsEnraged;
+
+            if (isAlreadyEnraged)
+                Game.CreateDialogue("GRRRRRRRROOAAR!", ScriptHelper.Red, Player);
             else
-                Game.CreateDialogue("GRRRRRR", DialogueColor, Player);
+                Game.CreateDialogue("GRRRRRR", ScriptHelper.Orange, Player);
             Player.SetGuardTarget(offender);
 
             Game.CreateDialogue(RandomHelper.GetItem(PlayerEnrageReactions), offender);
             
             m_normalModifiers = Player.GetModifiers();
             var enrageModifiers = Player.GetModifiers();
-            enrageModifiers.RunSpeedModifier = IsEnraged ? 1.5f : 1.25f;
-            enrageModifiers.SprintSpeedModifier = IsEnraged ? 1.5f : 1.25f;
-            enrageModifiers.MeleeForceModifier = IsEnraged ? 4f : 3f;
+            enrageModifiers.RunSpeedModifier = isAlreadyEnraged ? 1.5f : 1.25f;
+            enrageModifiers.SprintSpeedModifier = isAlreadyEnraged ? 1.5f : 1.25f;
+            enrageModifiers.MeleeForceModifier = isAlreadyEnraged ? 3f : 2.25f;
             Player.SetModifiers(enrageModifiers);
 
             m_normalBehaviorSet = Player.GetBotBehaviorSet();
-            var bs = GetBehaviorSet(BotAI.RagingHulk, IsEnraged ? SearchItems.Melee : SearchItems.Makeshift);
+            var bs = GetBehaviorSet(BotAI.RagingHulk, isAlreadyEnraged ? SearchItems.Melee : SearchItems.Makeshift);
             Player.SetBotBehaviorSet(bs);
 
             Player.SetStrengthBoostTime(enrageTime);
@@ -109,35 +109,16 @@ namespace SFDScript.BotExtended.Bots
 
         private void StopEnraging()
         {
+            var mod = Player.GetModifiers();
+            m_normalModifiers.CurrentHealth = mod.CurrentHealth;
+            m_normalModifiers.CurrentEnergy = mod.CurrentEnergy;
+
             Player.SetGuardTarget(null);
             Player.SetModifiers(m_normalModifiers);
             Player.SetBotBehaviorSet(m_normalBehaviorSet);
             Player.SetStrengthBoostTime(0);
             IsEnraged = false;
             m_offender = null;
-        }
-
-        public static IPlayer FindClosestTarget(Vector2 position)
-        {
-            IPlayer target = null;
-
-            foreach (var player in Game.GetPlayers())
-            {
-                if (player.IsDead || player.IsRemoved || ScriptHelper.GetSkin(player) == Skin.Bear)
-                    continue;
-
-                if (target == null) target = player;
-
-                var offenderDistance = Vector2.Distance(target.GetWorldPosition(), position);
-                var potentialOffenderDistance = Vector2.Distance(player.GetWorldPosition(), position);
-
-                if (potentialOffenderDistance < offenderDistance)
-                {
-                    target = player;
-                }
-            }
-
-            return target;
         }
     }
 }

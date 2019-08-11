@@ -107,5 +107,31 @@ namespace SFDScript.BotExtended.Bots
         public virtual void OnMeleeDamage(IPlayer attacker, PlayerMeleeHitArg arg) { }
         public virtual void OnDamage(IPlayer attacker, PlayerDamageArgs args) { }
         public virtual void OnDeath(PlayerDeathArgs args) { }
+
+        protected IPlayer FindClosestTarget()
+        {
+            var position = Player.GetWorldPosition();
+            IPlayer target = null;
+
+            foreach (var player in Game.GetPlayers())
+            {
+                var result = ScriptHelper.IsDifferentTeam(player, Player);
+                //var result = ScriptHelper.IsDifferentTeam(player, Player);
+                if (player.IsDead || player.IsRemoved || !ScriptHelper.IsDifferentTeam(player, Player))
+                    continue;
+
+                if (target == null) target = player;
+
+                var targetDistance = Vector2.Distance(target.GetWorldPosition(), position);
+                var potentialTargetDistance = Vector2.Distance(player.GetWorldPosition(), position);
+
+                if (potentialTargetDistance < targetDistance)
+                {
+                    target = player;
+                }
+            }
+
+            return target;
+        }
     }
 }

@@ -41,6 +41,23 @@ namespace SFDScript.BotExtended.Bots
             Player.SetGuardTarget(m_mommy.Player);
         }
 
+        private bool m_trackRocketRidingOffender = false;
+        protected override void OnUpdate(float elapsed)
+        {
+            base.OnUpdate(elapsed);
+
+            if (Player.IsRocketRiding && !m_trackRocketRidingOffender)
+            {
+                var projectile = Game.GetProjectile(Player.RocketRidingProjectileInstanceID);
+                m_offender = Game.GetPlayer(projectile.OwnerPlayerID);
+                m_trackRocketRidingOffender = true;
+            }
+            else
+            {
+                m_trackRocketRidingOffender = false;
+            }
+        }
+
         public override void OnDamage(IPlayer attacker, PlayerDamageArgs args)
         {
             m_offender = attacker;
@@ -60,9 +77,7 @@ namespace SFDScript.BotExtended.Bots
 
             if (m_offender == null)
             {
-                var killedPosition = Player.GetWorldPosition();
-
-                m_offender = TeddybearBot.FindClosestTarget(killedPosition);
+                m_offender = FindClosestTarget();
             }
 
             m_enrageCount++;

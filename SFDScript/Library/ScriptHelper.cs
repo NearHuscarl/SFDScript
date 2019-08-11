@@ -6,6 +6,9 @@ namespace SFDScript.Library
 {
     public static class ScriptHelper
     {
+        public static readonly Color Red = new Color(128, 32, 32);
+        public static readonly Color Orange = new Color(255, 128, 24);
+
         public static readonly Color MESSAGE_COLOR = new Color(24, 238, 200);
         public static readonly Color ERROR_COLOR = new Color(244, 77, 77);
         public static readonly Color WARNING_COLOR = new Color(249, 191, 11);

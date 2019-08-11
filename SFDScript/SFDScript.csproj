@@ -100,7 +100,7 @@
     <Compile Include="ScriptAPIExamples\StorageTestBed.cs" />
     <Compile Include="ScriptAPIExamples\VisualDebugging.cs" />
     <Compile Include="SharpConverter\SharpConverter.cs" />
-    <Compile Include="Test\DestroyAnimation.cs" />
+    <Compile Include="ScriptAPIExamples\DestroyAnimation.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

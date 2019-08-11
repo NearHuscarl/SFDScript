@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SFDGameScriptInterface;
+using System;
 using System.Collections.Generic;
 
 namespace SFDScript.Library
@@ -88,6 +89,26 @@ namespace SFDScript.Library
                 return GetEnumValue<T>(m_rnds[seedName]);
             }
             return GetEnumValue<T>(Rnd);
+        }
+
+        private static Vector2 Direction(Rnd rnd, float minAngle, float maxAngle)
+        {
+            var angle = Between(minAngle, maxAngle);
+            var radianAngle = angle * Math.PI / 180.0f;
+
+            return new Vector2()
+            {
+                X = (float)Math.Cos(radianAngle),
+                Y = (float)Math.Sin(radianAngle),
+            };
+        }
+        public static Vector2 Direction(float minAngle = 0, float maxAngle = 360, string seedName = "")
+        {
+            if (m_rnds.ContainsKey(seedName))
+            {
+                return Direction(m_rnds[seedName], minAngle, maxAngle);
+            }
+            return Direction(Rnd, minAngle, maxAngle);
         }
     }
 }

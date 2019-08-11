@@ -61,7 +61,7 @@ namespace SFDScript.BotExtended.Group
                 else
                 {
                     var botType = subGroup.GetRandomType();
-                    var bot = BotHelper.SpawnBot(botType);
+                    var bot = BotHelper.SpawnBot(botType, null, true, true, BotHelper.BotTeam, true);
 
                     newBots.Add(bot);
                     groupCountRemaining--;
