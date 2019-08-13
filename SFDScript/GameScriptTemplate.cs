@@ -23,7 +23,6 @@ namespace SFDScript
         {
             // The game will always call the following method "public void AfterStartup()" after a map start (or script activates). 
             // No triggers required. This is run after triggers that activate on startup (and after OnStartup triggers).
-
         }
 
         public void OnShutdown()

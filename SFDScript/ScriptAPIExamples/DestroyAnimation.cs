@@ -6,9 +6,7 @@ using System.Collections.Generic;
 namespace SFDScript.ScriptAPIExamples
 {
     /// <summary>
-    /// Usually when received enough overkill damage, player burst into pieces with blood and gore effects
-    /// This script replace the blood and gore with metal debris and other explosive effects for robot-like
-    /// character like Mecha in the campaign
+    /// Add more metal effects when gibbed for players which have PlayerHitEffect.Metal
     /// </summary>
     public class DestroyAnimation : GameScriptInterface
     {
@@ -16,10 +14,6 @@ namespace SFDScript.ScriptAPIExamples
         /// Placeholder constructor that's not to be included in the ScriptWindow!
         /// </summary>
         public DestroyAnimation() : base(null) { }
-
-        private Area m_gibArea;
-        private bool m_metalGibbing = false;
-        private const int GIB_AREA_SIZE = 15;
 
         private readonly List<string> DebrisList = new List<string> {
             "MetalDebris00A",
@@ -41,6 +35,7 @@ namespace SFDScript.ScriptAPIExamples
         public void OnStartup()
         {
             Game.GetPlayers()[0].GiveWeaponItem(WeaponItem.M60);
+            Game.RunCommand("ia 1");
 
             foreach (var player in Game.GetPlayers())
             {
@@ -51,60 +46,16 @@ namespace SFDScript.ScriptAPIExamples
             }
 
             Events.PlayerDeathCallback.Start(OnPlayerDeath);
-            Events.ObjectCreatedCallback.Start(OnObjectCreated);
-            Events.ObjectTerminatedCallback.Start(OnObjectTerminated);
-        }
-
-        private void OnObjectCreated(IObject[] objs)
-        {
-            if (m_metalGibbing)
-            {
-                foreach (var obj in objs)
-                {
-                    if (obj.Name.StartsWith("Gib") && m_gibArea.Contains(obj.GetWorldPosition()))
-                    {
-                        var debris = Game.CreateObject(RandomHelper.GetItem(DebrisList),
-                            obj.GetWorldPosition(),
-                            obj.GetAngle(),
-                            obj.GetLinearVelocity() * 2,
-                            obj.GetAngularVelocity());
-
-                        var debris2 = Game.CreateObject(RandomHelper.GetItem(DebrisList),
-                            obj.GetWorldPosition(),
-                            -obj.GetAngle(),
-                            -obj.GetLinearVelocity(),
-                            obj.GetAngularVelocity());
-
-                        if (RandomHelper.Between(0, 100) < 50)
-                        {
-                            Game.CreateObject(RandomHelper.GetItem(WiringTubeList),
-                                obj.GetWorldPosition(),
-                                obj.GetAngle(),
-                                RandomHelper.Direction(15, 165) * 20,
-                                -obj.GetAngularVelocity());
-                        }
-
-                        debris.SetMaxFire();
-                        obj.Remove();
-                    }
-                }
-                m_metalGibbing = false;
-            }
         }
 
         public void OnPlayerDeath(IPlayer player, PlayerDeathArgs args)
         {
-            if (args.Removed)
+            if (player.GetHitEffect() == PlayerHitEffect.Metal && args.Removed)
             {
-                var pos = player.GetWorldPosition();
-                var bottomLeft = new Vector2(pos.X - (GIB_AREA_SIZE / 2), pos.Y - (GIB_AREA_SIZE / 2));
-                var topRight = new Vector2(pos.X + (GIB_AREA_SIZE / 2), pos.Y + (GIB_AREA_SIZE / 2));
-                m_gibArea = new Area(bottomLeft, topRight);
-
+                var deathPosition = player.GetWorldPosition();
                 var effects = new List<Tuple<string, int>>() {
-                    Tuple.Create(EffectName.BulletHitMetal, 3),
-                    Tuple.Create(EffectName.Explosion, 1),
-                    Tuple.Create(EffectName.Steam, 3),
+                    Tuple.Create(EffectName.BulletHitMetal, 1),
+                    Tuple.Create(EffectName.Steam, 2),
                     Tuple.Create(EffectName.Electric, 4),
                 };
 
@@ -122,11 +73,34 @@ namespace SFDScript.ScriptAPIExamples
                     }
                 }
 
-                Game.TriggerExplosion(player.GetWorldPosition());
-                m_metalGibbing = true;
+                Game.TriggerExplosion(deathPosition);
+
+                for (var i = 0; i < 4; i++)
+                {
+                    var debrisLinearVelocity = RandomHelper.Direction(15, 165) * 10;
+                    var debris = Game.CreateObject(RandomHelper.GetItem(DebrisList),
+                        deathPosition,
+                        0f,
+                        debrisLinearVelocity,
+                        0f);
+                    debris.SetMaxFire();
+
+                    Game.CreateObject(RandomHelper.GetItem(DebrisList),
+                        deathPosition,
+                        0f,
+                        debrisLinearVelocity * -Vector2.UnitX,
+                        0f);
+
+                    if (RandomHelper.Between(0, 100) < 50)
+                    {
+                        Game.CreateObject(RandomHelper.GetItem(WiringTubeList),
+                            deathPosition,
+                            0f,
+                            RandomHelper.Direction(0, 180) * 6,
+                            0f);
+                    }
+                }
             }
         }
-
-        public void OnObjectTerminated(IObject[] objs) { }
     }
 }
