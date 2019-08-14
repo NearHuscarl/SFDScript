@@ -38,6 +38,7 @@ namespace SFDScript.BotExtended.Bots
 
         public void Decorate(IPlayer existingPlayer)
         {
+            existingPlayer.CustomID = Player.CustomID;
             existingPlayer.SetProfile(Player.GetProfile());
 
             existingPlayer.GiveWeaponItem(Player.CurrentMeleeWeapon.WeaponItem);
@@ -116,7 +117,6 @@ namespace SFDScript.BotExtended.Bots
             foreach (var player in Game.GetPlayers())
             {
                 var result = ScriptHelper.IsDifferentTeam(player, Player);
-                //var result = ScriptHelper.IsDifferentTeam(player, Player);
                 if (player.IsDead || player.IsRemoved || !ScriptHelper.IsDifferentTeam(player, Player))
                     continue;
 

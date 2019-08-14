@@ -8,7 +8,7 @@
         // Infected by zombie or other infected. Start turning into zombie when dying
         Infected,
 
-        // Most zombies dont turn again after dying (TODO)
+        // Most zombies dont turn again after dying
         Zombie,
     }
 }
