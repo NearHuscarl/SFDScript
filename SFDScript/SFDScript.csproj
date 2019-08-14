@@ -90,6 +90,7 @@
     <Compile Include="Library\ScriptHelper.cs" />
     <Compile Include="Library\SharpHelper.cs" />
     <Compile Include="ScriptAPIExamples\AmmoManagement.cs" />
+    <Compile Include="EffectDemo\EffectDemo.cs" />
     <Compile Include="ScriptAPIExamples\ExplosionListener.cs" />
     <Compile Include="ScriptAPIExamples\HitTest.cs" />
     <Compile Include="ScriptAPIExamples\MeleeActionListener.cs" />
