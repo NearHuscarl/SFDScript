@@ -78,6 +78,8 @@
     <Compile Include="BotExtended\WeaponSet.cs" />
     <Compile Include="BotExtended\ZombieStatus.cs" />
     <Compile Include="ColorPallete.cs" />
+    <Compile Include="Draft\ElectricBullet.cs" />
+    <Compile Include="Draft\InfectedBullet.cs" />
     <Compile Include="GameScriptTemplate.cs" />
     <Compile Include="Library\Mocks\Game.cs" />
     <Compile Include="Library\RandomHelper.cs" />
@@ -102,6 +104,7 @@
     <Compile Include="ScriptAPIExamples\VisualDebugging.cs" />
     <Compile Include="SharpConverter\SharpConverter.cs" />
     <Compile Include="ScriptAPIExamples\DestroyAnimation.cs" />
+    <Compile Include="Draft\SantaBullet.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
