@@ -1,0 +1,1 @@
+BotExtended script is getting too large so I decided to move it to a seperate repository [here](https://github.com/NearHuscarl/BotExtended)
